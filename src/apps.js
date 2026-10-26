@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  左のアイコンに出すページの一覧
 //  名前・色・アイコンを変えるときは、ここを書きかえます。
+//  色は青で統一しています（var(--primary)）。項目ごとに変えたいときは "#0ea5e9" のように書きます。
 //  ページを増やすときは、src/system に項目のフォルダーを作って画面（.jsx）と処理（.js）を置き、ここに 1 行足します。
 //  （例：src/system/programming/Programming.jsx と programming.js）
 //
@@ -11,16 +12,16 @@ export { APP_TITLE } from "./config";
 
 /** 左の上に並ぶページ（上から順に Ctrl + 1, 2, 3 … で開ける） */
 export const PAGES = [
-  { id: "home",        name: "ホーム",         icon: "home",        color: "#2563eb", load: () => import("./system/home/Home.jsx") },
-  { id: "programming", name: "プログラム学習", icon: "programming", color: "#2563eb", load: () => import("./system/programming/Programming.jsx") },
-  { id: "research",    name: "情報収集",       icon: "research",    color: "#0891b2", load: () => import("./system/research/Research.jsx") },
-  { id: "zukan",       name: "デジタル図鑑",   icon: "zukan",       color: "#16a34a", load: () => import("./system/zukan/Zukan.jsx") },
-  { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "#ea580c", load: () => import("./system/quiz/Quiz.jsx") },
+  { id: "home",        name: "ホーム",         icon: "home",        color: "var(--primary)", load: () => import("./system/home/Home.jsx") },
+  { id: "programming", name: "プログラム学習", icon: "programming", color: "var(--primary)", load: () => import("./system/programming/Programming.jsx") },
+  { id: "research",    name: "情報収集",       icon: "research",    color: "var(--primary)", load: () => import("./system/research/Research.jsx") },
+  { id: "zukan",       name: "デジタル図鑑",   icon: "zukan",       color: "var(--primary)", load: () => import("./system/zukan/Zukan.jsx") },
+  { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "var(--primary)", load: () => import("./system/quiz/Quiz.jsx") },
 ];
 
 /** 左の下に並ぶページ（上から 設定 → アカウント。その下にホワイト／ダークの切り替え） */
-export const SETTINGS = { id: "settings", name: "設定",       icon: "settings", color: "#64748b", load: () => import("./system/settings/Settings.jsx") };
-export const ACCOUNT  = { id: "account",  name: "アカウント", icon: "account",  color: "#7c3aed", load: () => import("./system/account/Account.jsx") };
+export const SETTINGS = { id: "settings", name: "設定",       icon: "settings", color: "var(--primary)", load: () => import("./system/settings/Settings.jsx") };
+export const ACCOUNT  = { id: "account",  name: "アカウント", icon: "account",  color: "var(--primary)", load: () => import("./system/account/Account.jsx") };
 export const BOTTOM_PAGES = [SETTINGS, ACCOUNT];
 
 /** 起動したときに開くページ */

@@ -1,7 +1,8 @@
 # 卒業研究アプリ
 
 Tauri 2 + React（JavaScript）+ Rust で作るデスクトップアプリです。
-左のサイドバーで「ホーム・プログラム学習・情報収集・デジタル図鑑・問題作成・設定」を切り替えます。
+起動すると起動画面（ログイン・新規登録）が出て、ログインするとホームが開きます。
+左のサイドバーで「ホーム・プログラム学習・情報収集・デジタル図鑑・問題作成」、左下で「設定・アカウント」を切り替えます。
 
 ## 起動する
 
@@ -9,9 +10,23 @@ Tauri 2 + React（JavaScript）+ Rust で作るデスクトップアプリです
 
 ```bash
 cd ~/projects/tauri-app
-npm ci              # 初回と、package-lock.json が変わったときだけ
-npm run tauri dev   # アプリが最大化で起動する（初回は Rust のビルドで数分かかる）
+mariadb < db/sotsuken.sql   # 初回だけ：データベース「sotsuken」とテーブルを作る
+npm ci                      # 初回と、package-lock.json が変わったときだけ
+npm run tauri dev           # アプリが最大化で起動する（初回は Rust のビルドで数分かかる）
 ```
+
+## ログインとデータベース
+
+- データベースは、その PC の MariaDB の `sotsuken`（ユーザー nkc-user / パスワード nkc）を使います。
+- テーブルは `db/sotsuken.sql` で作ります（user / gender / language / user_language）。ER 図どおりで、それ以外のテーブルは作りません。何度流しても大丈夫です。
+  - プログラム言語と試験は、どちらも `language` に入れます（同じ一覧）。
+  - パスワードは Argon2 で暗号化して保存します（元のパスワードは保存しません）。
+- 開発中（`npm run tauri dev`）は、ログイン ID とパスワードを空のまま「ログイン」を押すと、テスト用アカウント（ID：`devuser` ／ パスワード：`devpassword`）で入れます。初めて使うときに自動で作られます。exe では使えません。
+- 新規登録は「言語・試験」以外すべて必須です。一覧にない言語・試験はその場で追加できます。
+- アカウント画面で、名前・メール・性別・生年月日・言語と試験・パスワードを変更できます（ログイン ID は変更できません）。
+- 設定画面の内容（テーマ・文字の大きさなど）はデータベースではなく、その PC の中（localStorage）に保存します。
+- 別の PC の MariaDB につなぐときは、環境変数 `SOTSUKEN_DB_URL` で変えられます。
+  例）`SOTSUKEN_DB_URL=mysql://nkc-user:nkc@192.168.0.10:3306/sotsuken npm run tauri dev`
 
 ## フォルダーの中身
 
@@ -23,19 +38,28 @@ tauri-app/
 ├─ public/                  … アイコンなど、そのまま使うファイル
 ├─ src/                     … 画面側（React）
 │  ├─ main.jsx              … 入口（さわらなくてよい）
-│  ├─ App.jsx               … 全体（左のサイドバー＋右の画面）
+│  ├─ App.jsx               … 全体（ログイン前は起動画面、ログイン後は左のサイドバー＋右の画面）
 │  ├─ App.css               … 見た目（色・レイアウト・ホワイト／ダーク）
 │  ├─ apps.js               … 左に並ぶ項目の一覧（名前・アイコン・色）
 │  ├─ config.js             … アプリ名
-│  ├─ components/           … 全体で使う部品（サイドバー・アイコン・見出し）
+│  ├─ components/           … 全体で使う部品（サイドバー・アイコン・見出し・入力フォーム・言語の選択）
 │  └─ system/               … ★ 各項目のプログラムはここに書く
+│     ├─ start/             Start.jsx・start.js・start.css  … 起動画面（ログイン・新規登録）
+│     ├─ common/            api.js（Rust を呼ぶ）・validate.js（入力チェック）
 │     ├─ home/              Home.jsx（画面）・home.js（処理）
 │     ├─ programming/       Programming.jsx・programming.js … プログラム学習
 │     ├─ research/          Research.jsx・research.js       … 情報収集
 │     ├─ zukan/             Zukan.jsx・zukan.js             … デジタル図鑑
 │     ├─ quiz/              Quiz.jsx・quiz.js               … 問題作成
-│     └─ settings/          Settings.jsx                    … 設定
+│     ├─ settings/          Settings.jsx・settings.js・settings.css … 設定（PC の中に保存）
+│     └─ account/           Account.jsx・account.js・account.css … アカウント
+├─ db/sotsuken.sql          … データベースとテーブルを作る SQL
 └─ src-tauri/               … Rust 側と Tauri の設定（tauri.conf.json）
+   └─ src/
+      ├─ lib.rs             … 入口（コマンドの一覧）
+      ├─ db.rs              … データベースへの接続
+      ├─ account.rs         … ログイン・新規登録・アカウント変更の処理
+      └─ commands.rs        … 画面から呼ぶコマンド
 ```
 
 ### system の書き方

@@ -10,6 +10,7 @@ function SideItem({ page, active, onSelect }) {
       style={{ "--accent": page.color }}
       aria-current={active ? "page" : undefined}
       aria-label={page.name}
+      title={page.name}
       onClick={() => onSelect(page.id)}
     >
       <span className="side-ico"><Icon name={page.icon} /></span>
@@ -31,10 +32,10 @@ export default function Sidebar({ current, onSelect, theme, onTheme }) {
           <SideItem key={p.id} page={p} active={current === p.id} onSelect={onSelect} />
         ))}
         <div className="side-theme" role="radiogroup" aria-label="表示モード">
-          <button type="button" role="radio" aria-checked={theme === "light"} className={theme === "light" ? "active" : ""} onClick={() => onTheme("light")}>
+          <button type="button" role="radio" title="ホワイト" aria-checked={theme === "light"} className={theme === "light" ? "active" : ""} onClick={() => onTheme("light")}>
             <Icon name="sun" />ホワイト
           </button>
-          <button type="button" role="radio" aria-checked={theme === "dark"} className={theme === "dark" ? "active" : ""} onClick={() => onTheme("dark")}>
+          <button type="button" role="radio" title="ダーク" aria-checked={theme === "dark"} className={theme === "dark" ? "active" : ""} onClick={() => onTheme("dark")}>
             <Icon name="moon" />ダーク
           </button>
         </div>

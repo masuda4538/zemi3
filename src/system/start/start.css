@@ -1,0 +1,108 @@
+/* ═══════════════════════════════════════════════════════════════
+   起動画面の見た目とアニメーション（「ログイン」と「新規登録」だけ）
+     出てくるとき … 中央のカードが下からふわっと出る
+     ログイン後   … カードが小さくなりながら消え、後ろでアプリの画面が組み上がる
+                    （App.jsx の LEAVE_MS と同じくらいの長さ）
+   ═══════════════════════════════════════════════════════════════ */
+.start {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(900px 520px at 15% -10%, color-mix(in srgb, var(--sky) 22%, transparent), transparent 70%),
+    radial-gradient(900px 520px at 90% 110%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
+    var(--bg);
+  overflow: hidden;
+}
+.start-titlebar { flex: none; }
+
+.start-panel {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; justify-content: center; align-items: safe center;
+  padding: 8px 40px 40px;
+}
+.start-card {
+  width: min(440px, 100%);
+  display: flex; flex-direction: column; gap: 18px;
+  padding: 30px 32px 26px; border-radius: 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  animation: start-rise .5s var(--ease) both;
+}
+.start-card.is-wide { width: min(1120px, 100%); }
+
+.start-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 12px; background: var(--hover); }
+.start-card.is-wide .start-tabs { width: 360px; }
+.start-tabs button {
+  height: 38px; border: 0; border-radius: 9px; cursor: pointer;
+  background: transparent; color: var(--text-2); font-size: 14px; font-weight: 800;
+  transition: background .15s, color .15s;
+}
+.start-tabs button.active { background: var(--surface); color: var(--primary); }
+
+.start-form { animation: start-fade .3s var(--ease); }
+.start-head h2 { font-size: 22px; font-weight: 800; }
+.start-head p { margin-top: 4px; font-size: 13px; color: var(--text-2); }
+.start-switch { text-align: center; font-size: 13px; color: var(--text-2); }
+.start-switch button { border: 0; background: none; padding: 0; color: var(--primary); font-weight: 800; cursor: pointer; }
+.start-switch button:hover { text-decoration: underline; }
+.start-dev {
+  margin-top: -6px; text-align: center; font-size: 11.5px; color: var(--text-3);
+}
+
+/* ログイン：お知らせ欄と入力欄の間を詰める */
+.start-form .msg-slot { margin: -6px 0 -4px; }
+
+/* ───────── 新規登録（左：必須　右：任意） ───────── */
+.reg-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0; }
+.reg-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.reg-col:first-child { padding-right: 28px; }
+.reg-col-optional { padding-left: 28px; border-left: 1px solid var(--border); }
+.reg-col-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+.reg-col .form-grid { gap: 12px 16px; }
+.reg-col-optional .lang-picker { flex: 1; }
+.reg-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: -4px; }
+.reg-submit { min-width: 240px; height: 46px; font-size: 15px; }
+
+/* ようこそ */
+.start-welcome { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 0 30px; text-align: center; }
+.start-welcome h2 { font-size: 22px; font-weight: 800; animation: start-fade .4s .25s var(--ease) both; }
+.start-welcome p { color: var(--text-2); font-size: 13px; animation: start-fade .4s .35s var(--ease) both; }
+.start-check { width: 76px; height: 76px; margin-bottom: 6px; fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.start-check circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw .5s var(--ease) forwards; }
+.start-check path { stroke-dasharray: 36; stroke-dashoffset: 36; animation: draw .3s .4s var(--ease) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+@keyframes start-rise { from { opacity: 0; transform: translateY(18px); } }
+@keyframes start-fade { from { opacity: 0; transform: translateY(6px); } }
+
+/* ───────── ログイン後（アプリの画面へ） ───────── */
+.start.is-leaving { pointer-events: none; animation: start-bg-out .5s .15s var(--ease) both; }
+.start.is-leaving .start-card { animation: start-card-out .4s var(--ease) both; }
+.start.is-leaving .start-titlebar { opacity: 0; }
+@keyframes start-card-out { to { opacity: 0; transform: scale(.94); } }
+@keyframes start-bg-out { to { opacity: 0; } }
+
+/* アプリの画面が出てくるとき（App.jsx で .shell に is-entering が付く） */
+.shell.is-entering .side-item,
+.shell.is-entering .side-theme { animation: shell-item-in .45s var(--ease) both; animation-delay: .3s; }
+.shell.is-entering .side-group .side-item:nth-child(2) { animation-delay: .34s; }
+.shell.is-entering .side-group .side-item:nth-child(3) { animation-delay: .38s; }
+.shell.is-entering .side-group .side-item:nth-child(4) { animation-delay: .42s; }
+.shell.is-entering .side-group .side-item:nth-child(5) { animation-delay: .46s; }
+.shell.is-entering .side-group .side-item:nth-child(6) { animation-delay: .50s; }
+.shell.is-entering .side-group.bottom .side-item:nth-child(2) { animation-delay: .38s; }
+.shell.is-entering .main-col { animation: shell-main-in .55s .2s var(--ease) both; }
+@keyframes shell-item-in { from { opacity: 0; transform: translateX(-14px); } }
+@keyframes shell-main-in { from { opacity: 0; transform: translateY(16px); } }
+
+/* 画面が狭いときは、新規登録を 1 列にする */
+@media (max-width: 1000px) {
+  .reg-columns { grid-template-columns: 1fr; gap: 22px; }
+  .reg-col:first-child { padding-right: 0; }
+  .reg-col-optional { padding-left: 0; border-left: 0; padding-top: 20px; border-top: 1px solid var(--border); }
+  .reg-actions { flex-direction: column-reverse; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .start *, .start, .shell.is-entering * { animation-duration: .01ms !important; animation-delay: 0s !important; }
+}
+
+
