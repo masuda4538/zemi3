@@ -141,3 +141,37 @@ h1, h2, p { margin: 0; }
 .seg button { height: 30px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; background: transparent; color: var(--text-2); font-size: 13px; font-weight: 700; }
 .seg button:hover:not(.active) { background: var(--hover); }
 .seg button.active { background: var(--text); color: var(--surface); }
+
+/* ═════════ 右上の帯（最小化・最大化・閉じる） ═════════ */
+.main-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.titlebar { flex: none; height: 36px; display: flex; justify-content: flex-end; }
+.win-buttons { display: flex; }
+.win-btn {
+  display: grid; place-items: center; width: 46px; height: 36px;
+  border: 0; background: transparent; color: var(--text-2); cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.win-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.win-btn:hover { background: var(--hover); color: var(--text); }
+.win-btn.close:hover { background: #e81123; color: #fff; }
+.stage { flex: 1; padding-top: 4px; }
+.page-center { min-height: calc(100vh - 68px); }
+
+/* ═════════ 画面の切り替え（ぼやけた状態 → くっきり） ═════════ */
+.page {
+  animation: none;
+  transition: filter .38s var(--ease), opacity .38s var(--ease);
+}
+.page.is-blurred {
+  filter: blur(12px);
+  opacity: .35;
+  pointer-events: none;
+  transition-duration: .22s;
+}
+.page-error {
+  margin: 40px auto; max-width: 640px; padding: 14px 18px; border-radius: var(--radius);
+  border: 1px solid #fca5a5; background: color-mix(in srgb, #ef4444 8%, var(--surface)); color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.is-blurred { transition: none; filter: none; }
+}
