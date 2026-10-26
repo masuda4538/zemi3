@@ -1,14 +1,15 @@
 // ═══════════════════════════════════════════════════════════════
 //  左のアイコンに出すページの一覧
 //  名前・色・アイコンを変えるときは、ここを書きかえます。
-//  ページを増やすときは、src/pages にファイルを作って、ここに 1 行足します。
+//  ページを増やすときは、src/system に項目のフォルダーを作って画面（.jsx）と処理（.js）を置き、ここに 1 行足します。
+//  （例：src/system/programming/Programming.jsx と programming.js）
 // ═══════════════════════════════════════════════════════════════
-import Home from "./pages/Home";
-import Programming from "./pages/Programming";
-import Research from "./pages/Research";
-import Zukan from "./pages/Zukan";
-import Quiz from "./pages/Quiz";
-import Settings from "./pages/Settings";
+import Home from "./system/home/Home.jsx";
+import Programming from "./system/programming/Programming.jsx";
+import Research from "./system/research/Research.jsx";
+import Zukan from "./system/zukan/Zukan.jsx";
+import Quiz from "./system/quiz/Quiz.jsx";
+import Settings from "./system/settings/Settings.jsx";
 
 export { APP_TITLE } from "./config";
 
