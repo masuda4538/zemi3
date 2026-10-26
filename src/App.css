@@ -1,116 +1,143 @@
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+/* ═══════════════════════════════════════════════════════════════
+   卒業研究アプリ — 見た目
+   左にアプリのアイコン、右にアプリの画面。影は使わず、細い枠線と色で区切る
+   色はここ（:root）でまとめて決めています
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────── 色・文字（ホワイト） ───────── */
+:root,
+:root[data-theme="light"] {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface-2: #f7f9fb;
+  --hover: #eef2f7;
+  --border: #e2e7ee;
+  --border-strong: #cfd7e2;
+  --text: #1b2330;
+  --text-2: #4b5768;
+  --text-3: #8a95a6;
+  --primary: #2563eb;
+  --font: "Segoe UI", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP", system-ui, sans-serif;
+  --radius: 12px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --side-w: 100px;
+  color-scheme: light;
+}
+/* ───────── 色（ダーク） ───────── */
+:root[data-theme="dark"] {
+  --bg: #0f1217;
+  --surface: #171b22;
+  --surface-2: #1c2129;
+  --hover: #222833;
+  --border: #272e3a;
+  --border-strong: #354052;
+  --text: #e7eaf0;
+  --text-2: #b0b9c7;
+  --text-3: #7c8799;
+  --primary: #5b8cff;
+  color-scheme: dark;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafb);
-}
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+/* ───────── ベース ───────── */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: var(--font); font-size: 14px; line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+  user-select: none;
+  transition: background-color .25s, color .25s;
+}
+button { font: inherit; color: inherit; }
+h1, h2, p { margin: 0; }
+.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+/* ═════════ 全体のレイアウト ═════════ */
+.shell {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: var(--side-w) minmax(0, 1fr);
 }
 
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
+/* ── 左のサイドバー ── */
+.sidebar {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 12px 6px; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  background: var(--surface); border-right: 1px solid var(--border);
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
+.side-group { display: flex; flex-direction: column; gap: 6px; }
+.side-group.bottom { padding-top: 10px; }
+.side-item {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  width: 100%; padding: 9px 2px 8px; border-radius: 12px; cursor: pointer;
+  border: 0; background: transparent; color: var(--text-2);
+  transition: background .15s, color .15s;
 }
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
+.side-item:hover { background: var(--hover); color: var(--text); }
+.side-ico { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; transition: background .15s, color .15s; }
+.side-ico .icon { width: 23px; height: 23px; stroke-width: 1.9; }
+.side-label {
+  max-width: 100%; padding: 0 2px;
+  font-size: 11px; font-weight: 700; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
-.row {
-  display: flex;
-  justify-content: center;
+/* 選んでいるアプリは、そのアプリの色で塗る */
+.side-item.active { background: color-mix(in srgb, var(--accent) 11%, var(--surface)); color: var(--accent); }
+.side-item.active .side-ico { background: var(--accent); color: #fff; }
+.side-item.active::before {
+  content: ""; position: absolute; left: -6px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--accent);
 }
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* ホワイト／ダークの切り替え（縦に 2 つ） */
+.side-theme {
+  display: flex; flex-direction: column; gap: 2px;
+  margin: 2px 4px 0; padding: 3px; border-radius: 12px;
+  border: 1px solid var(--border-strong); background: var(--surface-2);
 }
-
-a:hover {
-  color: #535bf2;
+.side-theme button {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  height: 28px; padding: 0 4px; border: 0; border-radius: 9px; cursor: pointer;
+  background: transparent; color: var(--text-2);
+  font-size: 11px; font-weight: 700; white-space: nowrap;
 }
+.side-theme .icon { width: 13px; height: 13px; stroke-width: 2.2; }
+.side-theme button:hover:not(.active) { background: var(--hover); color: var(--text); }
+.side-theme button.active { background: var(--text); color: var(--surface); }
 
-h1 {
-  text-align: center;
+/* ── 右：アプリの画面 ── */
+.stage { min-width: 0; min-height: 0; overflow-y: auto; padding: 20px 24px 28px; }
+.page { min-height: 100%; animation: page-in .2s var(--ease); }
+@keyframes page-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .page { animation: none; } }
+
+/* ═════════ 仮の画面（中央にアイコンと名前） ═════════ */
+.page-center { min-height: calc(100vh - 48px); display: grid; place-items: center; }
+.app-title { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; margin-top: -4vh; }
+.app-title-icon {
+  display: grid; place-items: center; width: 132px; height: 132px; border-radius: 34px;
+  background:
+    radial-gradient(circle at 28% 18%, rgb(255 255 255 / .22), transparent 55%),
+    linear-gradient(150deg, var(--accent), color-mix(in srgb, var(--accent) 58%, #05070d));
+  color: #fff;
 }
+.app-title-icon .icon { width: 66px; height: 66px; stroke-width: 1.6; }
+.app-title h1 { font-size: 30px; font-weight: 800; letter-spacing: .04em; }
+.app-title-note { color: var(--text-3); font-size: 13px; }
 
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
-}
+/* ═════════ 設定 ═════════ */
+.page-narrow { max-width: 780px; display: flex; flex-direction: column; gap: 16px; }
+.page-heading { font-size: 22px; font-weight: 800; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: var(--radius); }
+.panel-head { padding: 14px 18px 10px; }
+.panel-head h2 { font-size: 15px; font-weight: 800; }
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 18px; border-top: 1px solid var(--border); }
+.set-row strong { font-size: 13.5px; }
+.set-row p { margin-top: 2px; font-size: 12.5px; color: var(--text-2); }
+.seg { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); flex: none; }
+.seg button { height: 30px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; background: transparent; color: var(--text-2); font-size: 13px; font-weight: 700; }
+.seg button:hover:not(.active) { background: var(--hover); }
+.seg button.active { background: var(--text); color: var(--surface); }

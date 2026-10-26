@@ -1,51 +1,60 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+// ═══════════════════════════════════════════════════════════════
+//  画面全体：左にアプリのアイコン、右に選んだアプリの画面
+//  ページの一覧は apps.js、それぞれの画面は src/pages/*.jsx にあります。
+// ═══════════════════════════════════════════════════════════════
+import { useEffect, useState } from "react";
+import Sidebar from "./components/Sidebar";
+import { APP_TITLE, PAGES, SETTINGS, findPage } from "./apps";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+// 最後に開いていたページと、表示モードを覚えておく（次に起動したときもそのまま）
+const load = (key, fallback) => {
+  try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
+};
+const save = (key, value) => {
+  try { localStorage.setItem(key, value); } catch { /* 保存できなくても動く */ }
+};
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+export default function App() {
+  const [current, setCurrent] = useState(() => findPage(load("page", "home")).id);
+  const [theme, setTheme] = useState(() => (load("theme", "light") === "dark" ? "dark" : "light"));
+
+  // 表示モードを画面全体に反映
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    save("theme", theme);
+  }, [theme]);
+
+  // ページを開いたら覚えておく・タイトルを変える
+  useEffect(() => {
+    save("page", current);
+    document.title = `${findPage(current).name} - ${APP_TITLE}`;
+  }, [current]);
+
+  // キーボード：Ctrl + 1〜5 で各ページ、Ctrl + , で設定
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= PAGES.length) { e.preventDefault(); setCurrent(PAGES[n - 1].id); }
+      if (e.key === ",") { e.preventDefault(); setCurrent(SETTINGS.id); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const page = findPage(current);
+  const Page = page.component;
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+    <div className="shell">
+      <Sidebar current={current} onSelect={setCurrent} theme={theme} onTheme={setTheme} />
+      <main className="stage" style={{ "--accent": page.color }}>
+        {/* key を付けると、ページを切り替えたときにアニメーションし直す */}
+        <section className="page" key={page.id}>
+          <Page page={page} theme={theme} onTheme={setTheme} />
+        </section>
+      </main>
+    </div>
   );
 }
-
-export default App;
