@@ -1,6 +1,6 @@
-// 左のサイドバー：上にホームと 4 つのアプリ、下に設定とホワイト／ダークの切り替え
+// 左のサイドバー：上にホームと 4 つのアプリ、下に設定・アカウント・ホワイト／ダークの切り替え
 import Icon from "./Icon";
-import { PAGES, SETTINGS } from "../apps";
+import { PAGES, BOTTOM_PAGES } from "../apps";
 
 function SideItem({ page, active, onSelect }) {
   return (
@@ -27,7 +27,9 @@ export default function Sidebar({ current, onSelect, theme, onTheme }) {
         ))}
       </div>
       <div className="side-group bottom">
-        <SideItem page={SETTINGS} active={current === SETTINGS.id} onSelect={onSelect} />
+        {BOTTOM_PAGES.map((p) => (
+          <SideItem key={p.id} page={p} active={current === p.id} onSelect={onSelect} />
+        ))}
         <div className="side-theme" role="radiogroup" aria-label="表示モード">
           <button type="button" role="radio" aria-checked={theme === "light"} className={theme === "light" ? "active" : ""} onClick={() => onTheme("light")}>
             <Icon name="sun" />ホワイト

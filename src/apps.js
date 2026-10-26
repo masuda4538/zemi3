@@ -10,6 +10,7 @@ import Research from "./system/research/Research.jsx";
 import Zukan from "./system/zukan/Zukan.jsx";
 import Quiz from "./system/quiz/Quiz.jsx";
 import Settings from "./system/settings/Settings.jsx";
+import Account from "./system/account/Account.jsx";
 
 export { APP_TITLE } from "./config";
 
@@ -22,8 +23,10 @@ export const PAGES = [
   { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "#ea580c", component: Quiz },
 ];
 
-/** 左の下にある設定（Ctrl + , で開ける） */
-export const SETTINGS = { id: "settings", name: "設定", icon: "settings", color: "#64748b", component: Settings };
+/** 左の下に並ぶページ（上から 設定 → アカウント。その下にホワイト／ダークの切り替え） */
+export const SETTINGS = { id: "settings", name: "設定",       icon: "settings", color: "#64748b", component: Settings };
+export const ACCOUNT  = { id: "account",  name: "アカウント", icon: "account",  color: "#7c3aed", component: Account };
+export const BOTTOM_PAGES = [SETTINGS, ACCOUNT];
 
 /** id からページを探す */
-export const findPage = (id) => [...PAGES, SETTINGS].find((p) => p.id === id) ?? PAGES[0];
+export const findPage = (id) => [...PAGES, ...BOTTOM_PAGES].find((p) => p.id === id) ?? PAGES[0];
