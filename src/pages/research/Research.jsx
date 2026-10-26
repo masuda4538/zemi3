@@ -1,15 +1,15 @@
 // ═══════════════════════════════════════════════════════════════
-//  問題作成
-//  左のアイコン「問題作成」を押すと表示されるページです。
+//  情報収集
+//  左のアイコン「情報収集」を押すと表示されるページです。
 //  ここに画面を作っていきます（今はアイコンと名前だけ）。
 //  page には apps.js の設定（名前・色・アイコン）が入っています。
 // ═══════════════════════════════════════════════════════════════
-import PageTitle from "../components/PageTitle";
+import PageTitle from "../../components/PageTitle";
 
-export default function Quiz({ page }) {
+export default function Research({ page }) {
   return (
     <div className="page-center">
-      <PageTitle page={page} note="ここに問題作成の画面を作ります（src/pages/Quiz.jsx）" />
+      <PageTitle page={page} note="ここに情報収集の画面を作ります（src/pages/research/Research.jsx）" />
     </div>
   );
 }

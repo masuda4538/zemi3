@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
-import { APP_TITLE } from "../config";
+import { APP_TITLE } from "../../config";
 
 export default function Settings({ theme, onTheme }) {
   const [version, setVersion] = useState("");
