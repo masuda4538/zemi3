@@ -1,28 +1,31 @@
 // ═══════════════════════════════════════════════════════════════
 //  左のアイコンに出すページの一覧
 //  名前・色・アイコンを変えるときは、ここを書きかえます。
-//  ページを増やすときは、src/pages にファイルを作って、ここに 1 行足します。
+//  色は青で統一しています（var(--primary)）。項目ごとに変えたいときは "#0ea5e9" のように書きます。
+//  ページを増やすときは、src/system に項目のフォルダーを作って画面（.jsx）と処理（.js）を置き、ここに 1 行足します。
+//  （例：src/system/programming/Programming.jsx と programming.js）
+//
+//  load の行は「押されたときに、その画面のプログラムを読み込む」という意味です。
+//  読み込んでいる間は、画面がぼやけてからくっきり見えるアニメーションになります。
 // ═══════════════════════════════════════════════════════════════
-import Home from "./pages/Home";
-import Programming from "./pages/Programming";
-import Research from "./pages/Research";
-import Zukan from "./pages/Zukan";
-import Quiz from "./pages/Quiz";
-import Settings from "./pages/Settings";
-
 export { APP_TITLE } from "./config";
 
 /** 左の上に並ぶページ（上から順に Ctrl + 1, 2, 3 … で開ける） */
 export const PAGES = [
-  { id: "home",        name: "ホーム",         icon: "home",        color: "#2563eb", component: Home },
-  { id: "programming", name: "プログラム学習", icon: "programming", color: "#2563eb", component: Programming },
-  { id: "research",    name: "情報収集",       icon: "research",    color: "#0891b2", component: Research },
-  { id: "zukan",       name: "デジタル図鑑",   icon: "zukan",       color: "#16a34a", component: Zukan },
-  { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "#ea580c", component: Quiz },
+  { id: "home",        name: "ホーム",         icon: "home",        color: "var(--primary)", load: () => import("./system/home/Home.jsx") },
+  { id: "programming", name: "プログラム学習", icon: "programming", color: "var(--primary)", load: () => import("./system/programming/Programming.jsx") },
+  { id: "research",    name: "情報収集",       icon: "research",    color: "var(--primary)", load: () => import("./system/research/Research.jsx") },
+  { id: "zukan",       name: "デジタル図鑑",   icon: "zukan",       color: "var(--primary)", load: () => import("./system/zukan/Zukan.jsx") },
+  { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "var(--primary)", load: () => import("./system/quiz/Quiz.jsx") },
 ];
 
-/** 左の下にある設定（Ctrl + , で開ける） */
-export const SETTINGS = { id: "settings", name: "設定", icon: "settings", color: "#64748b", component: Settings };
+/** 左の下に並ぶページ（上から 設定 → アカウント。その下にホワイト／ダークの切り替え） */
+export const SETTINGS = { id: "settings", name: "設定",       icon: "settings", color: "var(--primary)", load: () => import("./system/settings/Settings.jsx") };
+export const ACCOUNT  = { id: "account",  name: "アカウント", icon: "account",  color: "var(--primary)", load: () => import("./system/account/Account.jsx") };
+export const BOTTOM_PAGES = [SETTINGS, ACCOUNT];
+
+/** 起動したときに開くページ */
+export const START_PAGE = "home";
 
 /** id からページを探す */
-export const findPage = (id) => [...PAGES, SETTINGS].find((p) => p.id === id) ?? PAGES[0];
+export const findPage = (id) => [...PAGES, ...BOTTOM_PAGES].find((p) => p.id === id) ?? PAGES[0];

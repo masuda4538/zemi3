@@ -1,0 +1,50 @@
+/* ═════════ アカウント画面（左右に別の枠を並べる・なるべく 1 画面に収める） ═════════ */
+.account {
+  max-width: 1320px; margin: 0 auto; padding-bottom: 8px;
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; align-items: stretch;
+}
+.acc-col-left, .acc-col-right { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.account .input:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
+.account .field { gap: 5px; }
+.account .field-help, .account .field-error { line-height: 1.35; }
+
+/* 名前とログアウト */
+.acc-head { display: flex; align-items: center; gap: 14px; padding: 12px 18px; }
+.acc-avatar {
+  display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; flex: none;
+  background: linear-gradient(150deg, var(--sky), var(--accent) 70%);
+  color: #fff; font-size: 20px; font-weight: 800;
+}
+.acc-who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.acc-who h1 { font-size: 18px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-who span { font-size: 12.5px; color: var(--text-2); }
+.acc-who small { font-size: 11.5px; color: var(--text-3); }
+
+/* 枠（見出し・中身・下のボタンの帯） */
+.acc-card { display: flex; flex-direction: column; }
+.acc-card-fill { flex: 1; }
+.acc-card-head { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; padding: 12px 18px 4px; }
+.acc-card-head h2 { font-size: 15px; font-weight: 800; }
+.acc-card-head p { flex-basis: 100%; font-size: 12px; color: var(--text-3); }
+.acc-card-body { padding: 8px 18px 4px; }
+.acc-card-body.form-grid { gap: 8px 16px; }
+.acc-lang-body { flex: 1; display: flex; padding-bottom: 14px; }
+.acc-lang-body .lang-picker { flex: 1; align-content: start; }
+.acc-pw-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+
+.acc-bar {
+  display: flex; align-items: center; gap: 8px; margin-top: auto;
+  padding: 10px 18px; border-top: 1px solid var(--border); background: var(--surface-2);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.acc-status { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 700; }
+.acc-status.is-error { color: #dc2626; }
+.acc-status.is-ok { color: var(--primary); }
+:root[data-theme="dark"] .acc-status.is-error { color: #f87171; }
+:root[data-theme="dark"] .acc-status.is-ok { color: var(--sky); }
+
+/* 画面が狭いときは縦に並べる */
+@media (max-width: 1100px) {
+  .account { grid-template-columns: 1fr; }
+  .acc-pw-grid { grid-template-columns: 1fr; }
+}

@@ -1,2 +1,2 @@
 // アプリ全体の名前（ウィンドウのタイトルや設定画面に出ます）
-export const APP_TITLE = "卒業研究アプリ";
+export const APP_TITLE = "学習支援システム";

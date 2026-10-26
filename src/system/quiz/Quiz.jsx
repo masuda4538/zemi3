@@ -1,15 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
-//  プログラム学習
-//  左のアイコン「プログラム学習」を押すと表示されるページです。
-//  ここに画面を作っていきます（今はアイコンと名前だけ）。
+//  問題作成：画面（見た目）
+//  左のアイコン「問題作成」を押すと表示されます。
+//  見た目はこのファイル、処理（計算・データ・DB や Rust の呼び出し）は quiz.js に書きます。
 //  page には apps.js の設定（名前・色・アイコン）が入っています。
 // ═══════════════════════════════════════════════════════════════
-import PageTitle from "../components/PageTitle";
+import PageTitle from "../../components/PageTitle";
+import { getNote } from "./quiz.js";
 
-export default function Programming({ page }) {
+export default function Quiz({ page }) {
   return (
     <div className="page-center">
-      <PageTitle page={page} note="ここにプログラム学習の画面を作ります（src/pages/Programming.jsx）" />
+      <PageTitle page={page} note={getNote()} />
     </div>
   );
 }

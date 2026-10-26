@@ -1,0 +1,143 @@
+/* ═══════════════════════════════════════════════════════════════
+   入力フォームの見た目（新規登録・ログイン・アカウント画面で共通）
+   ボタンや枠の色は --accent（そのページの色）。なければ --primary（青）
+   ═══════════════════════════════════════════════════════════════ */
+.form { display: flex; flex-direction: column; gap: 16px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+.form-grid .span-2 { grid-column: 1 / -1; }
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field-label { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+.badge { padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 800; letter-spacing: .02em; }
+.badge-req { background: color-mix(in srgb, #ef4444 13%, var(--surface)); color: #dc2626; }
+.badge-opt { background: var(--hover); color: var(--text-3); }
+.field-help { font-size: 12px; color: var(--text-3); }
+.field-error { font-size: 12px; font-weight: 700; color: #dc2626; }
+:root[data-theme="dark"] .field-error, :root[data-theme="dark"] .badge-req { color: #f87171; }
+
+.input {
+  width: 100%; height: 42px; padding: 0 12px; border-radius: 10px;
+  border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 14px; outline: none; user-select: text;
+  transition: border-color .15s, box-shadow .15s;
+}
+select.input { cursor: pointer; padding-right: 8px; }
+.input::placeholder { color: var(--text-3); }
+.input:focus { border-color: var(--accent, var(--primary)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, var(--primary)) 20%, transparent); }
+.field.has-error .input { border-color: #ef4444; }
+
+/* パスワード（表示／隠す） */
+.pw-wrap { position: relative; }
+.pw-wrap .input { padding-right: 64px; }
+.pw-toggle {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  height: 30px; padding: 0 10px; border: 0; border-radius: 8px; cursor: pointer;
+  background: transparent; color: var(--text-3); font-size: 12px; font-weight: 700;
+}
+.pw-toggle:hover { background: var(--hover); color: var(--text); }
+
+/* 生年月日（年・月・日） */
+.birth { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; }
+
+/* 選ぶボタン（性別・言語） */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 38px; padding: 0 16px; border-radius: 999px; cursor: pointer;
+  border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text-2);
+  font-size: 13px; font-weight: 700;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.chip:hover { border-color: var(--text-3); color: var(--text); }
+.chip.on {
+  border-color: var(--accent, var(--primary)); color: var(--accent, var(--primary));
+  background: color-mix(in srgb, var(--accent, var(--primary)) 10%, var(--surface));
+}
+.chip-sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+.chip-check { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 言語・試験 */
+.lang-picker {
+  display: flex; flex-direction: column; gap: 14px; padding: 14px;
+  border: 1.5px dashed var(--border-strong); border-radius: 12px; background: var(--surface-2);
+}
+.lang-group { display: flex; flex-direction: column; gap: 8px; }
+.lang-group-head { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; color: var(--text-2); }
+.lang-count { padding: 1px 8px; border-radius: 999px; background: var(--accent, var(--primary)); color: #fff; font-size: 11px; }
+.chip.on { background: var(--sky-soft); }
+.lang-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+.lang-picker > .field-help, .lang-picker > .field-error { margin-top: -8px; }
+
+/* ボタン */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 42px; padding: 0 18px; border-radius: 10px; cursor: pointer;
+  border: 1.5px solid transparent; font: inherit; font-size: 14px; font-weight: 800; white-space: nowrap;
+  transition: filter .12s, background .12s, transform .08s;
+}
+.btn:active:not([disabled]) { transform: translateY(1px); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--accent, var(--primary)); color: #fff; }
+.btn-primary:hover:not([disabled]) { filter: brightness(1.08); }
+.btn-ghost { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
+.btn-ghost:hover:not([disabled]) { background: var(--hover); }
+.btn-danger { background: var(--surface); border-color: color-mix(in srgb, #ef4444 45%, var(--border)); color: #dc2626; }
+.btn-danger:hover:not([disabled]) { background: color-mix(in srgb, #ef4444 9%, var(--surface)); }
+.btn-block { width: 100%; height: 46px; font-size: 15px; }
+
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%; flex: none;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent); border-top-color: currentColor;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* お知らせ */
+.msg { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-radius: 10px; font-size: 13px; line-height: 1.6; }
+.msg-error { border: 1px solid color-mix(in srgb, #ef4444 40%, var(--border)); background: color-mix(in srgb, #ef4444 8%, var(--surface)); }
+.msg-ok { border: 1px solid color-mix(in srgb, var(--sky) 45%, var(--border)); background: var(--sky-soft); }
+.msg .btn { height: 30px; padding: 0 10px; font-size: 12px; margin-left: auto; }
+
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .lang-add { grid-template-columns: 1fr; }
+}
+
+/* お知らせ欄：空のときも 2 行ぶんの高さを取っておく（エラーが出ても画面がずれない） */
+.msg-slot { min-height: 64px; display: flex; flex-direction: column; justify-content: center; }
+.msg-slot .msg { animation: msg-in .18s ease-out; }
+@keyframes msg-in { from { opacity: 0; } }
+
+/* ───────── オン／オフのスイッチ ───────── */
+.switch { position: relative; display: inline-flex; flex: none; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.switch-track {
+  width: 44px; height: 24px; border-radius: 999px; background: var(--border-strong);
+  transition: background .15s;
+}
+.switch-track::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .25); transition: transform .15s;
+}
+.switch input:checked + .switch-track { background: var(--primary); }
+.switch input:checked + .switch-track::after { transform: translateX(20px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ───────── 確認のダイアログ ───────── */
+.dialog-backdrop {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px;
+  background: rgb(10 20 40 / .38); animation: dlg-fade .15s ease-out;
+}
+.dialog {
+  width: min(420px, 100%); padding: 22px 24px 18px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgb(10 20 40 / .25);
+  display: flex; flex-direction: column; gap: 10px; animation: dlg-pop .18s var(--ease);
+}
+.dialog h2 { font-size: 17px; font-weight: 800; }
+.dialog p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; white-space: pre-line; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.btn-danger-fill { background: #dc2626; color: #fff; }
+.btn-danger-fill:hover:not([disabled]) { filter: brightness(1.08); }
+@keyframes dlg-fade { from { opacity: 0; } }
+@keyframes dlg-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } }

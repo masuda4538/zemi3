@@ -1,22 +1,27 @@
 /* ═══════════════════════════════════════════════════════════════
    卒業研究アプリ — 見た目
    左にアプリのアイコン、右にアプリの画面。影は使わず、細い枠線と色で区切る
-   色はここ（:root）でまとめて決めています
+   色はここ（:root）でまとめて決めています（青・水色・白が基調）
+     --primary  … 青（ボタン・選択中の色）
+     --sky      … 水色（アイコンのグラデーション・アクセント）
+     --sky-soft … うすい水色（選択中の背景など）
    ═══════════════════════════════════════════════════════════════ */
 
 /* ───────── 色・文字（ホワイト） ───────── */
 :root,
 :root[data-theme="light"] {
-  --bg: #f3f5f8;
+  --bg: #f3f8fd;
   --surface: #ffffff;
-  --surface-2: #f7f9fb;
-  --hover: #eef2f7;
-  --border: #e2e7ee;
-  --border-strong: #cfd7e2;
-  --text: #1b2330;
-  --text-2: #4b5768;
-  --text-3: #8a95a6;
+  --surface-2: #f5f9fe;
+  --hover: #eaf3fd;
+  --border: #dce7f3;
+  --border-strong: #c6d6ea;
+  --text: #16233a;
+  --text-2: #475a75;
+  --text-3: #8496b0;
   --primary: #2563eb;
+  --sky: #38bdf8;
+  --sky-soft: #e3f3fd;
   --font: "Segoe UI", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP", system-ui, sans-serif;
   --radius: 12px;
   --ease: cubic-bezier(.2, .8, .2, 1);
@@ -25,16 +30,18 @@
 }
 /* ───────── 色（ダーク） ───────── */
 :root[data-theme="dark"] {
-  --bg: #0f1217;
-  --surface: #171b22;
-  --surface-2: #1c2129;
-  --hover: #222833;
-  --border: #272e3a;
-  --border-strong: #354052;
-  --text: #e7eaf0;
-  --text-2: #b0b9c7;
-  --text-3: #7c8799;
+  --bg: #0b111b;
+  --surface: #121a27;
+  --surface-2: #162132;
+  --hover: #1b283c;
+  --border: #223047;
+  --border-strong: #2e4261;
+  --text: #e6edf7;
+  --text-2: #aebcd0;
+  --text-3: #7a8aa3;
   --primary: #5b8cff;
+  --sky: #38bdf8;
+  --sky-soft: #10304a;
   color-scheme: dark;
 }
 
@@ -86,8 +93,8 @@ h1, h2, p { margin: 0; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* 選んでいるアプリは、そのアプリの色で塗る */
-.side-item.active { background: color-mix(in srgb, var(--accent) 11%, var(--surface)); color: var(--accent); }
-.side-item.active .side-ico { background: var(--accent); color: #fff; }
+.side-item.active { background: var(--sky-soft); color: var(--accent); }
+.side-item.active .side-ico { background: linear-gradient(150deg, var(--sky), var(--accent)); color: #fff; }
 .side-item.active::before {
   content: ""; position: absolute; left: -6px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0;
   background: var(--accent);
@@ -110,9 +117,7 @@ h1, h2, p { margin: 0; }
 
 /* ── 右：アプリの画面 ── */
 .stage { min-width: 0; min-height: 0; overflow-y: auto; padding: 20px 24px 28px; }
-.page { min-height: 100%; animation: page-in .2s var(--ease); }
-@keyframes page-in { from { opacity: 0; transform: translateY(6px); } }
-@media (prefers-reduced-motion: reduce) { .page { animation: none; } }
+.page { min-height: 100%; }
 
 /* ═════════ 仮の画面（中央にアイコンと名前） ═════════ */
 .page-center { min-height: calc(100vh - 48px); display: grid; place-items: center; }
@@ -121,7 +126,7 @@ h1, h2, p { margin: 0; }
   display: grid; place-items: center; width: 132px; height: 132px; border-radius: 34px;
   background:
     radial-gradient(circle at 28% 18%, rgb(255 255 255 / .22), transparent 55%),
-    linear-gradient(150deg, var(--accent), color-mix(in srgb, var(--accent) 58%, #05070d));
+    linear-gradient(150deg, var(--sky), var(--accent) 70%);
   color: #fff;
 }
 .app-title-icon .icon { width: 66px; height: 66px; stroke-width: 1.6; }
@@ -131,7 +136,7 @@ h1, h2, p { margin: 0; }
 /* ═════════ 設定 ═════════ */
 .page-narrow { max-width: 780px; display: flex; flex-direction: column; gap: 16px; }
 .page-heading { font-size: 22px; font-weight: 800; }
-.panel { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: var(--radius); }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .panel-head { padding: 14px 18px 10px; }
 .panel-head h2 { font-size: 15px; font-weight: 800; }
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 18px; border-top: 1px solid var(--border); }
@@ -141,3 +146,37 @@ h1, h2, p { margin: 0; }
 .seg button { height: 30px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; background: transparent; color: var(--text-2); font-size: 13px; font-weight: 700; }
 .seg button:hover:not(.active) { background: var(--hover); }
 .seg button.active { background: var(--text); color: var(--surface); }
+
+/* ═════════ 右上の帯（最小化・最大化・閉じる） ═════════ */
+.main-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.titlebar { flex: none; height: 36px; display: flex; justify-content: flex-end; }
+.win-buttons { display: flex; }
+.win-btn {
+  display: grid; place-items: center; width: 46px; height: 36px;
+  border: 0; background: transparent; color: var(--text-2); cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.win-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.win-btn:hover { background: var(--hover); color: var(--text); }
+.win-btn.close:hover { background: #e81123; color: #fff; }
+.stage { flex: 1; padding-top: 4px; }
+.page-center { min-height: calc(100vh - 68px); }
+
+/* 読み込めなかったときのメッセージ */
+.page-error {
+  margin: 40px auto; max-width: 640px; padding: 14px 18px; border-radius: var(--radius);
+  border: 1px solid #fca5a5; background: color-mix(in srgb, #ef4444 8%, var(--surface)); color: var(--text);
+}
+
+/* ═════════ 設定で切り替えるもの（settings.js の applySettings で html に付く） ═════════ */
+/* アニメーションを減らす */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after {
+  animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important;
+}
+.reduce-motion .spinner { animation-duration: .7s !important; }
+/* サイドバーの文字を隠す（アイコンだけ） */
+.compact-sidebar { --side-w: 68px; }
+.compact-sidebar .side-label { display: none; }
+.compact-sidebar .side-item { padding: 7px 2px; }
+.compact-sidebar .side-theme button { font-size: 0; gap: 0; }
+.compact-sidebar .side-theme .icon { width: 15px; height: 15px; }
