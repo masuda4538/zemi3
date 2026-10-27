@@ -5,6 +5,7 @@
 //  page には apps.js の設定（名前・色・アイコン）が入っています。
 // お試し
 //お試し２
+// otamesi3
 // ═══════════════════════════════════════════════════════════════
 import PageTitle from "../../components/PageTitle";
 import { getNote } from "./quiz.js";
