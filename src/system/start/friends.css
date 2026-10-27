@@ -1,0 +1,99 @@
+/* =========================================================
+ * 起動画面の黒猫たち（friends.js と組み合わせて使う）
+ *  study-notes の css/splash.css から、猫の部分だけを移したもの
+ *  .edge-friend：端に置く枠（端の向きに回転）  .actor：枠の中で動いて、端から顔を出す（下向きが端の外側）
+ * ========================================================= */
+.start { --sp-ink: #111; }
+ /* 重なる順（下から）：左の灰色の面 → 猫 → ログインの枠 → 右上のボタン → 「ゴロゴロ」の文字 */
+.start-brand { z-index: 0; }
+.start-card { position: relative; z-index: 2; }
+.start-titlebar { position: relative; z-index: 3; }
+
+.edge-friend {
+  position: absolute;
+  left: -200px;
+  top: -200px;
+  width: 96px;
+  height: 100px;
+  z-index: 1;
+  /* 端の外側（枠の下側）だけを隠す。前足をのばしたときなど、横や上へは、はみ出して見えてよい */
+  clip-path: inset(-300px -300px 0 -300px);
+  pointer-events: none;
+}
+.edge-friend.size-mid { width: 80px; height: 83px; }
+.edge-friend.size-small { width: 64px; height: 67px; }
+.edge-friend.size-boss { width: 200px; height: 208px; }   /* まんなかの猫（左の面の段の上） */
+.edge-friend .actor {
+  width: 100%;
+  height: 100%;
+  transform: translateY(105%);
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.friend-svg { width: 100%; height: 100%; display: block; overflow: visible; fill: var(--sp-ink); stroke: none; }
+.friend-svg .tail { fill: none; stroke: var(--sp-ink); stroke-width: 7; stroke-linecap: round; }  /* くるんとしたしっぽ */
+.friend-svg .eye { fill: var(--sp-ink); stroke: #fff; stroke-width: 2.6; }                       /* 白い輪の目 */
+.friend-svg .happy { fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; }       /* ^ ^ の目 */
+.friend-svg .f-happy { opacity: 0; }
+.friend-svg .f-sleep { opacity: 0; }
+.friend-svg .mouth { fill: #4a4a4a; stroke: #fff; stroke-width: 2.2; }                           /* あくびの口 */
+.friend-svg .f-mouth { transform: scale(0); }
+.friend-svg .gpaw { fill: var(--sp-ink); stroke: #fff; stroke-width: 2; }                        /* 毛づくろいの前足 */
+.friend-svg .f-gpaw { opacity: 0; }
+.friend-svg .toes { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; }        /* 指 */
+
+/* マウスで、なでる・クリックできるのは猫の体の上だけ（なでる手のカーソル） */
+.edge-friend .friend-svg .hit { pointer-events: visiblePainted; cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M9 17V8.6a1.8 1.8 0 0 1 3.6 0V15V6.4a1.8 1.8 0 0 1 3.6 0V15V7.4a1.8 1.8 0 0 1 3.6 0V15.4V10a1.8 1.8 0 0 1 3.6 0v10c0 5-3 9-8 9c-3.6 0-5.6-1.6-7.6-4.6L4.4 19.4a1.9 1.9 0 0 1 3-2.3Z' fill='%23fff' stroke='%23111' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M3 6.5c1-1.4 2.2-2 3.6-2M26 5c1.2.5 2 1.4 2.6 2.6' fill='none' stroke='%23111' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E") 15 14, pointer; }
+.friend-svg .f-gaze { transition: transform .15s ease-out; }
+.friend-svg .f-pet { transition: transform .3s cubic-bezier(.3, 1.4, .5, 1); }
+.edge-friend.is-petted .f-pet { transform: rotate(-7deg); }
+.edge-friend.is-petted .f-eyes { visibility: hidden; }
+.edge-friend.is-petted .f-happy { opacity: 1 !important; }
+/* なでる：耳を寝かせる・のどを鳴らして、ふるふる */
+.friend-svg .f-earwrap { transition: transform .25s ease-out; }
+.friend-svg .f-earwrap-l { transform-origin: 36px 40px; }
+.friend-svg .f-earwrap-r { transform-origin: 74px 40px; }
+.edge-friend.is-purring .friend-svg { animation: cat-purr .09s linear infinite alternate; }
+@keyframes cat-purr {
+  from { transform: translate(-.6px, 0); }
+  to { transform: translate(.6px, -.3px); }
+}
+.purr-text {                       /* 「ゴロゴロ」の文字 */
+  position: absolute;
+  z-index: 4;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.purr-text.is-z { font-style: italic; letter-spacing: .08em; }
+.friend-svg .f-arm { opacity: 0; transition: opacity .12s; }  /* マウスへのばす前足（形は friends.js が毎フレーム作る） */
+.friend-svg .arm-in { fill: none; stroke: var(--sp-ink); stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+.friend-svg .paw { fill: var(--sp-ink); }
+.friend-svg g { transform-box: view-box; }
+.friend-svg .f-head,
+.friend-svg .f-pet { transform-origin: 55px 100px; }   /* 体ごと、下（端）を中心にかしげる */
+.friend-svg .f-mouth { transform-origin: 55px 70px; }
+.friend-svg .f-gpaw { transform-origin: 38px 100px; }
+.friend-svg .f-ear-l { transform-origin: 36px 40px; }
+.friend-svg .f-ear-r { transform-origin: 74px 40px; }
+.friend-svg .f-eyes { transform-origin: 55px 55px; }
+.friend-svg .f-tail { transform-origin: 21px 92px; }
+
+/* まんなかの猫が座る段（左の灰色の面） */
+.brand-ledge {
+  width: min(420px, 80%); height: 6px; border-radius: 3px;
+  background: var(--sp-ink);
+  margin-top: 210px;   /* 猫が座る場所をあけておく（.size-boss の高さくらい） */
+}
+
+/* ダークモード（夜）：猫はみんな寝ている */
+.start.is-night .edge-friend .friend-svg { filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, .75)) drop-shadow(0 0 6px rgba(160, 180, 255, .18)); }
+.start.is-night .friend-svg .f-eyes { visibility: hidden; }
+.start.is-night .friend-svg .f-sleep { opacity: 1; }
+.start.is-night .edge-friend.is-petted .f-happy,
+.start.is-night .friend-svg .f-happy { opacity: 0 !important; }
+.start.is-night .friend-svg .f-arm { display: none; }
+.start.is-night .purr-text { color: #d9dde6; }
+:root[data-theme="dark"] .brand-ledge { background: #0b0d10; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }

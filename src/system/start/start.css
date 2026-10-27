@@ -7,53 +7,46 @@
 .start {
   position: fixed; inset: 0; z-index: 10;
   display: flex;
-  background:
-    radial-gradient(900px 520px at 15% -10%, color-mix(in srgb, var(--sky) 22%, transparent), transparent 70%),
-    radial-gradient(900px 520px at 90% 110%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
-    var(--bg);
+  background: #ffffff;   /* 右側：白 */
   overflow: hidden;
 }
 .start-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .start-titlebar { flex: none; }
+:root[data-theme="dark"] .start { background: var(--bg); }
 
 /* ───────── 左：ロゴ・マスコット（ログインのときだけ） ───────── */
 .start-brand {
   position: relative; overflow: hidden; flex: 0 0 56%;
   display: flex; flex-direction: column; padding: 28px 36px;
-  color: #fff;
+  color: #1f2937;
   background:
-    radial-gradient(520px 420px at 80% 8%, rgb(255 255 255 / .20), transparent 70%),
-    radial-gradient(480px 380px at 10% 100%, rgb(56 189 248 / .45), transparent 70%),
-    linear-gradient(160deg, #38bdf8 0%, #2563eb 55%, #1d4ed8 100%);
+    radial-gradient(620px 460px at 50% 45%, rgb(255 255 255 / .55), transparent 70%),
+    #e5e7eb;   /* 左側：灰色 */
   animation: brand-in .6s var(--ease) both;
 }
 :root[data-theme="dark"] .start-brand {
+  color: #e5e7eb;
   background:
-    radial-gradient(520px 420px at 80% 8%, rgb(56 189 248 / .22), transparent 70%),
-    linear-gradient(160deg, #0c4a6e 0%, #1e3a8a 60%, #172554 100%);
+    radial-gradient(620px 460px at 50% 45%, rgb(255 255 255 / .06), transparent 70%),
+    #2a2f37;
 }
 /* 背景の大きな丸（飾り） */
 .start-brand::before, .start-brand::after {
   content: ""; position: absolute; border-radius: 50%; pointer-events: none;
-  border: 1.5px solid rgb(255 255 255 / .18);
+  border: 1.5px solid rgb(0 0 0 / .06);
 }
+:root[data-theme="dark"] .start-brand::before, :root[data-theme="dark"] .start-brand::after { border-color: rgb(255 255 255 / .06); }
 .start-brand::before { width: 560px; height: 560px; right: -220px; bottom: -200px; }
 .start-brand::after  { width: 340px; height: 340px; left: -140px; top: -120px; }
 
 .start-brand-logo { position: relative; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 800; letter-spacing: .04em; }
-.brand-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 12px; box-shadow: 0 0 0 2px rgb(255 255 255 / .45), 0 6px 16px rgb(10 30 80 / .2); }
+.brand-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 12px rgb(0 0 0 / .12); }
 .start-brand-center {
   position: relative; flex: 1; min-height: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center;
 }
-.brand-mascot {
-  width: min(400px, 72%); max-height: 56vh; object-fit: contain;
-  filter: drop-shadow(0 18px 30px rgb(10 30 80 / .28));
-  animation: mascot-float 4.5s ease-in-out infinite;
-}
-.brand-catch { font-size: 17px; font-weight: 700; line-height: 1.8; white-space: pre-line; opacity: .95; }
+.brand-catch { font-size: 17px; font-weight: 700; line-height: 1.8; white-space: pre-line; opacity: .85; }
 .start-brand-foot { height: 20px; }
-@keyframes mascot-float { 50% { transform: translateY(-10px); } }
 @keyframes brand-in { from { opacity: 0; } }
 
 .start-panel {

@@ -7,13 +7,12 @@ export const APP_TITLE = "卒業研究アプリ";
 
 /**
  * ログイン画面の左側に出すもの
- *   ロゴ・マスコットの画像は public/brand/ に置きます（今は仮の画像です）。
- *   同じ名前のファイルで置き換えるか、ファイル名をここで書きかえてください。
- *   （png・jpg・svg・gif が使えます。例："/brand/mascot.png"）
+ *   ロゴの画像はデータベースには入れず、public/images/ に置きます。
+ *   同じ名前のファイルで置き換えるか、ファイル名をここで書きかえてください（例："/images/logo.png"）。
  *   出したくないときは "" にします。
+ *   黒猫たち（まんなかの猫と、端から顔を出す猫）は src/system/start/friends.js で動かしています。
  */
 export const BRAND = {
-  logo: "/brand/logo.svg",
-  mascot: "/brand/mascot.svg",
+  logo: "/images/logo.svg",
   catchphrase: "学ぶ・調べる・まとめる・ためす。\nひとつのアプリで。",
 };
