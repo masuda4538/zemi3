@@ -6,6 +6,7 @@
 // お試し
 //お試し２
 // otamesi3
+//otamesi4
 // ═══════════════════════════════════════════════════════════════
 import PageTitle from "../../components/PageTitle";
 import { getNote } from "./quiz.js";
