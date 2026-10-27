@@ -6,15 +6,6 @@ import {
   checkUserId, checkPassword, checkConfirm, checkName, checkMail, checkGender, checkBirth, toDateString,
 } from "../common/validate.js";
 
-/** ログインの入力チェック（問題があればメッセージ） */
-export function checkLogin(userId, password) {
-  if (!userId.trim() || !password) return "ログイン ID とパスワードを入力してください。";
-  return "";
-}
-
-/** 開発中に、ID もパスワードも空のままログインを押したか（テスト用アカウントで入る） */
-export const isQuickLogin = (isDev, userId, password) => isDev && !userId.trim() && !password;
-
 /** 新規登録フォームの最初の値 */
 export const emptyRegister = () => ({
   userId: "",

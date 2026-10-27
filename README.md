@@ -10,27 +10,21 @@ Tauri 2 + React（JavaScript）+ Rust で作るデスクトップアプリです
 
 ```bash
 cd ~/projects/tauri-app
-mariadb < db/sotsuken.sql   # 初回だけ：データベース「sotsuken」とテーブルを作る
-npm ci                      # 初回と、package-lock.json が変わったときだけ
-npm run tauri dev           # アプリが最大化で起動する（初回は Rust のビルドで数分かかる）
+npm ci              # 初回と、package-lock.json が変わったときだけ
+npm run tauri dev   # アプリが最大化で起動する（初回は Rust のビルドで数分かかる）
 ```
 
-## ログインとデータベース
+## ログインとデータ（今はデータベースなし）
 
-- データベースは、その PC の MariaDB の `sotsuken`（ユーザー nkc-user / パスワード nkc）を使います。
-- テーブルは `db/sotsuken.sql` で作ります（user / gender / language / user_language）。ER 図どおりで、それ以外のテーブルは作りません。何度流しても大丈夫です。
-  - プログラム言語と試験は、どちらも `language` に入れます（同じ一覧）。
-  - パスワードは Argon2 で暗号化して保存します（元のパスワードは保存しません）。
-- 開発中（`npm run tauri dev`）は、ログイン ID とパスワードを空のまま「ログイン」を押すと、テスト用アカウント（ID：`devuser` ／ パスワード：`devpassword`）で入れます。初めて使うときに自動で作られます。exe では使えません。
-- 新規登録は「言語・試験」以外すべて必須です。一覧にない言語・試験はその場で追加できます。
-- アカウント画面で、名前・メール・性別・生年月日・言語と試験・パスワードを変更できます（ログイン ID は変更できません）。
-- 設定画面の内容（テーマ・文字の大きさなど）はデータベースではなく、その PC の中（localStorage）に保存します。
-- 起動画面の黒猫たちは study-notes の起動画面の猫と同じ動きです（`src/system/start/friends.js`）。
-  端から顔を出す・マウスを目で追う・近づくと前足をのばす・なでるとゴロゴロ・クリックでびっくり・ダークモードでは寝ている・ログインできると一斉にぴょこん。
-- 画像はデータベースに入れません。`public/images/` にファイルとして置き、画面からは `"/images/ファイル名"` で使います（例：`<img src="/images/mascot.svg" />`）。
-  データベースに記録が必要になったときも、入れるのは画像のファイル名だけにします。
-- 別の PC の MariaDB につなぐときは、環境変数 `SOTSUKEN_DB_URL` で変えられます。
-  例）`SOTSUKEN_DB_URL=mysql://nkc-user:nkc@192.168.0.10:3306/sotsuken npm run tauri dev`
+- **今はデータベースを使っていません。** MariaDB が止まっていても、なくても動きます。
+- ログインは、何を入力しても（空のままでも）入れます。空のときは「ゲスト」になります。
+- 新規登録・アカウントの変更・パスワードの変更は、アプリを閉じるまでのあいだだけ覚えています（保存しません）。
+- 性別・言語と試験の一覧は `src/system/common/api.js` の `GENDERS`・`LANGUAGES` に書いてあります。
+- あとでデータベースをつなぐときは、`src/system/common/api.js` の中身を Rust（`invoke`）を呼ぶ形に書きかえます。
+  画面（各 `main.jsx`）は書きかえなくて大丈夫なように、関数の名前と返す形はそのままにしています。
+- 設定画面の内容（テーマ・文字の大きさなど）は、その PC の中（localStorage）に保存します。
+- 起動画面の黒猫は study-notes の起動画面の猫と同じ動きです（`src/system/start/friends.js`）。
+- 画像は `public/images/` にファイルとして置き、画面からは `"/images/ファイル名"` で使います（例：`<img src="/images/logo.svg" />`）。
 
 ## フォルダーの中身
 
@@ -50,7 +44,7 @@ tauri-app/
 │  ├─ components/           … 全体で使う部品（サイドバー・アイコン・見出し・入力フォーム・言語の選択）
 │  └─ system/               … ★ 各項目のプログラムはここに書く
 │     ├─ start/             main.jsx・start.js・start.css・friends.js・friends.css … 起動画面（ログイン・新規登録・黒猫たち）
-│     ├─ common/            api.js（Rust を呼ぶ）・validate.js（入力チェック）
+│     ├─ common/            api.js（アカウントのデータ。今は仮）・validate.js（入力チェック）
 │     ├─ home/              main.jsx（入口・画面）・home.js（処理）
 │     ├─ programming/       main.jsx・programming.js        … プログラム学習
 │     ├─ research/          main.jsx・research.js           … 情報収集
@@ -58,13 +52,9 @@ tauri-app/
 │     ├─ quiz/              main.jsx・quiz.js               … 問題作成
 │     ├─ settings/          main.jsx・settings.js・settings.css … 設定（PC の中に保存）
 │     └─ account/           main.jsx・account.js・account.css … アカウント
-├─ db/sotsuken.sql          … データベースとテーブルを作る SQL
 └─ src-tauri/               … Rust 側と Tauri の設定（tauri.conf.json）
    └─ src/
-      ├─ lib.rs             … 入口（コマンドの一覧）
-      ├─ db.rs              … データベースへの接続
-      ├─ account.rs         … ログイン・新規登録・アカウント変更の処理
-      └─ commands.rs        … 画面から呼ぶコマンド
+      └─ lib.rs             … 入口（画面から呼ぶコマンドの一覧。今はなし）
 ```
 
 ### system の書き方
