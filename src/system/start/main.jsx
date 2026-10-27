@@ -2,7 +2,7 @@
 //  起動画面：画面（見た目）　［このフォルダーの入口：main.jsx］
 //  アプリを起動すると最初にこの画面が出ます（「ログイン」と「新規登録」だけ）。
 //    ログイン … 左にロゴとまんなかの猫（config.js の BRAND）、右にログイン ID とパスワード
-//               開発中（npm run tauri dev）は、空のままログインを押すとテスト用アカウントで入れる
+//               今はデータベースがないので、何を入力しても（空でも）入れる（../common/api.js）
 //    新規登録 … 左に必須の情報、右に任意の情報（言語・試験）
 //  エラーが出ても画面がずれないように、エラーの場所は最初から取っておきます。
 //  ログイン（または登録）できたら「ようこそ」を出してから onLoggedIn(user) を呼びます。
@@ -12,9 +12,9 @@ import { useEffect, useRef, useState } from "react";
 import WindowControls from "../../components/WindowControls";
 import LanguagePicker from "../../components/LanguagePicker";
 import { Field, PasswordInput, GenderPicker, BirthDateSelect, MessageSlot, Spinner } from "../../components/Form";
-import { checkDb, getGenders, getLanguages, login, devLogin, isDev, register } from "../common/api.js";
+import { getGenders, getLanguages, login, register } from "../common/api.js";
 import { noErrors } from "../common/validate.js";
-import { checkLogin, isQuickLogin, emptyRegister, checkRegister, toRegisterInput } from "./start.js";
+import { emptyRegister, checkRegister, toRegisterInput } from "./start.js";
 import { loadLastUserId, saveLastUserId } from "../settings/settings.js";
 import { APP_TITLE, BRAND } from "../../config";
 import { createFriends } from "./friends.js";
@@ -26,14 +26,9 @@ const WELCOME_MS = 900;
 
 export default function Start({ leaving, settings, onLoggedIn }) {
   const [mode, setMode] = useState("login");     // "login" か "register"
-  const [dbError, setDbError] = useState("");
   const [welcome, setWelcome] = useState(null);  // ログインできた人
   const rootRef = useRef(null);
   const friendsRef = useRef(null);               // 黒猫たち（friends.js）
-
-  useEffect(() => {
-    checkDb().then(() => setDbError("")).catch((e) => setDbError(String(e)));
-  }, []);
 
   // 黒猫たちを出す（起動画面を閉じたら消す）
   useEffect(() => {
@@ -72,8 +67,8 @@ export default function Start({ leaving, settings, onLoggedIn }) {
                 <button type="button" role="tab" aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => setMode("register")}>新規登録</button>
               </div>
               {mode === "login"
-                ? <LoginForm key="login" settings={settings} dbError={dbError} onDone={done} onRegister={() => setMode("register")} />
-                : <RegisterForm key="register" settings={settings} dbError={dbError} onDone={done} onLogin={() => setMode("login")} />}
+                ? <LoginForm key="login" settings={settings} onDone={done} onRegister={() => setMode("register")} />
+                : <RegisterForm key="register" settings={settings} onDone={done} onLogin={() => setMode("login")} />}
             </>
           )}
         </div>
@@ -112,7 +107,7 @@ function Brand() {
 }
 
 // ───────── ログイン ─────────
-function LoginForm({ settings, dbError, onDone, onRegister }) {
+function LoginForm({ settings, onDone, onRegister }) {
   const [userId, setUserId] = useState(() => loadLastUserId(settings));   // 設定で「覚えておく」なら前回の ID
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -123,20 +118,12 @@ function LoginForm({ settings, dbError, onDone, onRegister }) {
 
   const submit = async (e) => {
     e.preventDefault();
-    const quick = isQuickLogin(isDev, userId, password);
-    if (!quick) {
-      const msg = checkLogin(userId, password);
-      if (msg) { setError(msg); return; }
-    }
     setBusy(true); setError("");
     try {
-      if (quick) {
-        onDone(await devLogin());
-      } else {
-        const user = await login(userId.trim(), password);
-        saveLastUserId(settings, user.userId);
-        onDone(user);
-      }
+      // 今はデータベースがないので、何を入力しても（空でも）入れる
+      const user = await login(userId.trim(), password);
+      if (userId.trim()) saveLastUserId(settings, user.userId);
+      onDone(user);
     } catch (err) {
       setError(String(err));
       setBusy(false);
@@ -156,18 +143,18 @@ function LoginForm({ settings, dbError, onDone, onRegister }) {
         <PasswordInput value={password} onChange={edit(setPassword)} autoFocus={!!userId} />
       </Field>
       {/* エラーの場所（空でも高さを取っておく） */}
-      <MessageSlot message={error || dbError} />
+      <MessageSlot message={error} />
       <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
         {busy ? <><Spinner />確認しています…</> : "ログイン"}
       </button>
-      {isDev && <p className="start-dev">開発中：空のままログインで、テスト用アカウントに入れます</p>}
+      <p className="start-dev">今はデータベースがないので、何を入力しても（空のままでも）ログインできます</p>
       <p className="start-switch">はじめての方は <button type="button" onClick={onRegister}>新規登録</button></p>
     </form>
   );
 }
 
 // ───────── 新規登録（左：必須の情報　右：任意の情報） ─────────
-function RegisterForm({ settings, dbError, onDone, onLogin }) {
+function RegisterForm({ settings, onDone, onLogin }) {
   const [form, setForm] = useState(emptyRegister);
   const [touched, setTouched] = useState(false);   // 一度「登録」を押したら、エラーを出し始める
   const [genders, setGenders] = useState([]);
@@ -207,7 +194,7 @@ function RegisterForm({ settings, dbError, onDone, onLogin }) {
     <form className="form start-form" onSubmit={submit} noValidate ref={formRef}>
       <div className="start-head">
         <h2>新規登録</h2>
-        <p>左の項目はすべて入力してください。右の「言語・試験」は任意です。あとからアカウント画面で変更できます。</p>
+        <p>左の項目はすべて入力してください。右の「言語・試験」は任意です。（今はデータベースがないので、登録した内容はアプリを閉じると消えます）</p>
       </div>
 
       <div className="reg-columns">
@@ -253,7 +240,7 @@ function RegisterForm({ settings, dbError, onDone, onLogin }) {
       </div>
 
       {/* エラーの場所（空でも高さを取っておく） */}
-      <MessageSlot message={error || dbError} />
+      <MessageSlot message={error} />
       <div className="reg-actions">
         <p className="start-switch">アカウントをお持ちの方は <button type="button" onClick={onLogin}>ログイン</button></p>
         <button type="submit" className="btn btn-primary reg-submit" disabled={busy}>

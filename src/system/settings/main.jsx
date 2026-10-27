@@ -7,9 +7,9 @@
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
-import { Switch, Spinner } from "../../components/Form";
+import { Switch } from "../../components/Form";
 import { APP_TITLE } from "../../config";
-import { checkDb, inTauri, isDev } from "../common/api.js";
+import { inTauri, isDev } from "../common/api.js";
 import { THEMES, FONT_SIZES, SHORTCUTS, forgetLastUserId } from "./settings.js";
 import "./settings.css";
 
@@ -79,7 +79,7 @@ export default function Settings({ settings, onSettings, onResetSettings, confir
             <div className="set-row">
               <div>
                 <strong>設定を初期状態に戻す</strong>
-                <p>この画面の設定をすべて最初の状態に戻します。アカウントやデータベースの内容は消えません。</p>
+                <p>この画面の設定をすべて最初の状態に戻します。</p>
               </div>
               <button
                 type="button"
@@ -102,31 +102,16 @@ export default function Settings({ settings, onSettings, onResetSettings, confir
 // ───────── 情報・データ ─────────
 function InfoCard({ user }) {
   const [version, setVersion] = useState("");
-  const [db, setDb] = useState({ state: "checking", message: "" });
-
-  const testDb = () => {
-    setDb({ state: "checking", message: "" });
-    checkDb().then(() => setDb({ state: "ok", message: "" })).catch((e) => setDb({ state: "ng", message: String(e) }));
-  };
 
   useEffect(() => {
     getVersion().then(setVersion).catch(() => setVersion(""));
-    testDb();
   }, []);
 
   return (
     <Card title="情報・データ">
       <Row title={APP_TITLE} desc={`バージョン ${version || "-"} ・ ${isDev ? "開発中（npm run tauri dev）" : inTauri ? "アプリ" : "ブラウザ"}`} />
       {user && <Row title="ログイン中" desc={`${user.name}（${user.userId}）`} />}
-      <Row
-        title="データベース"
-        desc={db.state === "ng" ? db.message : "この PC の MariaDB（sotsuken）"}
-      >
-        <span className={`db-state is-${db.state}`}>
-          {db.state === "checking" ? <><Spinner />確認中</> : db.state === "ok" ? "接続できています" : "接続できません"}
-        </span>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={testDb} disabled={db.state === "checking"}>もう一度確認</button>
-      </Row>
+      <Row title="データの保存" desc="今はデータベースを使っていません。アカウントの内容はアプリを閉じると消えます（設定はこの PC の中に保存されます）。" />
     </Card>
   );
 }

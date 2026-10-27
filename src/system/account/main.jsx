@@ -205,7 +205,7 @@ function PasswordCard() {
     try {
       await changePassword(form.current, form.next);
       setForm(emptyPassword); setTouched(false);
-      setDone("変更しました。次からは新しいパスワードでログインします。");
+      setDone("変更しました（今はデータベースがないので保存はされません）。");
     } catch (err) {
       setError(String(err));
     } finally {
