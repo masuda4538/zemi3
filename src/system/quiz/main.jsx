@@ -1,16 +1,29 @@
 // ═══════════════════════════════════════════════════════════════
-//  問題作成：画面（見た目）　［このフォルダーの入口：main.jsx］
-//  左のアイコン「問題作成」を押すと表示されます。
-//  見た目はこのファイル、処理（計算・データ・DB や Rust の呼び出し）は quiz.js に書きます。
-//  page には apps.js の設定（名前・色・アイコン）が入っています。
+//  問題作成：入口［このフォルダーの入口：main.jsx］
+//  左のアイコン「問題作成」を押すと、このファイルが読み込まれます。
+//
+//  ★ このファイルは、下の 3 つをつなぐだけです。ふだんは触らなくて大丈夫です。
+//    quiz.html … 画面（普通の HTML）
+//    quiz.css  … 見た目（普通の CSS）
+//    quiz.js   … 動き（普通の JavaScript。start(root) が最初に呼ばれる）
 // ═══════════════════════════════════════════════════════════════
-import PageTitle from "../../components/PageTitle";
-import { getNote } from "./quiz.js";
+import { useEffect, useRef } from "react";
+import html from "./quiz.html?raw";   // quiz.html の中身を、文字としてそのまま読み込む
+import { start } from "./quiz.js";
+import "./quiz.css";
 
 export default function Quiz({ page }) {
-  return (
-    <div className="page-center">
-      <PageTitle page={page} note={getNote()} />
-    </div>
-  );
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    root.innerHTML = html;                  // quiz.html を画面に入れる
+    const stop = start(root, { page });     // quiz.js を動かす
+    return () => {                          // ほかの画面へ移るとき
+      if (typeof stop === "function") stop();
+      root.innerHTML = "";
+    };
+  }, [page]);
+
+  return <div ref={rootRef} className="quiz-root" />;
 }
