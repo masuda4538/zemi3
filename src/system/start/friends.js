@@ -33,8 +33,12 @@
 // ---------- 絵（SVG・viewBox 0 0 100 100。下側が端。体は端の外まで続く） ----------
 //  .f-pet（なでられたとき・前足をのばすとき傾く）> .f-head（体ごと動く）> しっぽ・のばす前足（.f-arm。体のうしろ）・耳・体・顔（目・^ ^ の目・口）・毛づくろいの前足
 //  目：.f-eyes（まばたき）> .f-gaze（マウスを追う）> .f-pupils（きょろきょろ）
+//  .f-room：見えない四角。前足をいっぱいにのばしたときに届く範囲まで広げてある
+//    アプリ（Tauri の WebKit）は、猫の絵の「最初の大きさ」の外を描かないことがあり、
+//    のばした前足が耳の高さで切れてしまうので、最初から前足の届く範囲まで絵があることにしておく
 const CAT =
   '<svg viewBox="0 0 100 100" class="friend-svg">' +
+  '<rect class="f-room" x="-95" y="-45" width="290" height="145"/>' +
   '<g class="f-pet"><g class="f-head">' +
   '<g class="f-tail"><path class="tail hit" d="M21 92 C8 94 3 86 6 73"/></g>' +
   '<g class="f-arm"><path class="arm-in"/>' +

@@ -14,7 +14,7 @@
 .start-titlebar { flex: none; }
 :root[data-theme="dark"] .start { background: var(--bg); }
 
-/* ───────── 左：ロゴ・マスコット（ログインのときだけ） ───────── */
+/* ───────── 左：ロゴ・マスコット（ログインでも新規登録でも同じ） ───────── */
 .start-brand {
   position: relative; overflow: hidden; flex: 0 0 56%;
   display: flex; flex-direction: column; padding: 28px 36px;
@@ -55,16 +55,14 @@
   padding: 8px 40px 40px;
 }
 .start-card {
-  width: min(440px, 100%);
+  width: min(460px, 100%);
   display: flex; flex-direction: column; gap: 18px;
   padding: 30px 32px 26px; border-radius: 20px;
   background: var(--surface); border: 1px solid var(--border);
   animation: start-rise .5s var(--ease) both;
 }
-.start-card.is-wide { width: min(1120px, 100%); }
 
 .start-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 12px; background: var(--hover); }
-.start-card.is-wide .start-tabs { width: 360px; }
 .start-tabs button {
   height: 38px; border: 0; border-radius: 9px; cursor: pointer;
   background: transparent; color: var(--text-2); font-size: 14px; font-weight: 800;
@@ -85,16 +83,75 @@
 /* ログイン：お知らせ欄と入力欄の間を詰める */
 .start-form .msg-slot { margin: -6px 0 -4px; }
 
-/* ───────── 新規登録（左：必須　右：任意） ───────── */
-.reg-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0; }
-.reg-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.reg-col:first-child { padding-right: 28px; }
-.reg-col-optional { padding-left: 28px; border-left: 1px solid var(--border); }
-.reg-col-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
-.reg-col .form-grid { gap: 12px 16px; }
-.reg-col-optional .lang-picker { flex: 1; }
-.reg-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: -4px; }
-.reg-submit { min-width: 240px; height: 46px; font-size: 15px; }
+/* ───────── 新規登録（右の枠の中で、ステップごとに進む） ───────── */
+.reg-form { gap: 14px; }
+
+/* 進み具合 ①─②─③─④ */
+.stepper { display: grid; grid-template-columns: repeat(4, 1fr); list-style: none; margin: 2px 0 0; padding: 0; }
+.step { position: relative; display: flex; justify-content: center; }
+/* 丸と丸をつなぐ線（次の丸まで） */
+.step:not(:last-child)::after {
+  content: ""; position: absolute; top: 14px; left: calc(50% + 20px); right: calc(-50% + 20px);
+  height: 2px; border-radius: 2px; background: var(--border-strong);
+  transition: background .2s;
+}
+.step.line-on::after { background: var(--primary); }
+.step button {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 0; background: none; padding: 0; font: inherit; cursor: pointer;
+}
+.step button:disabled { cursor: default; }
+.step-dot {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--border-strong); background: var(--surface);
+  color: var(--text-3); font-size: 13px; font-weight: 800;
+  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+}
+.step-dot svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.step-label { font-size: 11.5px; font-weight: 800; color: var(--text-3); white-space: nowrap; transition: color .2s; }
+.step.is-current .step-dot { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--sky-soft); }
+.step.is-current .step-label { color: var(--primary); }
+.step.is-done .step-dot { border-color: var(--primary); background: var(--sky-soft); color: var(--primary); }
+.step.is-done .step-label, .step.is-visited .step-label { color: var(--text-2); }
+.step.is-visited .step-dot { border-color: var(--sky); color: var(--primary); }
+.step button:not(:disabled):hover .step-dot { box-shadow: 0 0 0 4px var(--hover); }
+.step button:not(:disabled):hover .step-label { color: var(--primary); }
+
+/* ステップの中身（高さをそろえて、ステップが変わっても枠の大きさが変わらないようにする） */
+.reg-viewport { overflow: hidden; margin: 0 -6px; padding: 0 6px; }
+.reg-step { display: flex; flex-direction: column; gap: 14px; min-height: 452px; }
+.reg-step .start-head h2 { display: flex; align-items: center; gap: 8px; font-size: 20px; }
+.reg-fields { display: flex; flex-direction: column; gap: 10px; }
+.reg-step .lang-picker { flex: 1; min-height: 0; }
+.reg-step .lang-picker .chips { max-height: 232px; overflow-y: auto; padding: 2px; }
+
+/* スライド（「次へ」で左へ、「戻る」で右へ） */
+.reg-step.slide-next { animation: reg-from-right .22s var(--ease) both; }
+.reg-step.slide-prev { animation: reg-from-left .22s var(--ease) both; }
+@keyframes reg-from-right { from { opacity: 0; transform: translateX(28px); } }
+@keyframes reg-from-left  { from { opacity: 0; transform: translateX(-28px); } }
+
+/* ④ 確認 */
+.reg-review { display: flex; flex-direction: column; gap: 10px; }
+.review-group { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.review-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 800; }
+.review-edit { border: 0; background: none; padding: 2px 4px; color: var(--primary); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.review-edit:hover { text-decoration: underline; }
+.review-group dl { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.review-group dl > div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px; font-size: 13px; }
+.review-group dt { color: var(--text-2); }
+.review-group dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.review-group .chips { gap: 6px; }
+.review-group .chip { cursor: default; height: 28px; }
+.review-none { font-size: 13px; color: var(--text-3); }
+
+/* 下のボタン（戻る／次へ） */
+.reg-form .msg-slot { min-height: 0; margin: -4px 0; }
+.reg-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.reg-actions .btn-ghost { min-width: 96px; }
+.reg-next { min-width: 160px; }
+/* 一番下の 1 行（ログインへのリンク／お知らせ）：どちらでも同じ高さにして、枠の大きさを変えない */
+.reg-form .start-switch, .reg-form .start-dev { margin-top: 0; line-height: 20px; }
 
 /* ようこそ */
 .start-welcome { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 0 30px; text-align: center; }
@@ -130,13 +187,9 @@
 @keyframes shell-item-in { from { opacity: 0; transform: translateX(-14px); } }
 @keyframes shell-main-in { from { opacity: 0; transform: translateY(16px); } }
 
-/* 画面が狭いときは、新規登録を 1 列にする */
+/* 画面が狭いときは、左のロゴと猫を隠す */
 @media (max-width: 1000px) {
   .start-brand { display: none; }
-  .reg-columns { grid-template-columns: 1fr; gap: 22px; }
-  .reg-col:first-child { padding-right: 0; }
-  .reg-col-optional { padding-left: 0; border-left: 0; padding-top: 20px; border-top: 1px solid var(--border); }
-  .reg-actions { flex-direction: column-reverse; align-items: stretch; }
 }
 @media (prefers-reduced-motion: reduce) {
   .start *, .start, .shell.is-entering * { animation-duration: .01ms !important; animation-delay: 0s !important; }
