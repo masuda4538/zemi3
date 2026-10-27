@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  起動画面：画面（見た目）
 //  アプリを起動すると最初にこの画面が出ます（「ログイン」と「新規登録」だけ）。
-//    ログイン … ログイン ID とパスワード
+//    ログイン … 左にロゴ・マスコット（config.js の BRAND）、右にログイン ID とパスワード
 //               開発中（npm run tauri dev）は、空のままログインを押すとテスト用アカウントで入れる
 //    新規登録 … 左に必須の情報、右に任意の情報（言語・試験）
 //  エラーが出ても画面がずれないように、エラーの場所は最初から取っておきます。
@@ -15,6 +15,7 @@ import { checkDb, getGenders, getLanguages, login, devLogin, isDev, register } f
 import { noErrors } from "../common/validate.js";
 import { checkLogin, isQuickLogin, emptyRegister, checkRegister, toRegisterInput } from "./start.js";
 import { loadLastUserId, saveLastUserId } from "../settings/settings.js";
+import { APP_TITLE, BRAND } from "../../config";
 import "./start.css";
 
 /** 「ようこそ」を出しておく時間（ミリ秒） */
@@ -34,8 +35,14 @@ export default function Start({ leaving, settings, onLoggedIn }) {
     setTimeout(() => onLoggedIn(user), WELCOME_MS);
   };
 
+  // 左のロゴ・マスコットはログインのときだけ（新規登録は入力欄が多いので画面全体を使う）
+  const showBrand = mode === "login";
+
   return (
-    <div className={`start${leaving ? " is-leaving" : ""}`}>
+    <div className={`start${leaving ? " is-leaving" : ""}${showBrand ? " has-brand" : ""}`}>
+      {showBrand && <Brand />}
+
+      <div className="start-main">
       <div className="start-titlebar"><WindowControls /></div>
 
       <section className="start-panel">
@@ -55,7 +62,31 @@ export default function Start({ leaving, settings, onLoggedIn }) {
           )}
         </div>
       </section>
+      </div>
     </div>
+  );
+}
+
+// ───────── 左：ロゴ・マスコット ─────────
+function Brand() {
+  // 画像が見つからないときは、その画像だけ出さない
+  const [hide, setHide] = useState({});
+  const img = (key, className, alt) =>
+    BRAND[key] && !hide[key] && (
+      <img className={className} src={BRAND[key]} alt={alt} draggable={false} onError={() => setHide((h) => ({ ...h, [key]: true }))} />
+    );
+  return (
+    <aside className="start-brand" data-tauri-drag-region>
+      <div className="start-brand-logo">
+        {img("logo", "brand-logo", "ロゴ")}
+        <span>{APP_TITLE}</span>
+      </div>
+      <div className="start-brand-center">
+        {img("mascot", "brand-mascot", "マスコット")}
+        {BRAND.catchphrase && <p className="brand-catch">{BRAND.catchphrase}</p>}
+      </div>
+      <div className="start-brand-foot" aria-hidden="true" />
+    </aside>
   );
 }
 

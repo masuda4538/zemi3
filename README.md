@@ -35,13 +35,14 @@ tauri-app/
 ├─ index.html
 ├─ package.json / package-lock.json
 ├─ vite.config.js
-├─ public/                  … アイコンなど、そのまま使うファイル
+├─ public/                  … そのまま使うファイル
+│  └─ brand/                logo.svg・mascot.svg … ログイン画面のロゴとマスコット（仮の画像。置き換えて使う）
 ├─ src/                     … 画面側（React）
 │  ├─ main.jsx              … 入口（さわらなくてよい）
 │  ├─ App.jsx               … 全体（ログイン前は起動画面、ログイン後は左のサイドバー＋右の画面）
 │  ├─ App.css               … 見た目（色・レイアウト・ホワイト／ダーク）
 │  ├─ apps.js               … 左に並ぶ項目の一覧（名前・アイコン・色）
-│  ├─ config.js             … アプリ名
+│  ├─ config.js             … アプリ名・ロゴとマスコットの画像・キャッチコピー
 │  ├─ components/           … 全体で使う部品（サイドバー・アイコン・見出し・入力フォーム・言語の選択）
 │  └─ system/               … ★ 各項目のプログラムはここに書く
 │     ├─ start/             Start.jsx・start.js・start.css  … 起動画面（ログイン・新規登録）
