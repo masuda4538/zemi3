@@ -6,14 +6,48 @@
    ═══════════════════════════════════════════════════════════════ */
 .start {
   position: fixed; inset: 0; z-index: 10;
-  display: flex; flex-direction: column;
-  background:
-    radial-gradient(900px 520px at 15% -10%, color-mix(in srgb, var(--sky) 22%, transparent), transparent 70%),
-    radial-gradient(900px 520px at 90% 110%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
-    var(--bg);
+  display: flex;
+  background: #ffffff;   /* 右側：白 */
   overflow: hidden;
 }
+.start-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .start-titlebar { flex: none; }
+:root[data-theme="dark"] .start { background: var(--bg); }
+
+/* ───────── 左：ロゴ・マスコット（ログインのときだけ） ───────── */
+.start-brand {
+  position: relative; overflow: hidden; flex: 0 0 56%;
+  display: flex; flex-direction: column; padding: 28px 36px;
+  color: #1f2937;
+  background:
+    radial-gradient(620px 460px at 50% 45%, rgb(255 255 255 / .55), transparent 70%),
+    #e5e7eb;   /* 左側：灰色 */
+  animation: brand-in .6s var(--ease) both;
+}
+:root[data-theme="dark"] .start-brand {
+  color: #e5e7eb;
+  background:
+    radial-gradient(620px 460px at 50% 45%, rgb(255 255 255 / .06), transparent 70%),
+    #2a2f37;
+}
+/* 背景の大きな丸（飾り） */
+.start-brand::before, .start-brand::after {
+  content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+  border: 1.5px solid rgb(0 0 0 / .06);
+}
+:root[data-theme="dark"] .start-brand::before, :root[data-theme="dark"] .start-brand::after { border-color: rgb(255 255 255 / .06); }
+.start-brand::before { width: 560px; height: 560px; right: -220px; bottom: -200px; }
+.start-brand::after  { width: 340px; height: 340px; left: -140px; top: -120px; }
+
+.start-brand-logo { position: relative; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 800; letter-spacing: .04em; }
+.brand-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 12px rgb(0 0 0 / .12); }
+.start-brand-center {
+  position: relative; flex: 1; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center;
+}
+.brand-catch { font-size: 17px; font-weight: 700; line-height: 1.8; white-space: pre-line; opacity: .85; }
+.start-brand-foot { height: 20px; }
+@keyframes brand-in { from { opacity: 0; } }
 
 .start-panel {
   flex: 1; min-height: 0; overflow-y: auto;
@@ -78,6 +112,8 @@
 .start.is-leaving { pointer-events: none; animation: start-bg-out .5s .15s var(--ease) both; }
 .start.is-leaving .start-card { animation: start-card-out .4s var(--ease) both; }
 .start.is-leaving .start-titlebar { opacity: 0; }
+.start.is-leaving .start-brand { animation: brand-out .45s var(--ease) both; }
+@keyframes brand-out { to { opacity: 0; transform: translateX(-24px); } }
 @keyframes start-card-out { to { opacity: 0; transform: scale(.94); } }
 @keyframes start-bg-out { to { opacity: 0; } }
 
@@ -96,6 +132,7 @@
 
 /* 画面が狭いときは、新規登録を 1 列にする */
 @media (max-width: 1000px) {
+  .start-brand { display: none; }
   .reg-columns { grid-template-columns: 1fr; gap: 22px; }
   .reg-col:first-child { padding-right: 0; }
   .reg-col-optional { padding-left: 0; border-left: 0; padding-top: 20px; border-top: 1px solid var(--border); }

@@ -25,6 +25,10 @@ npm run tauri dev           # アプリが最大化で起動する（初回は R
 - 新規登録は「言語・試験」以外すべて必須です。一覧にない言語・試験はその場で追加できます。
 - アカウント画面で、名前・メール・性別・生年月日・言語と試験・パスワードを変更できます（ログイン ID は変更できません）。
 - 設定画面の内容（テーマ・文字の大きさなど）はデータベースではなく、その PC の中（localStorage）に保存します。
+- 起動画面の黒猫たちは study-notes の起動画面の猫と同じ動きです（`src/system/start/friends.js`）。
+  端から顔を出す・マウスを目で追う・近づくと前足をのばす・なでるとゴロゴロ・クリックでびっくり・ダークモードでは寝ている・ログインできると一斉にぴょこん。
+- 画像はデータベースに入れません。`public/images/` にファイルとして置き、画面からは `"/images/ファイル名"` で使います（例：`<img src="/images/mascot.svg" />`）。
+  データベースに記録が必要になったときも、入れるのは画像のファイル名だけにします。
 - 別の PC の MariaDB につなぐときは、環境変数 `SOTSUKEN_DB_URL` で変えられます。
   例）`SOTSUKEN_DB_URL=mysql://nkc-user:nkc@192.168.0.10:3306/sotsuken npm run tauri dev`
 
@@ -35,24 +39,25 @@ tauri-app/
 ├─ index.html
 ├─ package.json / package-lock.json
 ├─ vite.config.js
-├─ public/                  … アイコンなど、そのまま使うファイル
+├─ public/                  … そのまま使うファイル
+│  └─ images/               … ★ 画像はここに置く（今はロゴ logo.svg）
 ├─ src/                     … 画面側（React）
 │  ├─ main.jsx              … 入口（さわらなくてよい）
 │  ├─ App.jsx               … 全体（ログイン前は起動画面、ログイン後は左のサイドバー＋右の画面）
 │  ├─ App.css               … 見た目（色・レイアウト・ホワイト／ダーク）
 │  ├─ apps.js               … 左に並ぶ項目の一覧（名前・アイコン・色）
-│  ├─ config.js             … アプリ名
+│  ├─ config.js             … アプリ名・ロゴの画像・キャッチコピー
 │  ├─ components/           … 全体で使う部品（サイドバー・アイコン・見出し・入力フォーム・言語の選択）
 │  └─ system/               … ★ 各項目のプログラムはここに書く
-│     ├─ start/             Start.jsx・start.js・start.css  … 起動画面（ログイン・新規登録）
+│     ├─ start/             main.jsx・start.js・start.css・friends.js・friends.css … 起動画面（ログイン・新規登録・黒猫たち）
 │     ├─ common/            api.js（Rust を呼ぶ）・validate.js（入力チェック）
-│     ├─ home/              Home.jsx（画面）・home.js（処理）
-│     ├─ programming/       Programming.jsx・programming.js … プログラム学習
-│     ├─ research/          Research.jsx・research.js       … 情報収集
-│     ├─ zukan/             Zukan.jsx・zukan.js             … デジタル図鑑
-│     ├─ quiz/              Quiz.jsx・quiz.js               … 問題作成
-│     ├─ settings/          Settings.jsx・settings.js・settings.css … 設定（PC の中に保存）
-│     └─ account/           Account.jsx・account.js・account.css … アカウント
+│     ├─ home/              main.jsx（入口・画面）・home.js（処理）
+│     ├─ programming/       main.jsx・programming.js        … プログラム学習
+│     ├─ research/          main.jsx・research.js           … 情報収集
+│     ├─ zukan/             main.jsx・zukan.js              … デジタル図鑑
+│     ├─ quiz/              main.jsx・quiz.js               … 問題作成
+│     ├─ settings/          main.jsx・settings.js・settings.css … 設定（PC の中に保存）
+│     └─ account/           main.jsx・account.js・account.css … アカウント
 ├─ db/sotsuken.sql          … データベースとテーブルを作る SQL
 └─ src-tauri/               … Rust 側と Tauri の設定（tauri.conf.json）
    └─ src/
@@ -64,11 +69,12 @@ tauri-app/
 
 ### system の書き方
 
-- `〇〇.jsx` … 画面（見た目）。ボタンや表など、表示するものを書きます。
+- `main.jsx` … そのフォルダーの入口（画面・見た目）。どのフォルダーも入口は `main.jsx` に統一しています。
+  画面が大きくなったら、部品を別の `.jsx` に分けて `main.jsx` から import します。
 - `〇〇.js` … 処理（プログラム）。計算・データの読み書き・DB や Rust の呼び出しなどを書きます。
 - `.js` に `export function 名前() { … }` と書くと、`.jsx` で `import { 名前 } from "./〇〇.js";` として使えます。
 - ファイルが大きくなったら、その項目のフォルダーの中にファイルを増やして分けます。
-- 項目を増やすときは、`src/system` にフォルダーを作り、`src/apps.js` に 1 行足します。
+- 項目を増やすときは、`src/system` にフォルダーを作って `main.jsx` を置き、`src/apps.js` に 1 行足します（`load: () => import("./system/〇〇/main.jsx")`）。
 
 ## GitHub の使い方
 

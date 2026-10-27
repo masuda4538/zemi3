@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  設定：処理（読み込み・保存・画面への反映）
 //  設定はデータベースではなく、その PC の中（localStorage）に保存します。
-//  項目を増やすときは DEFAULTS に 1 行足して、Settings.jsx に画面を足します。
+//  項目を増やすときは DEFAULTS に 1 行足して、main.jsx に画面を足します。
 // ═══════════════════════════════════════════════════════════════
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrentWebview } from "@tauri-apps/api/webview";

@@ -1,0 +1,18 @@
+<!-- 仮のロゴ（自分たちのものができたら、public/images/ のこのファイルを置き換えてください） -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="24" fill="url(#g)"/>
+  <!-- 開いた本 -->
+  <path d="M20 44c9-3 19-2 28 4v28c-9-6-19-7-28-4z" fill="#fff"/>
+  <path d="M76 44c-9-3-19-2-28 4v28c9-6 19-7 28-4z" fill="#e0f2fe"/>
+  <!-- 卒業帽 -->
+  <path d="M48 16 80 29 48 42 16 29z" fill="#fff"/>
+  <path d="M30 34v8c0 4 8 7 18 7s18-3 18-7v-8l-18 7z" fill="#fff" opacity=".85"/>
+  <path d="M76 31v13" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="76" cy="46" r="3.5" fill="#fff"/>
+</svg>

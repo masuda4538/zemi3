@@ -1,11 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
-//  起動画面：画面（見た目）
+//  起動画面：画面（見た目）　［このフォルダーの入口：main.jsx］
 //  アプリを起動すると最初にこの画面が出ます（「ログイン」と「新規登録」だけ）。
-//    ログイン … ログイン ID とパスワード
+//    ログイン … 左にロゴとまんなかの猫（config.js の BRAND）、右にログイン ID とパスワード
 //               開発中（npm run tauri dev）は、空のままログインを押すとテスト用アカウントで入れる
 //    新規登録 … 左に必須の情報、右に任意の情報（言語・試験）
 //  エラーが出ても画面がずれないように、エラーの場所は最初から取っておきます。
 //  ログイン（または登録）できたら「ようこそ」を出してから onLoggedIn(user) を呼びます。
+//  黒猫たちの動きは friends.js（study-notes の起動画面の猫と同じ動き）。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useRef, useState } from "react";
 import WindowControls from "../../components/WindowControls";
@@ -15,7 +16,10 @@ import { checkDb, getGenders, getLanguages, login, devLogin, isDev, register } f
 import { noErrors } from "../common/validate.js";
 import { checkLogin, isQuickLogin, emptyRegister, checkRegister, toRegisterInput } from "./start.js";
 import { loadLastUserId, saveLastUserId } from "../settings/settings.js";
+import { APP_TITLE, BRAND } from "../../config";
+import { createFriends } from "./friends.js";
 import "./start.css";
+import "./friends.css";
 
 /** 「ようこそ」を出しておく時間（ミリ秒） */
 const WELCOME_MS = 900;
@@ -24,18 +28,37 @@ export default function Start({ leaving, settings, onLoggedIn }) {
   const [mode, setMode] = useState("login");     // "login" か "register"
   const [dbError, setDbError] = useState("");
   const [welcome, setWelcome] = useState(null);  // ログインできた人
+  const rootRef = useRef(null);
+  const friendsRef = useRef(null);               // 黒猫たち（friends.js）
 
   useEffect(() => {
     checkDb().then(() => setDbError("")).catch((e) => setDbError(String(e)));
   }, []);
 
+  // 黒猫たちを出す（起動画面を閉じたら消す）
+  useEffect(() => {
+    const friends = createFriends(rootRef.current);
+    friendsRef.current = friends;
+    return () => { friends.destroy(); friendsRef.current = null; };
+  }, []);
+
+  // ログイン／新規登録を切りかえたら、猫の置き場所を選びなおす
+  useEffect(() => { friendsRef.current?.refresh(); }, [mode]);
+
   const done = (user) => {
     setWelcome(user);
+    friendsRef.current?.celebrate();   // 猫たちが一斉にぴょこん
     setTimeout(() => onLoggedIn(user), WELCOME_MS);
   };
 
+  // 左のロゴとまんなかの猫はログインのときだけ（新規登録は入力欄が多いので画面全体を使う）
+  const showBrand = mode === "login";
+
   return (
-    <div className={`start${leaving ? " is-leaving" : ""}`}>
+    <div ref={rootRef} className={`start${leaving ? " is-leaving" : ""}${showBrand ? " has-brand" : ""}`}>
+      {showBrand && <Brand />}
+
+      <div className="start-main">
       <div className="start-titlebar"><WindowControls /></div>
 
       <section className="start-panel">
@@ -55,7 +78,36 @@ export default function Start({ leaving, settings, onLoggedIn }) {
           )}
         </div>
       </section>
+      </div>
     </div>
+  );
+}
+
+// ───────── 左：ロゴとまんなかの猫 ─────────
+// まんなかの猫は friends.js が .brand-ledge（段）の上に座らせる
+// 開発中は画像の URL に起動した時刻を付けて、アプリが前の画像を覚えたまま（キャッシュ）にならないようにする
+// （public/images の画像を差し替えたら、アプリを開き直すか Ctrl + R で新しい画像になる）
+const IMAGE_VERSION = import.meta.env.DEV ? `?v=${Date.now()}` : "";
+
+function Brand() {
+  // 画像が見つからないときは、その画像だけ出さない
+  const [hide, setHide] = useState({});
+  const img = (key, className, alt) =>
+    BRAND[key] && !hide[key] && (
+      <img className={className} src={BRAND[key] + IMAGE_VERSION} alt={alt} draggable={false} onError={() => setHide((h) => ({ ...h, [key]: true }))} />
+    );
+  return (
+    <aside className="start-brand" data-tauri-drag-region>
+      <div className="start-brand-logo">
+        {img("logo", "brand-logo", "ロゴ")}
+        <span>{APP_TITLE}</span>
+      </div>
+      <div className="start-brand-center">
+        <div className="brand-ledge" aria-hidden="true" />
+        {BRAND.catchphrase && <p className="brand-catch">{BRAND.catchphrase}</p>}
+      </div>
+      <div className="start-brand-foot" aria-hidden="true" />
+    </aside>
   );
 }
 

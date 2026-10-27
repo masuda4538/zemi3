@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  画面全体
-//    ログイン前 … 起動画面（src/system/start/Start.jsx）
+//    ログイン前 … 起動画面（src/system/start/main.jsx）
 //    ログイン後 … 左にアプリのアイコン、右に選んだアプリの画面
 //  右の一番上は、最小化・最大化・閉じるのボタンがある帯（WindowControls）です。
 //  ページの一覧は apps.js、それぞれの項目（画面と処理）は src/system/<項目>/ の中にあります。
@@ -16,7 +16,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import Sidebar from "./components/Sidebar";
 import WindowControls from "./components/WindowControls";
 import ConfirmDialog from "./components/ConfirmDialog";
-import Start from "./system/start/Start.jsx";
+import Start from "./system/start/main.jsx";
 import { logout, inTauri } from "./system/common/api.js";
 import {
   DEFAULTS, loadSettings, saveSettings, applySettings, applyStartup, effectiveTheme, watchSystemTheme,
