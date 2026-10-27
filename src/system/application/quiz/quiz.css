@@ -1,0 +1,80 @@
+/* ═══════════════════════════════════════════════════════════════
+   問題作成：見た目（普通の CSS）
+   ・クラス名は必ず quiz- から始める（CSS はアプリ全体で共通なので、
+     .card などの名前にすると、ほかの人の画面まで変わってしまう）
+   ・色は var(--primary) などを使うと、ダークモードにも自動で合う
+       --text（文字） --text-2（うすい文字） --surface（枠の中） --border（線）
+       --primary（青） --sky（水色） --sky-soft（うすい水色）
+   ・ボタンは共通の btn / btn-primary / btn-ghost をそのまま使える
+   ═══════════════════════════════════════════════════════════════ */
+
+.quiz {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* hidden を付けたものは必ず隠す（display: flex などを書いても消えるように） */
+.quiz [hidden] { display: none !important; }
+
+.quiz-title { font-size: 22px; font-weight: 800; }
+.quiz-sub { margin-top: 4px; font-size: 13px; color: var(--text-2); }
+
+/* 枠 */
+.quiz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+/* 何問目か・進み具合のバー・正解数 */
+.quiz-progress { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-2); font-weight: 700; }
+.quiz-bar { flex: 1; height: 8px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.quiz-bar-fill { width: 0; height: 100%; border-radius: 99px; background: var(--primary); transition: width .3s; }
+
+.quiz-question { font-size: 18px; font-weight: 800; line-height: 1.6; }
+
+/* 選択肢（2 列） */
+.quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quiz-choice {
+  min-height: 52px;
+  padding: 10px 16px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.quiz-choice:hover:not(:disabled) { background: var(--hover); border-color: var(--primary); }
+.quiz-choice:disabled { cursor: default; }
+.quiz-choice.is-correct { border-color: #16a34a; background: color-mix(in srgb, #16a34a 12%, var(--surface)); }
+.quiz-choice.is-wrong   { border-color: #dc2626; background: color-mix(in srgb, #dc2626 10%, var(--surface)); }
+
+/* 正解／不正解の文（空でも高さを取っておいて、画面がずれないようにする） */
+.quiz-result { min-height: 24px; font-size: 15px; font-weight: 800; }
+.quiz-result.is-correct { color: #16a34a; }
+.quiz-result.is-wrong { color: #dc2626; }
+
+.quiz-actions { display: flex; justify-content: flex-end; min-height: 42px; }
+
+/* 終わったとき */
+.quiz-finish { align-items: center; text-align: center; padding: 40px 24px; }
+.quiz-finish-label { color: var(--text-2); font-weight: 700; }
+.quiz-finish-score { font-size: 20px; font-weight: 800; }
+.quiz-finish-score span { font-size: 44px; color: var(--primary); margin-right: 4px; }
+
+/* 画面がせまいときは 1 列 */
+@media (max-width: 720px) {
+  .quiz-choices { grid-template-columns: 1fr; }
+}

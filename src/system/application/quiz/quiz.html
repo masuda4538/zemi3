@@ -1,0 +1,40 @@
+<!--
+  問題作成：画面（普通の HTML）
+  ・<html> <head> <body> は書かない（アプリの画面の中に入れるため）
+  ・<script> も書かない（動きは quiz.js に書く）
+  ・クラス名は quiz- から始める（ほかの画面とぶつからないように）
+  ・quiz.js から使う場所には data-q="名前" を付けて、root.querySelector('[data-q="名前"]') で探す
+-->
+<div class="quiz">
+  <header class="quiz-head">
+    <h1 class="quiz-title">問題作成</h1>
+    <p class="quiz-sub">問題を解いてみよう（問題は quiz.js の QUESTIONS に書いてあります）</p>
+  </header>
+
+  <!-- 問題を解いている画面 -->
+  <section class="quiz-card" data-q="play">
+    <div class="quiz-progress">
+      <span data-q="count">1 / 3</span>
+      <div class="quiz-bar"><div class="quiz-bar-fill" data-q="bar"></div></div>
+      <span>正解 <b data-q="score">0</b></span>
+    </div>
+
+    <p class="quiz-question" data-q="question">ここに問題文が入ります</p>
+
+    <!-- 選択肢のボタンは quiz.js が作ってここに入れる -->
+    <div class="quiz-choices" data-q="choices"></div>
+
+    <p class="quiz-result" data-q="result"></p>
+
+    <div class="quiz-actions">
+      <button type="button" class="btn btn-primary" data-q="next" hidden>次の問題へ</button>
+    </div>
+  </section>
+
+  <!-- 全部解き終わったときの画面 -->
+  <section class="quiz-card quiz-finish" data-q="finish" hidden>
+    <p class="quiz-finish-label">おつかれさまでした</p>
+    <p class="quiz-finish-score"><span data-q="final">0</span> 問 正解</p>
+    <button type="button" class="btn btn-primary" data-q="retry">もう一度</button>
+  </section>
+</div>
