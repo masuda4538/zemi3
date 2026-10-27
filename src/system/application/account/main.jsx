@@ -5,13 +5,13 @@
 //    右の列 … 言語・試験（保存ボタンつき）
 //  それぞれの枠の「保存」は、その枠の内容だけを保存します。
 //  エラーや「保存しました」はボタンの横に出すので、画面がずれません。
-//  App.jsx から user（ログインしている人）、onUserChange、onLogout を受け取ります。
+//  main/App.jsx から user（ログインしている人）、onUserChange、onLogout を受け取ります。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
-import LanguagePicker from "../../components/LanguagePicker";
-import { Field, PasswordInput, GenderPicker, BirthDateSelect, Spinner } from "../../components/Form";
-import { getGenders, getLanguages, updateMe, changePassword } from "../common/api.js";
-import { noErrors } from "../common/validate.js";
+import LanguagePicker from "../../main/components/LanguagePicker";
+import { Field, PasswordInput, GenderPicker, BirthDateSelect, Spinner } from "../../main/components/Form";
+import { getGenders, getLanguages, updateMe, changePassword } from "../../main/common/api.js";
+import { noErrors } from "../../main/common/validate.js";
 import {
   toProfileForm, checkProfile, toProfileInput, isBasicChanged, isLanguagesChanged, checkPasswordForm, initial,
 } from "./account.js";

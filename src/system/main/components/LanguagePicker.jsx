@@ -5,7 +5,7 @@
 //  プログラム言語と試験は、同じ一覧（language テーブル）に入っています。
 // ═══════════════════════════════════════════════════════════════
 import { useState } from "react";
-import { addLanguage } from "../system/common/api.js";
+import { addLanguage } from "../common/api.js";
 import { Spinner } from "./Form";
 import "./form.css";
 

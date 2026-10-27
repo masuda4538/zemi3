@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
 //  画面全体
-//    ログイン前 … 起動画面（src/system/start/main.jsx）
+//    ログイン前 … 起動画面（main/login/main.jsx）
 //    ログイン後 … 左にアプリのアイコン、右に選んだアプリの画面
 //  右の一番上は、最小化・最大化・閉じるのボタンがある帯（WindowControls）です。
-//  ページの一覧は apps.js、それぞれの項目（画面と処理）は src/system/<項目>/ の中にあります。
+//  ページの一覧は apps.js、それぞれの項目（画面と処理）は src/system/application/<項目>/ の中にあります。
 //
 //  ・起動したときは、必ず起動画面 → ログイン後はホームを開きます。
 //  ・アプリを押したときに、その画面のプログラムを読み込んで表示します（アニメーションなし）。
-//  ・設定（src/system/settings/settings.js）はここで持ち、画面全体に反映します。
+//  ・設定（application/settings/settings.js）はここで持ち、画面全体に反映します。
 //  ・各画面には次のものを渡します：
 //      page / user / onUserChange / onLogout / settings / onSettings / onResetSettings / confirm
 // ═══════════════════════════════════════════════════════════════
@@ -16,15 +16,15 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import Sidebar from "./components/Sidebar";
 import WindowControls from "./components/WindowControls";
 import ConfirmDialog from "./components/ConfirmDialog";
-import Start from "./system/start/main.jsx";
-import { logout, inTauri } from "./system/common/api.js";
+import Start from "./login/main.jsx";
+import { logout, inTauri } from "./common/api.js";
 import {
   DEFAULTS, loadSettings, saveSettings, applySettings, applyStartup, effectiveTheme, watchSystemTheme,
-} from "./system/settings/settings.js";
+} from "../application/settings/settings.js";
 import { APP_TITLE, PAGES, SETTINGS, START_PAGE, findPage } from "./apps";
 import "./App.css";
 
-/** 起動画面からアプリの画面へ切り替わる時間（ミリ秒）。start.css のアニメーションと合わせる */
+/** 起動画面からアプリの画面へ切り替わる時間（ミリ秒）。login/login.css のアニメーションと合わせる */
 const LEAVE_MS = 750;
 /** アプリの画面が組み上がるアニメーションの時間（ミリ秒） */
 const ENTER_MS = 1300;

@@ -3,13 +3,13 @@
 //    左の列 … 表示・操作
 //    右の列 … 起動・ログイン、情報・データ
 //  変えるとすぐ反映され、その PC の中に保存されます（データベースには入れません）。
-//  App.jsx から settings（今の設定）、onSettings（変更）、onResetSettings、confirm を受け取ります。
+//  main/App.jsx から settings（今の設定）、onSettings（変更）、onResetSettings、confirm を受け取ります。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
-import { Switch } from "../../components/Form";
-import { APP_TITLE } from "../../config";
-import { inTauri, isDev } from "../common/api.js";
+import { Switch } from "../../main/components/Form";
+import { APP_TITLE } from "../../main/config";
+import { inTauri, isDev } from "../../main/common/api.js";
 import { THEMES, FONT_SIZES, SHORTCUTS, forgetLastUserId } from "./settings.js";
 import "./settings.css";
 

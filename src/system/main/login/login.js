@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  起動画面：処理（入力のチェック・送るデータを作る）
-//  画面は main.jsx、Rust を呼ぶ関数は ../common/api.js
+//  画面は main.jsx、データを扱う関数は ../common/api.js
 // ═══════════════════════════════════════════════════════════════
 import {
   checkUserId, checkPassword, checkConfirm, checkName, checkMail, checkGender, checkBirth, toDateString,

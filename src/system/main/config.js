@@ -10,7 +10,7 @@ export const APP_TITLE = "卒業研究アプリ";
  *   ロゴの画像はデータベースには入れず、public/images/ に置きます。
  *   同じ名前のファイルで置き換えるか、ファイル名をここで書きかえてください（例："/images/logo.png"）。
  *   出したくないときは "" にします。
- *   黒猫たち（まんなかの猫と、端から顔を出す猫）は src/system/start/friends.js で動かしています。
+ *   黒猫たち（まんなかの猫と、端から顔を出す猫）は src/system/main/login/friends.js で動かしています。
  */
 export const BRAND = {
   logo: "/images/logo.svg",

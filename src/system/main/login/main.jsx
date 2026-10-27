@@ -10,15 +10,15 @@
 //  黒猫たちの動きは friends.js（study-notes の起動画面の猫と同じ動き）。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useRef, useState } from "react";
-import WindowControls from "../../components/WindowControls";
-import LanguagePicker from "../../components/LanguagePicker";
-import { Field, PasswordInput, GenderPicker, BirthDateSelect, MessageSlot, Spinner } from "../../components/Form";
+import WindowControls from "../components/WindowControls";
+import LanguagePicker from "../components/LanguagePicker";
+import { Field, PasswordInput, GenderPicker, BirthDateSelect, MessageSlot, Spinner } from "../components/Form";
 import { getGenders, getLanguages, login, register } from "../common/api.js";
-import { emptyRegister, toRegisterInput, STEPS, stepErrors, firstInvalidStep } from "./start.js";
-import { loadLastUserId, saveLastUserId } from "../settings/settings.js";
-import { APP_TITLE, BRAND } from "../../config";
+import { emptyRegister, toRegisterInput, STEPS, stepErrors, firstInvalidStep } from "./login.js";
+import { loadLastUserId, saveLastUserId } from "../../application/settings/settings.js";
+import { APP_TITLE, BRAND } from "../config";
 import { createFriends } from "./friends.js";
-import "./start.css";
+import "./login.css";
 import "./friends.css";
 
 /** 「ようこそ」を出しておく時間（ミリ秒） */
@@ -152,7 +152,7 @@ function LoginForm({ settings, onDone, onRegister }) {
 
 // ───────── 新規登録（右の枠の中で、ステップごとに進む） ─────────
 //  ① アカウント → ② プロフィール → ③ 言語・試験（任意）→ ④ 確認して登録
-//  ステップの名前と項目は start.js の STEPS。ここは各ステップの中身（見た目）
+//  ステップの名前と項目は login.js の STEPS。ここは各ステップの中身（見た目）
 function RegisterForm({ settings, onDone, onLogin }) {
   const [form, setForm] = useState(emptyRegister);
   const [step, setStep] = useState(0);          // 今のステップ（0 から）

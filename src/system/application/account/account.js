@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════
 //  アカウント：処理（入力のチェック・送るデータを作る）
-//  画面は main.jsx、Rust を呼ぶ関数は ../common/api.js
+//  画面は main.jsx、データを扱う関数は main/common/api.js
 // ═══════════════════════════════════════════════════════════════
 import {
   checkName, checkMail, checkGender, checkBirth, checkPassword, checkConfirm,
   toDateString, fromDateString,
-} from "../common/validate.js";
+} from "../../main/common/validate.js";
 
 /** ログインしている人の情報 → フォームの値 */
 export const toProfileForm = (user) => ({

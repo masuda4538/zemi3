@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  アカウントのデータを扱う関数（今はデータベースなしの「仮」）
 //  画面からは、ここの関数を import して使います。
-//    例）import { login } from "../common/api.js";
+//    例）import { login } from "../../main/common/api.js";   // application/<項目>/main.jsx から使うとき
 //        const user = await login("taro01", "password");
 //
 //  ★ 今はデータベースを使っていません。

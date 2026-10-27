@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { inTauri } from "../common/api.js";
+import { inTauri } from "../../main/common/api.js";
 
 const KEY = "settings";
 const LAST_ID_KEY = "lastUserId";
