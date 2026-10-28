@@ -1,15 +1,17 @@
 // ═══════════════════════════════════════════════════════════════
 //  起動画面：画面（見た目）　［このフォルダーの入口：main.jsx］
 //  アプリを起動すると最初にこの画面が出ます（「ログイン」と「新規登録」だけ）。
-//    ログイン … 左にロゴとまんなかの猫（config.js の BRAND）、右にログイン ID とパスワード
+//    左       … 猫が上に座っている枠。中にロゴ・システム名・サブタイトル（config.js の APP_TITLE・BRAND）
+//    ログイン … 右にログイン ID とパスワード
 //               今はデータベースがないので、何を入力しても（空でも）入れる（../common/api.js）
 //    新規登録 … 左はログインと同じまま、右の枠の中でステップごとに進む
 //               ① アカウント → ② プロフィール → ③ 言語・試験（任意）→ ④ 確認して登録
 //  エラーが出ても画面がずれないように、エラーの場所は最初から取っておきます。
 //  ログイン（または登録）できたら「ようこそ」を出してから onLoggedIn(user) を呼びます。
 //  黒猫たちの動きは friends.js（study-notes の起動画面の猫と同じ動き）。
+//  パスワードを「表示」にしているあいだは、まんなかの猫が両手で目を隠す（ときどき指のすきまからのぞく）。
 // ═══════════════════════════════════════════════════════════════
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import WindowControls from "../components/WindowControls";
 import LanguagePicker from "../components/LanguagePicker";
 import { Field, PasswordInput, GenderPicker, BirthDateSelect, MessageSlot, Spinner } from "../components/Form";
@@ -40,6 +42,13 @@ export default function Start({ leaving, settings, onLoggedIn }) {
   // ログイン／新規登録を切りかえたら、猫の置き場所を選びなおす
   useEffect(() => { friendsRef.current?.refresh(); }, [mode]);
 
+  // パスワードを「表示」にしている欄の数。1 つ以上あるあいだは、まんなかの猫が両手で目を隠す
+  const shownRef = useRef(0);
+  const onPasswordShow = useCallback((show) => {
+    shownRef.current = Math.max(0, shownRef.current + (show ? 1 : -1));
+    friendsRef.current?.setShy(shownRef.current > 0);
+  }, []);
+
   const done = (user) => {
     setWelcome(user);
     friendsRef.current?.celebrate();   // 猫たちが一斉にぴょこん
@@ -64,8 +73,8 @@ export default function Start({ leaving, settings, onLoggedIn }) {
                 <button type="button" role="tab" aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => setMode("register")}>新規登録</button>
               </div>
               {mode === "login"
-                ? <LoginForm key="login" settings={settings} onDone={done} onRegister={() => setMode("register")} />
-                : <RegisterForm key="register" settings={settings} onDone={done} onLogin={() => setMode("login")} />}
+                ? <LoginForm key="login" settings={settings} onDone={done} onRegister={() => setMode("register")} onPasswordShow={onPasswordShow} />
+                : <RegisterForm key="register" settings={settings} onDone={done} onLogin={() => setMode("login")} onPasswordShow={onPasswordShow} />}
             </>
           )}
         </div>
@@ -75,8 +84,8 @@ export default function Start({ leaving, settings, onLoggedIn }) {
   );
 }
 
-// ───────── 左：ロゴとまんなかの猫 ─────────
-// まんなかの猫は friends.js が .brand-ledge（段）の上に座らせる
+// ───────── 左：ロゴ・システム名・サブタイトルの枠（猫が上に座っている） ─────────
+// まんなかの猫は friends.js が .brand-ledge（この枠）の上のふちに座らせる
 // 開発中は画像の URL に起動した時刻を付けて、アプリが前の画像を覚えたまま（キャッシュ）にならないようにする
 // （public/images の画像を差し替えたら、アプリを開き直すか Ctrl + R で新しい画像になる）
 const IMAGE_VERSION = import.meta.env.DEV ? `?v=${Date.now()}` : "";
@@ -90,13 +99,14 @@ function Brand() {
     );
   return (
     <aside className="start-brand" data-tauri-drag-region>
-      <div className="start-brand-logo">
-        {img("logo", "brand-logo", "ロゴ")}
-        <span>{APP_TITLE}</span>
-      </div>
+      {/* まんなか：ロゴ・システム名・サブタイトルの枠（上のふちに猫が座る） */}
       <div className="start-brand-center">
-        <div className="brand-ledge" aria-hidden="true" />
-        {BRAND.catchphrase && <p className="brand-catch">{BRAND.catchphrase}</p>}
+        <section className="brand-ledge brand-card">
+          {img("logo", "brand-card-logo", "ロゴ")}
+          {BRAND.tagline && <p className="brand-card-tagline">{BRAND.tagline}</p>}
+          <h1 className="brand-card-title">{APP_TITLE}</h1>
+          {BRAND.catchphrase && <p className="brand-card-sub">{BRAND.catchphrase}</p>}
+        </section>
       </div>
       <div className="start-brand-foot" aria-hidden="true" />
     </aside>
@@ -104,7 +114,7 @@ function Brand() {
 }
 
 // ───────── ログイン ─────────
-function LoginForm({ settings, onDone, onRegister }) {
+function LoginForm({ settings, onDone, onRegister, onPasswordShow }) {
   const [userId, setUserId] = useState(() => loadLastUserId(settings));   // 設定で「覚えておく」なら前回の ID
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -137,14 +147,14 @@ function LoginForm({ settings, onDone, onRegister }) {
         <input className="input" value={userId} onChange={(e) => edit(setUserId)(e.target.value)} autoComplete="username" autoFocus={!userId} spellCheck={false} />
       </Field>
       <Field label="パスワード">
-        <PasswordInput value={password} onChange={edit(setPassword)} autoFocus={!!userId} />
+        <PasswordInput value={password} onChange={edit(setPassword)} autoFocus={!!userId} onShowChange={onPasswordShow} />
       </Field>
       {/* エラーの場所（空でも高さを取っておく） */}
       <MessageSlot message={error} />
       <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
         {busy ? <><Spinner />確認しています…</> : "ログイン"}
       </button>
-      <p className="start-dev">今はデータベースがないので、何を入力しても（空のままでも）ログインできます</p>
+      <p className="start-dev">今はデータベースがないので、何を入れても（空でも）ログインできます</p>
       <p className="start-switch">はじめての方は <button type="button" onClick={onRegister}>新規登録</button></p>
     </form>
   );
@@ -153,7 +163,7 @@ function LoginForm({ settings, onDone, onRegister }) {
 // ───────── 新規登録（右の枠の中で、ステップごとに進む） ─────────
 //  ① アカウント → ② プロフィール → ③ 言語・試験（任意）→ ④ 確認して登録
 //  ステップの名前と項目は login.js の STEPS。ここは各ステップの中身（見た目）
-function RegisterForm({ settings, onDone, onLogin }) {
+function RegisterForm({ settings, onDone, onLogin, onPasswordShow }) {
   const [form, setForm] = useState(emptyRegister);
   const [step, setStep] = useState(0);          // 今のステップ（0 から）
   const [reached, setReached] = useState(0);    // ここまで進んだことがある（上の丸から戻れる）
@@ -240,10 +250,10 @@ function RegisterForm({ settings, onDone, onLogin }) {
                 <input className="input" value={form.userId} onChange={(e) => set("userId")(e.target.value)} autoComplete="username" spellCheck={false} maxLength={16} />
               </Field>
               <Field label="パスワード" help="8〜64 文字" error={errors.password}>
-                <PasswordInput value={form.password} onChange={set("password")} autoComplete="new-password" />
+                <PasswordInput value={form.password} onChange={set("password")} autoComplete="new-password" onShowChange={onPasswordShow} />
               </Field>
               <Field label="パスワード（確認）" reserve error={errors.confirm}>
-                <PasswordInput value={form.confirm} onChange={set("confirm")} autoComplete="new-password" />
+                <PasswordInput value={form.confirm} onChange={set("confirm")} autoComplete="new-password" onShowChange={onPasswordShow} />
               </Field>
             </div>
           )}

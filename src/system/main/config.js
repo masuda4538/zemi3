@@ -14,5 +14,8 @@ export const APP_TITLE = "卒業研究アプリ";
  */
 export const BRAND = {
   logo: "/images/logo.svg",
+  // 名前の上に小さく出す英語など（例："Graduation Research App"）。出さないときは ""
+  tagline: "",
+  // 名前の下に出すサブタイトル（\n で改行）
   catchphrase: "学ぶ・調べる・まとめる・ためす。\nひとつのアプリで。",
 };

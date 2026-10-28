@@ -8,7 +8,7 @@
 //    <MessageSlot>     … お知らせ欄（空でも高さを取っておく）
 //  見た目は form.css
 // ═══════════════════════════════════════════════════════════════
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import "./form.css";
 
 /**
@@ -45,8 +45,26 @@ export function MessageSlot({ message, type = "error" }) {
   );
 }
 
-export function PasswordInput({ value, onChange, autoComplete = "current-password", ...rest }) {
+/**
+ * パスワード欄（「表示」で文字を見せる／隠す）
+ * onShowChange : (見せているか) => void … 表示を切り替えたときに呼ばれる（なくてもよい）
+ *                ログイン画面では、これで猫が目を隠す
+ */
+export function PasswordInput({ value, onChange, autoComplete = "current-password", onShowChange, ...rest }) {
   const [show, setShow] = useState(false);
+  const notify = useRef(onShowChange);
+  notify.current = onShowChange;
+  const showRef = useRef(show);
+  showRef.current = show;
+
+  const toggle = () => {
+    const next = !show;
+    setShow(next);
+    notify.current?.(next);
+  };
+  // 見せたまま画面から消えたとき（タブやステップを切り替えたとき）は、隠したことにする
+  useEffect(() => () => { if (showRef.current) notify.current?.(false); }, []);
+
   return (
     <div className="pw-wrap">
       <input
@@ -58,7 +76,7 @@ export function PasswordInput({ value, onChange, autoComplete = "current-passwor
         spellCheck={false}
         {...rest}
       />
-      <button type="button" className="pw-toggle" onClick={() => setShow(!show)} aria-label={show ? "パスワードを隠す" : "パスワードを表示"}>
+      <button type="button" className="pw-toggle" onClick={toggle} aria-pressed={show} aria-label={show ? "パスワードを隠す" : "パスワードを表示"}>
         {show ? "隠す" : "表示"}
       </button>
     </div>

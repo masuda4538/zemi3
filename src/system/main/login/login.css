@@ -39,13 +39,31 @@
 .start-brand::before { width: 560px; height: 560px; right: -220px; bottom: -200px; }
 .start-brand::after  { width: 340px; height: 340px; left: -140px; top: -120px; }
 
-.start-brand-logo { position: relative; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 800; letter-spacing: .04em; }
-.brand-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 12px rgb(0 0 0 / .12); }
 .start-brand-center {
   position: relative; flex: 1; min-height: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center;
 }
-.brand-catch { font-size: 17px; font-weight: 700; line-height: 1.8; white-space: pre-line; opacity: .85; }
+/* まんなかの枠：ロゴ・システム名・サブタイトル。上のふちに猫が座る（friends.js が .brand-ledge を見ている） */
+.brand-card {
+  position: relative;
+  width: min(440px, 86%);
+  margin-top: 196px;                 /* 猫が座る場所をあけておく（猫の高さくらい） */
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 34px 32px 32px;
+  border: 2px solid var(--sp-ink, #111);   /* 猫が乗っている「ふち」。猫と同じ黒 */
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(15 23 42 / .12);
+  color: #16233a; text-align: center;
+}
+:root[data-theme="dark"] .brand-card {
+  background: #1b212b; color: #e6edf7; border-color: #0b0d10;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / .18), 0 12px 30px rgb(0 0 0 / .35);
+}
+.brand-card-logo { width: 64px; height: 64px; object-fit: contain; border-radius: 16px; box-shadow: 0 6px 16px rgb(37 99 235 / .25); }
+.brand-card-tagline { margin-top: 4px; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--primary); }
+.brand-card-title { margin-top: 2px; font-size: 28px; font-weight: 800; letter-spacing: .06em; }
+.brand-card-sub { font-size: 14.5px; font-weight: 700; line-height: 1.8; white-space: pre-line; opacity: .7; }
 .start-brand-foot { height: 20px; }
 @keyframes brand-in { from { opacity: 0; } }
 
@@ -54,31 +72,37 @@
   display: flex; justify-content: center; align-items: safe center;
   padding: 8px 40px 40px;
 }
+/* 右側：枠は付けず、白い面にそのまま置く（見やすさ重視） */
 .start-card {
-  width: min(460px, 100%);
-  display: flex; flex-direction: column; gap: 18px;
-  padding: 30px 32px 26px; border-radius: 20px;
-  background: var(--surface); border: 1px solid var(--border);
+  width: min(420px, 100%);
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 8px 0 24px;
   animation: start-rise .5s var(--ease) both;
 }
 
-.start-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 12px; background: var(--hover); }
+/* ログイン｜新規登録：下線のタブ */
+.start-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1.5px solid var(--border); }
 .start-tabs button {
-  height: 38px; border: 0; border-radius: 9px; cursor: pointer;
-  background: transparent; color: var(--text-2); font-size: 14px; font-weight: 800;
-  transition: background .15s, color .15s;
+  position: relative; height: 46px; margin-bottom: -1.5px; padding: 0; cursor: pointer;
+  border: 0; border-bottom: 2.5px solid transparent; background: transparent;
+  color: var(--text-3); font-size: 15px; font-weight: 800;
+  transition: color .15s, border-color .15s;
 }
-.start-tabs button.active { background: var(--surface); color: var(--primary); }
+.start-tabs button:hover { color: var(--text); }
+.start-tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
 
 .start-form { animation: start-fade .3s var(--ease); }
-.start-head h2 { font-size: 22px; font-weight: 800; }
-.start-head p { margin-top: 4px; font-size: 13px; color: var(--text-2); }
+.start-head h2 { font-size: 26px; font-weight: 800; letter-spacing: .02em; }
+.start-head p { margin-top: 6px; font-size: 13.5px; color: var(--text-2); }
 .start-switch { text-align: center; font-size: 13px; color: var(--text-2); }
 .start-switch button { border: 0; background: none; padding: 0; color: var(--primary); font-weight: 800; cursor: pointer; }
 .start-switch button:hover { text-decoration: underline; }
 .start-dev {
   margin-top: -6px; text-align: center; font-size: 11.5px; color: var(--text-3);
 }
+
+/* 枠がないぶん、入力欄は少し高くして押しやすくする */
+.start-form .input { height: 46px; }
 
 /* ログイン：お知らせ欄と入力欄の間を詰める */
 .start-form .msg-slot { margin: -6px 0 -4px; }
@@ -120,7 +144,7 @@
 /* ステップの中身（高さをそろえて、ステップが変わっても枠の大きさが変わらないようにする） */
 .reg-viewport { overflow: hidden; margin: 0 -6px; padding: 0 6px; }
 .reg-step { display: flex; flex-direction: column; gap: 14px; min-height: 452px; }
-.reg-step .start-head h2 { display: flex; align-items: center; gap: 8px; font-size: 20px; }
+.reg-step .start-head h2 { display: flex; align-items: center; gap: 8px; font-size: 22px; }
 .reg-fields { display: flex; flex-direction: column; gap: 10px; }
 .reg-step .lang-picker { flex: 1; min-height: 0; }
 .reg-step .lang-picker .chips { max-height: 232px; overflow-y: auto; padding: 2px; }

@@ -81,12 +81,47 @@
 .friend-svg .f-eyes { transform-origin: 55px 55px; }
 .friend-svg .f-tail { transform-origin: 21px 92px; }
 
-/* まんなかの猫が座る段（左の灰色の面） */
-.brand-ledge {
-  width: min(420px, 80%); height: 6px; border-radius: 3px;
-  background: var(--sp-ink);
-  margin-top: 210px;   /* 猫が座る場所をあけておく（.size-boss の高さくらい） */
-}
+/* ───────── パスワードを見ないようにする（パスワードを「表示」にしているあいだ） ─────────
+   friends.js の setShy が、まんなかの猫に .is-shy と、次のどれか 1 つを付ける。.is-peek は「ちらっとのぞく」
+     .is-shy-cover … 両手で目を隠す
+     .is-shy-away  … そっぽを向く
+     .is-shy-curl  … 丸くなる
+   夜（ダークモード）は寝ているので、どれもしない（.start:not(.is-night) を付けている） */
+.friend-svg .f-head { transition: transform .45s cubic-bezier(.25, 1.35, .45, 1); }
+.friend-svg .f-eyes { transition: transform .3s ease-out; }
+.friend-svg .f-sleep { transition: opacity .2s; }
+
+/* 両手で目を隠す：手はふだん体の下（端の外）に隠れていて、上がってくる */
+.friend-svg .cover-arm { fill: var(--sp-ink); }   /* 腕（体と同じ色。手の先だけ白いふちを見せる） */
+.friend-svg .cover-paw { transform: translateY(66px); transition: transform .32s cubic-bezier(.4, 0, .7, .2); }
+.friend-svg .cover-l { transform-origin: 43px 100px; }
+.friend-svg .cover-r { transform-origin: 67px 100px; }
+.start:not(.is-night) .is-shy-cover .cover-paw { transform: translateY(0); transition: transform .42s cubic-bezier(.25, 1.35, .45, 1); }
+.start:not(.is-night) .is-shy-cover .cover-r { transition-delay: .07s; }
+.start:not(.is-night) .is-shy-cover.is-peek .cover-r { transform: translate(4px, 7px) rotate(17deg); transition: transform .28s ease-out; transition-delay: 0s; }
+.start:not(.is-night) .is-shy-cover .f-earwrap-l { transform: rotate(-10deg); }   /* はずかしそうに耳を少し寝かせる */
+.start:not(.is-night) .is-shy-cover .f-earwrap-r { transform: rotate(10deg); }
+.start.is-night .friend-svg .f-cover { display: none; }
+
+/* そっぽを向く：顔ごと左（ログインの欄と反対）を向いて、目を左に寄せる。ちらっ＝目だけ少し戻す */
+.start:not(.is-night) .is-shy-away .f-head { transform: rotate(-9deg); }
+.start:not(.is-night) .is-shy-away .f-eyes { transform: translate(-13px, 2px); }
+.start:not(.is-night) .is-shy-away .f-earwrap-l { transform: rotate(-16deg); }
+.start:not(.is-night) .is-shy-away .f-earwrap-r { transform: rotate(-6deg); }
+.start:not(.is-night) .is-shy-away.is-peek .f-head { transform: rotate(-5deg); }
+.start:not(.is-night) .is-shy-away.is-peek .f-eyes { transform: translate(-3px, 1px); transition-duration: .18s; }
+
+/* 丸くなる：体を低く・まるくして、目をぎゅっと閉じる（耳も寝かせる）。ちらっ＝うす目をあける */
+.start:not(.is-night) .is-shy-curl .f-head { transform: translateY(12px) scale(1.12, .8); }
+.start:not(.is-night) .is-shy-curl .f-eyes { visibility: hidden; }
+.start:not(.is-night) .is-shy-curl .f-sleep { opacity: 1; }
+.start:not(.is-night) .is-shy-curl .f-earwrap-l { transform: rotate(-24deg); }
+.start:not(.is-night) .is-shy-curl .f-earwrap-r { transform: rotate(24deg); }
+.start:not(.is-night) .is-shy-curl .f-tail { transform: rotate(40deg); transition: transform .45s; }
+.start:not(.is-night) .is-shy-curl.is-peek .f-eyes { visibility: visible; transform: scaleY(.45); }
+.start:not(.is-night) .is-shy-curl.is-peek .f-sleep { opacity: 0; }
+
+/* まんなかの猫が座る場所：.brand-ledge の上のふち（今はシステム名の枠。見た目は login.css の .brand-card） */
 
 /* ダークモード（夜）：猫はみんな寝ている */
 .start.is-night .edge-friend .friend-svg { filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, .75)) drop-shadow(0 0 6px rgba(160, 180, 255, .18)); }
@@ -96,4 +131,3 @@
 .start.is-night .friend-svg .f-happy { opacity: 0 !important; }
 .start.is-night .friend-svg .f-arm { display: none; }
 .start.is-night .purr-text { color: #d9dde6; }
-:root[data-theme="dark"] .brand-ledge { background: #0b0d10; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
