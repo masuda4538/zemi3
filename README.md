@@ -49,10 +49,11 @@ tauri-app/
 │     │  └─ common/         … みんなで使う処理（api.js：アカウントのデータ。今は仮／validate.js：入力チェック）
 │     └─ application/       … ★ 各アプリの画面（担当者ごとにフォルダーを分ける）
 │        ├─ home/           main.jsx（入口・画面）・home.js（処理）  … ホーム
-│        ├─ programming/    main.jsx・programming.js                … プログラム学習
-│        ├─ research/       main.jsx・research.js                   … 情報収集
-│        ├─ zukan/          main.jsx・zukan.js                      … デジタル図鑑
-│        ├─ quiz/           main.jsx・quiz.html・quiz.css・quiz.js  … 問題作成（HTML・CSS・JS で書く形）
+│        ├─ programming/    main.jsx・main.html・main.css・main.js・achievements.js … プログラム学習
+│        ├─ research/       main.jsx・main.html・main.css・main.js・achievements.js … 情報収集
+│        ├─ zukan/          main.jsx・main.html・main.css・main.js・achievements.js … デジタル図鑑
+│        ├─ quiz/           main.jsx・main.html・main.css・main.js・achievements.js … 問題作成
+│        ├─ achieve/        main.jsx・achieve.js・achieve.css・Ring.jsx … アチーブ
 │        ├─ settings/       main.jsx・settings.js・settings.css      … 設定（PC の中に保存）
 │        └─ account/        main.jsx・account.js・account.css        … アカウント
 └─ src-tauri/               … Rust 側と Tauri の設定（tauri.conf.json）
@@ -70,7 +71,14 @@ tauri-app/
 - `〇〇.js` … 処理（プログラム）。計算・データの読み書き・DB や Rust の呼び出しなどを書きます。
   `export function 名前() { … }` と書くと、`.jsx` で `import { 名前 } from "./〇〇.js";` として使えます。
 - `〇〇.css` … 見た目。クラス名はフォルダー名から始めます（例：`.quiz-card`）。CSS はアプリ全体で共通なので、ほかの画面とぶつからないようにするためです。
-- HTML・CSS・JS で書きたいときは、`application/quiz/` と同じ形（`main.jsx` はつなぐだけ、中身は `quiz.html`・`quiz.css`・`quiz.js`）にします。
+- **プログラム学習・情報収集・デジタル図鑑・問題作成は、HTML・CSS・JS で作ります。**
+  `main.jsx` はつなぐだけ（触らない）で、書きかえていくのは次の 3 つです。
+  - `main.html` … 画面。`<html>`・`<body>`・`<script>` は書かない。main.js から使う要素には `data-app="名前"` を付ける
+  - `main.css` … 見た目。クラス名はフォルダー名から始める（例：`.quiz-card`）
+  - `main.js` … 動き。`export function start(root, app) { … }` が最初に呼ばれる。
+    `app.$("名前")` で要素を探し、`app.on(要素, "click", 関数)` でイベントを付ける。
+    `app.notify({ … })` で右上のお知らせ、`app.unlock("id")` でアチーブ
+  - アチーブは `achievements.js` に書く（名前・説明。数をためるものは `goal: 10`）
 - みんなで使う部品・処理は、`application/〇〇/` から次のように読み込みます。
   ```js
   import { Field } from "../../main/components/Form";

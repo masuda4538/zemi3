@@ -66,5 +66,13 @@
 .ach-text p { margin-top: 2px; font-size: 12.5px; color: var(--text-2); }
 .ach-text small { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; color: var(--text-3); }
 .ach-card:not(.is-got) .ach-text strong { color: var(--text-2); }
+/* 数をためるアチーブの進み具合（2 / 10） */
+.ach-count { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.ach-count-bar { flex: 1; height: 6px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.ach-count-fill { height: 100%; border-radius: 99px; background: var(--primary); transition: width .4s var(--ease); }
+.ach-card.is-got .ach-count-fill { background: #d97706; }
+:root[data-theme="dark"] .ach-card.is-got .ach-count-fill { background: #fbbf24; }
+.ach-count span { flex: none; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.ach-count b { font-size: 14px; color: var(--text); }
 .ach-app { padding: 1px 8px; border-radius: 99px; background: var(--sky-soft); color: var(--primary); font-weight: 800; }
 .ach-empty, .ach-note { font-size: 12.5px; color: var(--text-3); }

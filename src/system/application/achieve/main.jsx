@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  アチーブ：画面（見た目）　［このフォルダーの入口：main.jsx］
 //  左に「すべて」と各アプリ、右にそのアチーブの一覧（手に入れたものは色つき、まだのものは灰色）
+//  数をためるアチーブ（goal があるもの）は、カードに「2 / 10」と進み具合のバーを出す
 //  一覧の上に、進み具合の円グラフ（Ring.jsx）
 //    すべて   … 左に全体の大きな円、右にアプリごとの小さな円（押すとそのアプリへ）
 //    各アプリ … そのアプリの大きな円
@@ -9,7 +10,7 @@
 import { useEffect, useState } from "react";
 import SettingsLayout from "../../main/components/SettingsLayout";
 import Icon from "../../main/components/Icon";
-import { getUnlocked, onAchievementUnlocked } from "../../main/common/achievements.js";
+import { getUnlocked, getProgress, onAchievementsChange } from "../../main/common/achievements.js";
 import { GROUPS, ALL, countGot } from "./achieve.js";
 import Ring from "./Ring";
 import "./achieve.css";
@@ -17,9 +18,10 @@ import "./achieve.css";
 export default function Achieve() {
   const [current, setCurrent] = useState("all");
   const [unlocked, setUnlocked] = useState(getUnlocked);
+  const [progress, setProgress] = useState(getProgress);   // 数をためるアチーブの今の数
 
-  // 開いているあいだに手に入れたら、すぐ反映する
-  useEffect(() => onAchievementUnlocked(() => setUnlocked(getUnlocked())), []);
+  // 開いているあいだに手に入れた・数が増えたら、すぐ反映する
+  useEffect(() => onAchievementsChange(() => { setUnlocked(getUnlocked()); setProgress(getProgress()); }), []);
 
   const group = GROUPS.find((g) => g.app.id === current);
   const list = group ? group.list.map((a) => ({ ...a, appName: group.app.name })) : ALL;
@@ -73,6 +75,7 @@ export default function Achieve() {
       <div className="ach-grid">
         {list.map((a) => {
           const when = unlocked[a.key];
+          const now = a.goal ? (when ? a.goal : progress[a.key] ?? 0) : 0;   // 数をためるアチーブの今の数
           return (
             <div key={a.key} className={`panel ach-card${when ? " is-got" : ""}`}>
               <span className="ach-badge">
@@ -81,6 +84,12 @@ export default function Achieve() {
               <div className="ach-text">
                 <strong>{a.name}</strong>
                 <p>{a.desc}</p>
+                {a.goal && (
+                  <div className="ach-count" role="img" aria-label={`${now} / ${a.goal}`}>
+                    <div className="ach-count-bar"><div className="ach-count-fill" style={{ width: `${(now / a.goal) * 100}%` }} /></div>
+                    <span><b>{now}</b> / {a.goal}</span>
+                  </div>
+                )}
                 <small>{!group && <span className="ach-app">{a.appName}</span>}{when ? `取得 ${when}` : "まだ"}</small>
               </div>
             </div>
@@ -88,7 +97,7 @@ export default function Achieve() {
         })}
         {list.length === 0 && <p className="ach-empty">まだアチーブがありません。</p>}
       </div>
-      <p className="ach-note">今はデータベースがないので、手に入れたアチーブはアプリを閉じると消えます。</p>
+      <p className="ach-note">手に入れたアチーブと進み具合は、この PC の中のファイル（achievements.json）にログイン ID ごとに保存しています。</p>
     </SettingsLayout>
   );
 }
