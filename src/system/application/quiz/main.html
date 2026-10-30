@@ -1,0 +1,24 @@
+<!--
+  問題作成：画面（普通の HTML） ★ このファイルを書きかえていきます
+  ・<html> <head> <body> <script> は書かない（アプリの画面の中に入れるため）
+  ・クラス名は quiz- から始める（ほかのアプリとぶつからないように）
+  ・main.js から使う要素には data-app="名前" を付ける → main.js で app.$("名前") で探せる
+  ・アプリ全体の部品の見た目も使える：btn btn-primary btn-ghost（ボタン）／ panel（枠）／ input（入力欄）
+  ・画像は public/images/quiz/ に置いて <img src="/images/quiz/ファイル名.png"> で出す
+-->
+<div class="quiz">
+  <header class="quiz-head">
+    <h1 class="quiz-title">問題作成</h1>
+    <p class="quiz-sub">ここに問題作成を作ります（src/system/application/quiz/main.html）</p>
+  </header>
+
+  <!-- はじめの例：消して、自分の画面を作っていってください -->
+  <section class="panel quiz-card">
+    <h2 class="quiz-card-title">はじめの例</h2>
+    <p class="quiz-text">ボタンを押すと数が増えます。はじめて押したときは、右上にお知らせが出ます。</p>
+    <div class="quiz-row">
+      <button type="button" class="btn btn-primary" data-app="count-button">押してみる</button>
+      <span class="quiz-count"><b data-app="count">0</b> 回</span>
+    </div>
+  </section>
+</div>

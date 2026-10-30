@@ -1,16 +1,17 @@
 // ═══════════════════════════════════════════════════════════════
-//  デジタル図鑑：画面（見た目）　［このフォルダーの入口：main.jsx］
-//  左のアイコン「デジタル図鑑」を押すと表示されます。
-//  見た目はこのファイル、処理（計算・データ・DB や Rust の呼び出し）は zukan.js に書きます。
-//  page には main/apps.js の設定（名前・色・アイコン）が入っています。
+//  デジタル図鑑：入口［このフォルダーの入口：main.jsx］ ★ このファイルは触らなくて大丈夫です
+//  左のアイコン「デジタル図鑑」を押すと、このファイルが読み込まれます。
+//  書きかえていくのは、この 3 つです
+//    main.html … 画面（普通の HTML）
+//    main.css  … 見た目（普通の CSS）
+//    main.js   … 動き（普通の JavaScript。start(root, app) が最初に呼ばれる）
+//  アチーブは achievements.js
 // ═══════════════════════════════════════════════════════════════
-import PageTitle from "../../main/components/PageTitle";
-import { getNote } from "./zukan.js";
+import HtmlApp from "../../main/components/HtmlApp";
+import html from "./main.html?raw";   // main.html の中身を、文字としてそのまま読み込む
+import { start } from "./main.js";
+import "./main.css";
 
-export default function Zukan({ page }) {
-  return (
-    <div className="page-center">
-      <PageTitle page={page} note={getNote()} />
-    </div>
-  );
+export default function Zukan(props) {
+  return <HtmlApp html={html} start={start} {...props} />;
 }
