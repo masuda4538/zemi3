@@ -1,0 +1,146 @@
+/* ═══════════════════════════════════════════════════════════════
+   ホーム：見た目（普通の CSS） ★ 自由に書きかえてよい
+   ・main.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
+   ・このページの中だけに効きます（ほかの人の画面には効かないので、クラス名は自由）
+   ・色は var(--primary) などを使うと、ダークモードにも自動で合う
+       --text（文字） --text-2（うすい文字） --text-3（もっとうすい文字）
+       --surface（枠の中） --surface-2（少し色のついた面） --border（線）
+       --primary（青） --sky（水色） --sky-soft（うすい水色）
+   ═══════════════════════════════════════════════════════════════ */
+
+.home {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* hidden を付けたものは必ず隠す（display: flex などを書いても消えるように） */
+.home [hidden] { display: none !important; }
+
+.home-icon { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ───────── 1. 今日の情報（左：時計　右：今日は何の日） ───────── */
+.home-hero {
+  display: flex; align-items: center; gap: 24px;
+  padding: 22px 26px; border-radius: 18px; color: #fff;
+  background: linear-gradient(120deg, var(--sky), var(--primary) 70%);
+}
+
+/* 今日は何の日：青い帯の上に、すこし透ける白い小箱を 4 つ並べる */
+.home-today { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.home-today-title { font-size: 15px; font-weight: 800; }
+.home-today-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.home-today-item {
+  display: flex; flex-direction: column; gap: 3px; min-width: 0;
+  padding: 10px 14px; border-radius: 12px;
+  background: rgb(255 255 255 / .16); border: 1px solid rgb(255 255 255 / .3);
+}
+.home-today-label { font-size: 11px; font-weight: 800; opacity: .85; }
+.home-today-item strong { font-size: 18px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-today-sub { font-size: 11.5px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-today-bar { display: block; height: 5px; border-radius: 99px; background: rgb(255 255 255 / .3); overflow: hidden; }
+.home-today-fill { display: block; height: 100%; border-radius: 99px; background: #fff; }
+
+/* 時計：白い枠に黒いふち（ダークモードでは暗い枠に白いふち） */
+.home-clock {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none;
+  padding: 10px 26px 12px; border-radius: 16px;
+  background: var(--surface); color: var(--text); border: 2.5px solid var(--text);
+  box-shadow: 0 6px 18px rgb(10 20 40 / .18);
+}
+.home-clock-time {
+  font-size: 34px; font-weight: 800; line-height: 1.15; letter-spacing: .03em;
+  font-variant-numeric: tabular-nums;   /* 数字の幅をそろえて、秒が変わっても横に動かないように */
+}
+.home-clock-date { font-size: 12px; font-weight: 600; color: var(--text-2); }
+
+/* ───────── 枠（共通） ───────── */
+.home-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.home-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.home-card { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; }
+.home-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.home-card-head h2 { font-size: 16px; font-weight: 800; }
+.home-card-note { font-size: 12px; color: var(--text-3); }
+.home-link {
+  border: 0; background: none; padding: 2px 4px; cursor: pointer;
+  color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800;
+}
+.home-link:hover { text-decoration: underline; }
+.home-small-title { margin-top: 4px; font-size: 12px; font-weight: 800; color: var(--text-3); }
+
+/* ───────── 2. アプリ ───────── */
+.home-app-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.home-app {
+  display: flex; align-items: center; gap: 14px; min-width: 0;
+  padding: 14px; border: 1px solid var(--border); border-radius: 14px; cursor: pointer;
+  background: var(--surface); color: var(--text); font: inherit; text-align: left;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.home-app:hover { border-color: var(--primary); background: var(--hover); }
+.home-app:active { transform: translateY(1px); }
+.home-app-icon {
+  display: grid; place-items: center; width: 46px; height: 46px; padding: 11px; flex: none; border-radius: 13px;
+  background: linear-gradient(150deg, var(--sky), var(--primary)); color: #fff;
+}
+.home-app-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.home-app-text strong { font-size: 14.5px; }
+.home-app-text span { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-app-badge {
+  flex: none; padding: 2px 9px; border-radius: 99px; border: 1px solid var(--border);
+  background: var(--surface-2); font-size: 11px; font-weight: 800; color: var(--text-3);
+}
+
+/* ───────── 3. アチーブ ───────── */
+.home-achieve-top { display: flex; align-items: center; gap: 16px; }
+.home-ring { position: relative; width: 84px; height: 84px; flex: none; }
+.home-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.home-ring-track { fill: none; stroke: var(--sky-soft); stroke-width: 10; }
+.home-ring-fill { fill: none; stroke: var(--primary); stroke-width: 10; stroke-linecap: round; }
+.home-ring-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+.home-ring-pct small { font-size: .6em; color: var(--text-2); }
+.home-achieve-count { display: flex; flex-direction: column; }
+.home-achieve-count strong { font-size: 22px; font-weight: 800; }
+.home-achieve-count span { font-size: 12px; color: var(--text-2); }
+
+.home-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.home-ach { display: flex; align-items: center; gap: 10px; }
+.home-ach-badge {
+  display: grid; place-items: center; width: 34px; height: 34px; padding: 8px; flex: none; border-radius: 10px;
+  background: var(--surface-2); border: 1.5px dashed var(--border-strong); color: var(--text-3);
+}
+.home-ach.is-got .home-ach-badge { border: 0; color: #fff; background: linear-gradient(150deg, #fcd34d, #f59e0b 75%); }
+.home-ach-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.home-ach-text strong { font-size: 13px; }
+.home-ach-text > span { font-size: 11.5px; color: var(--text-3); }
+.home-ach-bar { display: block; height: 5px; margin-top: 4px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.home-ach-fill { display: block; height: 100%; border-radius: 99px; background: var(--primary); }
+.home-empty { font-size: 12.5px; color: var(--text-3); }
+
+/* ───────── 4. お知らせ ───────── */
+.home-news { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.home-news-item { display: flex; gap: 14px; padding: 10px 0; }
+.home-news-item + .home-news-item { border-top: 1px solid var(--border); }
+.home-news-date {
+  flex: none; height: fit-content; padding: 2px 8px; border-radius: 6px;
+  background: var(--sky-soft); color: var(--primary); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.home-news-text strong { font-size: 13.5px; }
+.home-news-text p { margin-top: 2px; font-size: 12.5px; color: var(--text-2); }
+
+/* ───────── 5. 今日のヒント ───────── */
+.home-tip-text {
+  padding: 14px 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 13.5px; line-height: 1.7;
+}
+
+/* 画面がせまいときは 1 列にする */
+@media (max-width: 1000px) {
+  .home-grid { grid-template-columns: 1fr; }
+  .home-today-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .home-app-list { grid-template-columns: 1fr; }
+  .home-hero { flex-direction: column; align-items: stretch; }
+}

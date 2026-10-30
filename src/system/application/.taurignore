@@ -1,0 +1,5 @@
+# npm run tauri dev が見張るのは Rust（.rs）だけにする
+#   HTML・CSS・JS を書きかえたときは、Rust を作り直さない（画面だけ自動で更新される）
+*
+!*/
+!*.rs

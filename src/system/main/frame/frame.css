@@ -1,0 +1,37 @@
+/* ═══════════════════════════════════════════════════════════════
+   各アプリのページ（窓の中）に、自動で読み込まれる見た目
+   （各アプリの main.html に書かなくても効く。vite-apps.js が <head> のいちばん上に入れる）
+   ・色：var(--primary) var(--text) var(--surface) など（main/theme.css）。ダークモードにも自動で合う
+   ・部品：btn btn-primary btn-ghost（ボタン） panel（枠） input（入力欄）
+   自分の CSS はこのあとに読まれるので、ここに書いてあることは自分の CSS で上書きできます。
+   ═══════════════════════════════════════════════════════════════ */
+@import "../theme.css";
+@import "../components/form.css";
+
+* { box-sizing: border-box; }
+html { background: transparent; }
+body {
+  margin: 0;
+  padding: 4px 24px 28px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font); font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+
+/* 設定の「アニメーションを減らす」 */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after {
+  animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important;
+}
+
+/* hidden を付けたものは必ず隠す（display: flex などを書いても消えるように） */
+[hidden] { display: none !important; }
+
+/* 複数行の入力欄（<textarea class="input">） */
+textarea.input { height: auto; min-height: 84px; padding: 10px 12px; line-height: 1.6; resize: vertical; }

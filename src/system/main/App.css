@@ -1,49 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════
    卒業研究アプリ — 見た目
    左にアプリのアイコン、右にアプリの画面。影は使わず、細い枠線と色で区切る
-   色はここ（:root）でまとめて決めています（青・水色・白が基調）
+   色は theme.css でまとめて決めています（青・水色・白が基調）
      --primary  … 青（ボタン・選択中の色）
      --sky      … 水色（アイコンのグラデーション・アクセント）
      --sky-soft … うすい水色（選択中の背景など）
    ═══════════════════════════════════════════════════════════════ */
 
-/* ───────── 色・文字（ホワイト） ───────── */
-:root,
-:root[data-theme="light"] {
-  --bg: #f3f8fd;
-  --surface: #ffffff;
-  --surface-2: #f5f9fe;
-  --hover: #eaf3fd;
-  --border: #dce7f3;
-  --border-strong: #c6d6ea;
-  --text: #16233a;
-  --text-2: #475a75;
-  --text-3: #8496b0;
-  --primary: #2563eb;
-  --sky: #38bdf8;
-  --sky-soft: #e3f3fd;
-  --font: "Segoe UI", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP", system-ui, sans-serif;
-  --radius: 12px;
-  --ease: cubic-bezier(.2, .8, .2, 1);
-  --side-w: 100px;
-  color-scheme: light;
-}
-/* ───────── 色（ダーク） ───────── */
-:root[data-theme="dark"] {
-  --bg: #0b111b;
-  --surface: #121a27;
-  --surface-2: #162132;
-  --hover: #1b283c;
-  --border: #223047;
-  --border-strong: #2e4261;
-  --text: #e6edf7;
-  --text-2: #aebcd0;
-  --text-3: #7a8aa3;
-  --primary: #5b8cff;
-  --sky: #38bdf8;
-  --sky-soft: #10304a;
-  color-scheme: dark;
-}
+@import "./theme.css";   /* 色・文字（theme.css にまとめた） */
 
 /* ───────── ベース ───────── */
 * { box-sizing: border-box; }
@@ -198,6 +162,12 @@ h1, h2, p { margin: 0; }
   margin: 40px auto; max-width: 640px; padding: 14px 18px; border-radius: var(--radius);
   border: 1px solid #fca5a5; background: color-mix(in srgb, #ef4444 8%, var(--surface)); color: var(--text);
 }
+
+/* 各アプリのページ（HTML・CSS・JS で作るページ）は、右側いっぱいの窓（iframe）に出す
+   （main/components/HtmlFolder.jsx。窓の中の余白は main/frame/frame.css の body） */
+.stage:has(> .page > .html-frame) { display: flex; padding: 0; overflow: hidden; }
+.stage:has(> .page > .html-frame) > .page { flex: 1; display: flex; min-height: 0; }
+.html-frame { flex: 1; display: block; width: 100%; min-height: 0; border: 0; background: transparent; }
 
 /* ═════════ 設定で切り替えるもの（settings.js の applySettings で html に付く） ═════════ */
 /* アニメーションを減らす */

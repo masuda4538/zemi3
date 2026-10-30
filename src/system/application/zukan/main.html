@@ -1,24 +1,92 @@
+<!DOCTYPE html>
 <!--
-  デジタル図鑑：画面（普通の HTML） ★ このファイルを書きかえていきます
-  ・<html> <head> <body> <script> は書かない（アプリの画面の中に入れるため）
-  ・クラス名は zukan- から始める（ほかのアプリとぶつからないように）
-  ・main.js から使う要素には data-app="名前" を付ける → main.js で app.$("名前") で探せる
-  ・アプリ全体の部品の見た目も使える：btn btn-primary btn-ghost（ボタン）／ panel（枠）／ input（入力欄）
-  ・画像は public/images/zukan/ に置いて <img src="/images/zukan/ファイル名.png"> で出す
--->
-<div class="zukan">
-  <header class="zukan-head">
-    <h1 class="zukan-title">デジタル図鑑アプリ</h1>
-    <p class="zukan-sub">ここにデジタル図鑑を作ります（src/system/application/zukan/main.html）</p>
-  </header>
+  デジタル図鑑：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
+  ・このファイル（main.html）と rust/main.rs だけは、名前と場所を変えない（入口）
 
-  <!-- はじめの例：消して、自分の画面を作っていってください -->
-  <section class="panel zukan-card">
-    <h2 class="zukan-card-title">はじめの例</h2>
-    <p class="zukan-text">ボタンを押すと数が増えます。はじめて押したときは、右上にお知らせが出ます。</p>
-    <div class="zukan-row">
-      <button type="button" class="btn btn-primary" data-app="count-button">押してみる</button>
-      <span class="zukan-count"><b data-app="count">0</b> 回</span>
+  いまの見本アプリ（動きます。直しながら広げていってください）
+    上：ことばと分類で探す
+    中：図鑑のカード一覧 → 押すと右に「くわしく」（レア度は Rust が決める）
+    下：「図鑑にのせる」で新しいカードを追加
+
+  フォルダーの中
+    main.html                     画面（このファイル）
+    css/style.css                 見た目
+    js/main.js                    動きの中心（ボタンを押したら何をするか）
+    js/data.js                    データ（図鑑を読む・足す・探す）
+    js/view.js                    表示（データから HTML を作って画面に出す）
+    data/entries.json             はじめから入っている図鑑のデータ
+    images/                       画像（sample.svg：黒ねこ、noimage.svg：画像が無いとき）
+    rust/main.rs                  Rust の窓口（JS から呼べる関数を登録）
+    rust/logic.rs                 Rust の処理（名前からレア度を決める）
+    achievements/achievements.js  アチーブ
+
+  ・ファイルを増やしたら、<link> <script> <img> でつなぐ（パスはこのファイルから見た場所）
+  ・何も書かなくても使えるもの：共通の見た目（色・btn・panel・input）と app（お知らせ・アチーブ・Rust）
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>デジタル図鑑</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <main class="page">
+    <!-- 見出し -->
+    <header class="head">
+      <img class="head-img" src="./images/sample.svg" alt="">
+      <div class="head-text">
+        <h1 class="title">デジタル図鑑</h1>
+        <p class="sub">見つけたものを図鑑にのせて、集めていきましょう。</p>
+      </div>
+      <button type="button" class="btn btn-primary" id="open-form">＋ 図鑑にのせる</button>
+    </header>
+
+    <!-- 図鑑にのせる（はじめは隠しておく。「＋ 図鑑にのせる」で出す） -->
+    <form class="panel card add-form" id="add-form" hidden>
+      <h2 class="card-title">図鑑にのせる</h2>
+      <div class="form-grid">
+        <label class="field">
+          <span class="label">名前（必須）</span>
+          <input class="input" name="name" placeholder="例：カブトムシ" required>
+        </label>
+        <label class="field">
+          <span class="label">分類</span>
+          <select class="input" name="category" id="category-input"></select>
+        </label>
+        <label class="field span-2">
+          <span class="label">せつめい</span>
+          <textarea class="input" name="text" placeholder="見つけた場所・とくちょう など"></textarea>
+        </label>
+      </div>
+      <div class="row">
+        <button type="submit" class="btn btn-primary">のせる</button>
+        <button type="button" class="btn btn-ghost" id="close-form">やめる</button>
+      </div>
+    </form>
+
+    <!-- 探す -->
+    <div class="tools">
+      <input class="input search" id="search" type="search" placeholder="名前で探す">
+      <select class="input category" id="category-filter"></select>
+      <span class="count"><b id="entry-count">0</b> こ</span>
     </div>
-  </section>
-</div>
+
+    <div class="layout">
+      <!-- カードの一覧（js/view.js の drawCards が中身を作る） -->
+      <ul class="cards" id="cards"></ul>
+
+      <!-- くわしく（カードを押すと出る。js/view.js の drawDetail が中身を入れる） -->
+      <aside class="panel card detail" id="detail" hidden>
+        <img class="detail-img" id="detail-img" alt="">
+        <p class="detail-category" id="detail-category"></p>
+        <h2 class="detail-name" id="detail-name"></h2>
+        <p class="detail-rarity">レア度 <span id="detail-rarity">—</span></p>
+        <p class="detail-text" id="detail-text"></p>
+        <button type="button" class="btn btn-ghost" id="close-detail">とじる</button>
+      </aside>
+    </div>
+    <p class="empty" id="empty" hidden>見つかりませんでした。</p>
+  </main>
+</body>
+</html>

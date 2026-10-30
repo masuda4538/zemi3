@@ -1,24 +1,80 @@
+<!DOCTYPE html>
 <!--
-  情報収集：画面（普通の HTML） ★ このファイルを書きかえていきます
-  ・<html> <head> <body> <script> は書かない（アプリの画面の中に入れるため）
-  ・クラス名は research- から始める（ほかのアプリとぶつからないように）
-  ・main.js から使う要素には data-app="名前" を付ける → main.js で app.$("名前") で探せる
-  ・アプリ全体の部品の見た目も使える：btn btn-primary btn-ghost（ボタン）／ panel（枠）／ input（入力欄）
-  ・画像は public/images/research/ に置いて <img src="/images/research/ファイル名.png"> で出す
--->
-<div class="research">
-  <header class="research-head">
-    <h1 class="research-title">情報収集</h1>
-    <p class="research-sub">ここに情報収集を作ります（src/system/application/research/main.html）</p>
-  </header>
+  情報収集：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
+  ・このファイル（main.html）と rust/main.rs だけは、名前と場所を変えない（入口）
 
-  <!-- はじめの例：消して、自分の画面を作っていってください -->
-  <section class="panel research-card">
-    <h2 class="research-card-title">はじめの例</h2>
-    <p class="research-text">ボタンを押すと数が増えます。はじめて押したときは、右上にお知らせが出ます。</p>
-    <div class="research-row">
-      <button type="button" class="btn btn-primary" data-app="count-button">押してみる</button>
-      <span class="research-count"><b data-app="count">0</b> 回</span>
+  いまの見本アプリ（動きます。直しながら広げていってください）
+    左：調べたことを書いて「追加」（URL は Rust がチェックして、サイト名を取り出す）
+    右：メモの一覧。ことばやタグでしぼりこめる
+
+  フォルダーの中
+    main.html                     画面（このファイル）
+    css/style.css                 見た目
+    js/main.js                    動きの中心（ボタンを押したら何をするか）
+    js/data.js                    データ（メモを読む・足す・しぼりこむ）
+    js/view.js                    表示（データから HTML を作って画面に出す）
+    data/memos.json               はじめから入っているメモ
+    images/                       画像
+    rust/main.rs                  Rust の窓口（JS から呼べる関数を登録）
+    rust/logic.rs                 Rust の処理（URL からサイト名を取り出す）
+    achievements/achievements.js  アチーブ
+
+  ・ファイルを増やしたら、<link> <script> <img> でつなぐ（パスはこのファイルから見た場所）
+  ・何も書かなくても使えるもの：共通の見た目（色・btn・panel・input）と app（お知らせ・アチーブ・Rust）
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>情報収集</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <main class="page">
+    <!-- 見出し -->
+    <header class="head">
+      <img class="head-img" src="./images/sample.svg" alt="">
+      <div class="head-text">
+        <h1 class="title">情報収集</h1>
+        <p class="sub">調べたことをメモして、あとから探せるようにしましょう。</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- 左：メモを書く（js/main.js が「追加」を受け取る） -->
+      <form class="panel card" id="memo-form">
+        <h2 class="card-title">メモを追加</h2>
+        <label class="field">
+          <span class="label">テーマ（必須）</span>
+          <input class="input" name="topic" placeholder="例：黒ねこはなぜ黒い？" required>
+        </label>
+        <label class="field">
+          <span class="label">参考にした URL</span>
+          <input class="input" name="url" placeholder="https://…">
+        </label>
+        <label class="field">
+          <span class="label">分かったこと</span>
+          <textarea class="input" name="note" placeholder="短くまとめて書く"></textarea>
+        </label>
+        <label class="field">
+          <span class="label">タグ（カンマで区切る）</span>
+          <input class="input" name="tags" placeholder="例：どうぶつ, いろ">
+        </label>
+        <p class="error" id="form-error" hidden></p>
+        <button type="submit" class="btn btn-primary">追加</button>
+      </form>
+
+      <!-- 右：メモの一覧（js/view.js の drawMemos が中身を作る） -->
+      <section class="panel card">
+        <div class="list-head">
+          <h2 class="card-title">メモ <span class="count" id="memo-count">0</span></h2>
+          <input class="input search" id="search" type="search" placeholder="ことばで探す">
+        </div>
+        <div class="tags" id="tag-filter"></div>
+        <ul class="memos" id="memos"></ul>
+        <p class="empty" id="empty" hidden>見つかりませんでした。</p>
+      </section>
     </div>
-  </section>
-</div>
+  </main>
+</body>
+</html>
