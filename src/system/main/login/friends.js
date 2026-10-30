@@ -17,6 +17,9 @@
  *    猫をクリックすると、びっくりして目がまんまるになり、さっと引っこむ（まんなかの猫は跳ねるだけ）
  *  ダークモード（夜）
  *    猫はみんな寝ている（目を閉じて、ゆっくり息をする）。ときどき「Zz」。なでると寝言を言う
+ *  パスワードを「表示」にしたとき（setShy）
+ *    まんなかの猫が、パスワードを見ないようにする。「表示」にするたびに次のどれか
+ *      両手で目を隠す ／ そっぽを向く ／ 丸くなる（どれも、ときどき ちらっとのぞく）
  *  ログインできたとき
  *    みんな一斉にぴょこん（celebrate）
  *
@@ -26,12 +29,14 @@
  *  使い方（main.jsx）：
  *    const friends = createFriends(画面全体の要素);   // 猫を出して動かしはじめる
  *    friends.refresh();     // ログイン／新規登録を切りかえたとき（置き場所を選びなおす）
+ *    friends.setShy(true);  // パスワードを「表示」にしたとき（false で元にもどす）
  *    friends.celebrate();   // ログインできたとき
  *    friends.destroy();     // 画面を閉じるとき
  * ========================================================= */
 
 // ---------- 絵（SVG・viewBox 0 0 100 100。下側が端。体は端の外まで続く） ----------
 //  .f-pet（なでられたとき・前足をのばすとき傾く）> .f-head（体ごと動く）> しっぽ・のばす前足（.f-arm。体のうしろ）・耳・体・顔（目・^ ^ の目・口）・毛づくろいの前足
+//  .f-cover：目を隠す両手（パスワードを「表示」にしているあいだ。動きは friends.css の .is-shy-cover / .is-peek）
 //  目：.f-eyes（まばたき）> .f-gaze（マウスを追う）> .f-pupils（きょろきょろ）
 //  .f-room：見えない四角。前足をいっぱいにのばしたときに届く範囲まで広げてある
 //    アプリ（Tauri の WebKit）は、猫の絵の「最初の大きさ」の外を描かないことがあり、
@@ -53,6 +58,10 @@ const CAT =
   '<g class="f-sleep"><path class="happy" d="M37 55 Q43 61 49 55 M61 55 Q67 61 73 55"/></g>' +
   '<g class="f-mouth"><ellipse class="mouth" cx="55" cy="70" rx="5" ry="6.5"/></g>' +
   '<g class="f-gpaw"><path class="gpaw" d="M30 100 L30 80 Q30 70 38 70 Q46 70 46 80 L46 100 Z"/><path class="toes" d="M34 74.5 v3.5 M38 73.5 v3.5 M42 74.5 v3.5"/></g>' +
+  '<g class="f-cover">' +
+  '<g class="cover-paw cover-l"><ellipse class="gpaw" cx="43" cy="55" rx="11.5" ry="10.5"/><path class="cover-arm" d="M34.5 60 L51.5 60 L51.5 110 L34.5 110 Z"/><path class="toes" d="M37.5 48.5 v3.2 M43 47.2 v3.2 M48.5 48.5 v3.2"/></g>' +
+  '<g class="cover-paw cover-r"><ellipse class="gpaw" cx="67" cy="55" rx="11.5" ry="10.5"/><path class="cover-arm" d="M58.5 60 L75.5 60 L75.5 110 L58.5 110 Z"/><path class="toes" d="M61.5 48.5 v3.2 M67 47.2 v3.2 M72.5 48.5 v3.2"/></g>' +
+  '</g>' +
   '</g></g></svg>';
 
 // ---------- 動きの道具 ----------
@@ -351,7 +360,7 @@ const BASE = 'translateY(4%)';   // まんなかの猫の座り位置
 
 /**
  * root：起動画面の全体（.start）。猫はこの中に作られる
- * ログインの枠は .start-card、まんなかの猫が座る段は .brand-ledge
+ * ログインの枠は .start-card、まんなかの猫が座る場所は .brand-ledge の上のふち（今はシステム名の枠）
  */
 export function createFriends(root) {
   let stopped = false;
@@ -362,6 +371,8 @@ export function createFriends(root) {
   let mouseMoved = false;   // 前のフレームからマウスが動いたか
   let lastNow = 0;
   let celebrated = false;
+  let shy = false;          // パスワードを見せている（まんなかの猫が目を隠している）
+  let shyToken = 0;         // のぞく動きのタイマーを、隠すのをやめたら止めるための番号
   const timers = new Set();      // あとで止めるための setTimeout / setInterval
   const listeners = [];          // あとで外すためのイベント
 
@@ -691,7 +702,7 @@ export function createFriends(root) {
         const gk = Math.min(3.2, glen / 30);
         a.gaze.style.transform = `translate(${(gx / glen) * gk}px, ${(gy / glen) * gk}px)`;
       }
-      const near = out && !a.holds.has('pet') && !!tgt; // 前足をのばす（なでられている間はのばさない）
+      const near = out && !a.holds.has('pet') && !!tgt && !(a.fixed && shy); // 前足をのばす（なでられている・目を隠している間はのばさない）
       if (tgt) a.tgt = tgt;
       a.reach += ((near ? 1 : 0) - a.reach) * 0.16;
       if (a.reach < 0.01 || !a.tgt) {
@@ -750,7 +761,7 @@ export function createFriends(root) {
   function bossLoop(a) {
     const tick = () => {
       if (gone()) return;
-      if (!night && !a.holds.size && !busy(a) && a.el.style.visibility !== 'hidden') BOSS.idle[Math.floor(Math.random() * BOSS.idle.length)](a);
+      if (!night && !shy && !a.holds.size && !busy(a) && a.el.style.visibility !== 'hidden') BOSS.idle[Math.floor(Math.random() * BOSS.idle.length)](a);
       later(tick, 1800 + Math.random() * 2200);
     };
     later(tick, 900);
@@ -762,6 +773,48 @@ export function createFriends(root) {
     a.el.style.visibility = '';
     const rr = root.getBoundingClientRect();
     place(a, 'ledge', r.left + r.width / 2 - rr.left);
+  }
+
+  // ---------- パスワードを見ないようにする（パスワードを「表示」にしているあいだ） ----------
+  //  「表示」にするたびに、次の 3 つからどれか 1 つ（前と同じにはなりにくい）。見た目は friends.css の .is-shy-〇〇
+  //    cover … 両手で目をふさぐ。ときどき右手をずらして、指のすきまから片目でちらっ
+  //    away  … ぷいっと そっぽを向く。ときどき目だけこっちに戻して、ちらっ
+  //    curl  … 体を低くして丸くなり、目をぎゅっと閉じる。ときどき うす目でちらっ
+  //  のぞく動き（.is-peek）は、どれも 2〜4 秒おき
+  const SHY_MODES = ['cover', 'away', 'curl'];
+  const SHY_WORDS = { cover: ['みてないよ', 'みてないにゃ'], away: ['ぷいっ', 'ふんっ'], curl: ['まるっ', 'みないにゃ…'] };
+  let shyMode = '';
+  let lastShyMode = '';
+  function peekLater(token) {
+    later(() => {
+      if (token !== shyToken || !shy || gone()) return;
+      boss.el.classList.add('is-peek');
+      later(() => {
+        boss.el.classList.remove('is-peek');
+        if (token === shyToken && shy) peekLater(token);
+      }, 900 + Math.random() * 600);   // のぞいている時間
+    }, 1800 + Math.random() * 2400);   // 次にのぞくまで
+  }
+  function setShy(on) {
+    if (stopped || on === shy) return;
+    shy = on;
+    shyToken += 1;
+    boss.el.classList.remove('is-shy', 'is-peek', ...SHY_MODES.map((m) => `is-shy-${m}`));
+    if (!on) { shyMode = ''; return; }
+    // どれにするか選ぶ（前と同じものは、なるべく避ける）
+    do { shyMode = SHY_MODES[Math.floor(Math.random() * SHY_MODES.length)]; } while (shyMode === lastShyMode && Math.random() < 0.8);
+    lastShyMode = shyMode;
+    // のばしていた前足をしまって、ほかの動きを止める
+    boss.reach = 0;
+    boss.hand = null;
+    boss.arm.style.opacity = '0';
+    if (!boss.holds.has('pet')) boss.pet.style.transform = '';
+    if (boss.holds.has('reach')) release(boss, 'reach');
+    reset(boss);
+    boss.el.classList.add('is-shy', `is-shy-${shyMode}`);
+    if (reduce || night) return;
+    later(() => { if (shy && !night) purrText(boss, SHY_WORDS[shyMode]); }, 250);
+    peekLater(shyToken);
   }
 
   // ---------- びっくり（クリックしたとき） ----------
@@ -905,6 +958,7 @@ export function createFriends(root) {
   if (typeof ResizeObserver === 'function') {
     ro = new ResizeObserver(() => placeBoss(boss));
     ro.observe(root);
+    if (ledge()) ro.observe(ledge());   // 猫が座る枠の大きさが変わったときも座りなおす
   }
 
   reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)
@@ -946,8 +1000,11 @@ export function createFriends(root) {
         });
       });
     },
+    /** パスワードを「表示」にしたとき true、隠したとき false：まんなかの猫がパスワードを見ないようにする */
+    setShy(on) { setShy(!!on); },
     /** ログインできたとき：みんな一斉にぴょこん */
     celebrate() {
+      setShy(false);
       if (stopped || celebrated || reduce || night || gone()) return;
       celebrated = true;
       BOSS.cheer(boss);

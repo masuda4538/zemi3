@@ -11,6 +11,8 @@
 //      → ほかの画面へ移るときに、まとめて外してくれる
 // ═══════════════════════════════════════════════════════════════
 
+import { unlockAchievement } from "../../main/common/achievements.js";
+
 /** 問題の一覧（あとで DB から読むようにする）
  *  text：問題文　choices：選択肢　answer：正解の番号（0 から数える）　explain：解説 */
 const QUESTIONS = [
@@ -74,6 +76,7 @@ export function start(root) {
     const q = QUESTIONS[index];
     const ok = picked === q.answer;
     if (ok) score++;
+    if (ok) unlockAchievement("quiz", "first-correct");   // アチーブ「はじめての正解」（achievements.js）
 
     // ボタンに色を付けて、もう押せないようにする
     $("choices").querySelectorAll(".quiz-choice").forEach((btn, i) => {
@@ -95,6 +98,7 @@ export function start(root) {
 
   // ───────── 全部終わったとき ─────────
   function showFinish() {
+    if (score === QUESTIONS.length) unlockAchievement("quiz", "perfect");   // アチーブ「パーフェクト」
     $("play").hidden = true;
     $("finish").hidden = false;
     $("final").textContent = `${score} / ${QUESTIONS.length}`;

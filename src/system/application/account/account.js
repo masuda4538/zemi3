@@ -53,5 +53,31 @@ export const checkPasswordForm = (p) => ({
   confirm: checkConfirm(p.next, p.confirm),
 });
 
+/** アイコンに使える画像か（だめなら理由、よければ ""） */
+export function checkAvatarFile(file) {
+  if (!file) return "画像を選んでください。";
+  if (!file.type.startsWith("image/")) return "画像のファイル（PNG・JPEG など）を選んでください。";
+  if (file.size > 10 * 1024 * 1024) return "10 MB までの画像にしてください。";
+  return "";
+}
+
+/** 画像を、まん中を正方形に切り取って size × size に小さくする → data URL（PNG） */
+export function toAvatarDataUrl(file, size = 256) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(img.naturalWidth, img.naturalHeight);
+      const canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      canvas.getContext("2d").drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject("画像を読み込めませんでした。別の画像を選んでください。"); };
+    img.src = url;
+  });
+}
+
 /** 頭文字（アイコンに出す） */
 export const initial = (name) => [...(name ?? "").trim()][0] ?? "?";

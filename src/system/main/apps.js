@@ -18,10 +18,11 @@ export const PAGES = [
   { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "var(--primary)", load: () => import("../application/quiz/main.jsx") },
 ];
 
-/** 左の下に並ぶページ（上から 設定 → アカウント。その下にホワイト／ダークの切り替え） */
+/** 左の下に並ぶページ（上から アチーブ → 設定 → アカウント。その下にホワイト／ダークの切り替え） */
+export const ACHIEVE  = { id: "achieve",  name: "アチーブ",   icon: "trophy",   color: "var(--primary)", load: () => import("../application/achieve/main.jsx") };
 export const SETTINGS = { id: "settings", name: "設定",       icon: "settings", color: "var(--primary)", load: () => import("../application/settings/main.jsx") };
 export const ACCOUNT  = { id: "account",  name: "アカウント", icon: "account",  color: "var(--primary)", load: () => import("../application/account/main.jsx") };
-export const BOTTOM_PAGES = [SETTINGS, ACCOUNT];
+export const BOTTOM_PAGES = [ACHIEVE, SETTINGS, ACCOUNT];
 
 /** 起動したときに開くページ */
 export const START_PAGE = "home";

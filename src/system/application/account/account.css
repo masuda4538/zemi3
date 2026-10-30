@@ -1,40 +1,38 @@
-/* ═════════ アカウント画面（左右に別の枠を並べる・なるべく 1 画面に収める） ═════════ */
-.account {
-  max-width: 1320px; margin: 0 auto; padding-bottom: 8px;
-  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; align-items: stretch;
-}
-.acc-col-left, .acc-col-right { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.account .input:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
-.account .field { gap: 5px; }
-.account .field-help, .account .field-error { line-height: 1.35; }
+/* ═════════ アカウント画面（左に項目・右に中身。形は main/components/settings-layout.css） ═════════ */
+.acc-card .input:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
+.acc-card .field { gap: 5px; }
+.acc-card .field-help, .acc-card .field-error { line-height: 1.35; }
 
-/* 名前とログアウト */
-.acc-head { display: flex; align-items: center; gap: 14px; padding: 12px 18px; }
-.acc-avatar {
-  display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; flex: none;
-  background: linear-gradient(150deg, var(--sky), var(--accent) 70%);
-  color: #fff; font-size: 20px; font-weight: 800;
-}
-.acc-who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.acc-who h1 { font-size: 18px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.acc-who span { font-size: 12.5px; color: var(--text-2); }
-.acc-who small { font-size: 11.5px; color: var(--text-3); }
+/* 左上：名前・ログイン ID */
+.acc-who-box { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; }
+.acc-who { min-width: 0; display: flex; flex-direction: column; }
+.acc-who strong { font-size: 16px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-who span { font-size: 12.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-dates { grid-column: 1 / -1; margin-top: 8px; font-size: 11px; line-height: 1.6; color: var(--text-3); }
 
-/* 枠（見出し・中身・下のボタンの帯） */
+/* プロフィール：アイコンの画像 */
+.acc-avatar-card { display: flex; align-items: center; gap: 18px; padding: 16px 20px; }
+.acc-avatar-text { flex: 1; min-width: 0; }
+.acc-avatar-text strong { font-size: 14px; }
+.acc-avatar-text p { margin: 2px 0 4px; font-size: 12.5px; color: var(--text-2); }
+.acc-avatar-actions { display: flex; flex-direction: column; gap: 6px; }
+.acc-avatar-actions .btn { min-width: 112px; height: 36px; }
+
+/* 左下：ログアウト */
+.acc-logout { width: 100%; height: 38px; font-size: 13px; }
+.acc-logout .icon { width: 16px; height: 16px; }
+
+/* 右：中身の枠（中身・下のボタンの帯） */
 .acc-card { display: flex; flex-direction: column; }
-.acc-card-fill { flex: 1; }
-.acc-card-head { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; padding: 12px 18px 4px; }
-.acc-card-head h2 { font-size: 15px; font-weight: 800; }
-.acc-card-head p { flex-basis: 100%; font-size: 12px; color: var(--text-3); }
-.acc-card-body { padding: 8px 18px 4px; }
-.acc-card-body.form-grid { gap: 8px 16px; }
-.acc-lang-body { flex: 1; display: flex; padding-bottom: 14px; }
+.acc-card-body { padding: 18px 20px 8px; }
+.acc-card-body.form-grid { gap: 10px 18px; }
+.acc-lang-body { display: flex; padding-bottom: 18px; }
 .acc-lang-body .lang-picker { flex: 1; align-content: start; }
-.acc-pw-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.acc-pw-grid { display: grid; grid-template-columns: minmax(0, 420px); gap: 12px; }
 
 .acc-bar {
   display: flex; align-items: center; gap: 8px; margin-top: auto;
-  padding: 10px 18px; border-top: 1px solid var(--border); background: var(--surface-2);
+  padding: 10px 20px; border-top: 1px solid var(--border); background: var(--surface-2);
   border-radius: 0 0 var(--radius) var(--radius);
 }
 .acc-status { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 700; }
@@ -43,8 +41,6 @@
 :root[data-theme="dark"] .acc-status.is-error { color: #f87171; }
 :root[data-theme="dark"] .acc-status.is-ok { color: var(--sky); }
 
-/* 画面が狭いときは縦に並べる */
-@media (max-width: 1100px) {
-  .account { grid-template-columns: 1fr; }
-  .acc-pw-grid { grid-template-columns: 1fr; }
+@media (max-width: 720px) {
+  .acc-card-body.form-grid { grid-template-columns: 1fr; }
 }

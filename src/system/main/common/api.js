@@ -48,10 +48,11 @@ const wait = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms)); //
 const copy = (u) => JSON.parse(JSON.stringify(u));
 
 /** 入力から、画面に返す「ログインしている人」の形を作る */
-function makeUser({ userId, name, mail = "", genderId = 9, birthDate = "2000-01-01", languageIds = [] }) {
+function makeUser({ userId, name, mail = "", genderId = 9, birthDate = "2000-01-01", languageIds = [], avatar = "" }) {
   const now = nowText();
   return {
     userId,
+    avatar,   // アイコンの画像（data URL。"" なら名前の 1 文字を出す）
     name,
     mail,
     genderId,
@@ -98,6 +99,9 @@ export async function login(userId, _password) {
   return copy(me);
 }
 
+/** ログインしている人の ID（していなければ ""）。アチーブを人ごとに分けるのに使う */
+export const currentUserId = () => me?.userId ?? "";
+
 export async function logout() {
   me = null;
 }
@@ -112,7 +116,16 @@ export async function getMe() {
 export async function updateMe(input) {
   await wait();
   if (!me) throw "ログインしていません。もう一度ログインしてください。";
-  me = { ...makeUser({ ...input, userId: me.userId }), createdAt: me.createdAt, updatedAt: nowText() };
+  me = { ...makeUser({ ...input, userId: me.userId, avatar: me.avatar }), createdAt: me.createdAt, updatedAt: nowText() };
+  return copy(me);
+}
+
+/** アイコンの画像を変える（dataUrl は画像の data URL。"" で画像なし）。変更後の情報が返る。アプリを閉じると元に戻る
+ *  あとで保存するようにするときは、ここで画像をファイル（AppData の images）か DB に書く */
+export async function updateAvatar(dataUrl) {
+  await wait();
+  if (!me) throw "ログインしていません。もう一度ログインしてください。";
+  me = { ...me, avatar: dataUrl, updatedAt: nowText() };
   return copy(me);
 }
 

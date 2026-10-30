@@ -1,12 +1,32 @@
 // ═══════════════════════════════════════════════════════════════
 //  設定：処理（読み込み・保存・画面への反映）
-//  設定はデータベースではなく、その PC の中（localStorage）に保存します。
+//  設定は PC ごとのものなので、データベースではなく その PC の中のファイルに保存します。
+//    保存先（アプリのデータ用フォルダー。Tauri 公式の tauri-plugin-store を使っています）
+//      Windows のアプリ … C:\Users\<名前>\AppData\Roaming\com.nkc-user.tauri-app\settings.json
+//      WSL で開発中     … ~/.local/share/com.nkc-user.tauri-app/settings.json
+//      （設定画面の「情報」に、今使っている場所が出ます）
+//    ファイルの中身：{ "version": 1, "settings": { 設定 }, "lastUserId": "前回のログイン ID" }
+//  ブラウザで開いたとき（npm run dev）は、ファイルが使えないので localStorage に保存します。
+//
+//  使い方
+//    起動したとき（src/main.jsx）… await initSettings()  … ファイルを読んでおく
+//    あとは loadSettings() / saveSettings() でいつでも読み書きできる（読むのは一瞬・書くのは裏で）
 //  項目を増やすときは DEFAULTS に 1 行足して、main.jsx に画面を足します。
 // ═══════════════════════════════════════════════════════════════
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { appDataDir, join } from "@tauri-apps/api/path";
+import { load } from "@tauri-apps/plugin-store";
 import { inTauri } from "../../main/common/api.js";
+import { DEFAULT_SHORTCUTS } from "../../main/shortcuts.js";
+import { notify } from "../../main/common/notify.js";
 
+/** 設定ファイルの名前（AppData の中のアプリのフォルダーに作られる） */
+const FILE = "settings.json";
+/** ファイルの形のバージョン（形を大きく変えたら 2 にして、古い形を変換する処理を足す） */
+const FILE_VERSION = 1;
+
+// ブラウザで開いたとき・前のバージョン（localStorage に保存していたころ）のキー
 const KEY = "settings";
 const LAST_ID_KEY = "lastUserId";
 
@@ -19,10 +39,12 @@ export const DEFAULTS = {
   compactSidebar: false,   // サイドバーの文字を隠す（アイコンだけ）
   // 操作
   confirmLogout: true,     // ログアウトの前に確認する
-  confirmClose: false,     // アプリを閉じる前に確認する
+  confirmClose: true,      // アプリを閉じる前に確認する（猫が「もう帰るの…？」と聞く）
   // 起動・ログイン
   rememberId: true,        // ログイン ID を覚えておく
   startMaximized: true,    // 起動したときに最大化する
+  // キーボード
+  shortcuts: DEFAULT_SHORTCUTS,   // { 操作の id: "Ctrl+1" など }（一覧は main/shortcuts.js）
 };
 
 /** 文字の大きさ → 画面の拡大率 */
@@ -38,23 +60,112 @@ export const THEMES = [
   { id: "system", name: "PC に合わせる" },
 ];
 
-/** 保存してある設定を読む（ないものは最初の値） */
-export function loadSettings() {
-  let saved = {};
-  try {
-    saved = JSON.parse(localStorage.getItem(KEY) ?? "{}") ?? {};
-    // 前のバージョンで保存した表示モードを引き継ぐ
-    if (!saved.theme) saved.theme = localStorage.getItem("theme") ?? undefined;
-  } catch { /* 読めなければ最初の値 */ }
+// ───────── 読み込み・保存 ─────────
+let store = null;               // 設定ファイル（Tauri のときだけ）
+let cache = null;               // 読み込んだ設定（画面からはこれを使うので、読むのは一瞬）
+let lastId = "";                // 前回のログイン ID
+let writing = Promise.resolve(); // 書き込みを順番に行うための列
+
+/** 保存してある値と最初の値を合わせる（ないもの・型がちがうものは最初の値） */
+function merge(saved) {
   const merged = { ...DEFAULTS };
   for (const k of Object.keys(DEFAULTS)) {
-    if (saved[k] !== undefined && typeof saved[k] === typeof DEFAULTS[k]) merged[k] = saved[k];
+    if (saved && saved[k] !== undefined && typeof saved[k] === typeof DEFAULTS[k]) merged[k] = saved[k];
+  }
+  // ショートカットは 1 つずつ合わせる（あとで操作を増やしても、増えた操作は最初のキーになる）
+  merged.shortcuts = { ...DEFAULT_SHORTCUTS };
+  const sc = saved?.shortcuts;
+  if (sc && typeof sc === "object") {
+    for (const id of Object.keys(DEFAULT_SHORTCUTS)) {
+      if (typeof sc[id] === "string") merged.shortcuts[id] = sc[id];
+    }
   }
   return merged;
 }
 
+/** localStorage に入っている設定（ブラウザのとき・前のバージョンから引き継ぐとき） */
+function readLocal() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) ?? "null");
+    const theme = localStorage.getItem("theme");   // もっと前のバージョンの表示モード
+    return {
+      settings: saved || theme ? merge({ ...(saved ?? {}), theme: saved?.theme ?? theme ?? undefined }) : null,
+      lastUserId: localStorage.getItem(LAST_ID_KEY) ?? "",
+    };
+  } catch {
+    return { settings: null, lastUserId: "" };
+  }
+}
+
+/** 起動したときに 1 回だけ呼ぶ：設定ファイルを読んでおく（src/main.jsx） */
+export async function initSettings() {
+  if (!inTauri) {               // ブラウザ：localStorage から
+    const local = readLocal();
+    cache = local.settings ?? { ...DEFAULTS };
+    lastId = local.lastUserId;
+    return;
+  }
+  try {
+    store = await load(FILE, { autoSave: false, defaults: {} });
+    const saved = await store.get("settings");
+    if (saved) {
+      cache = merge(saved);
+      lastId = (await store.get("lastUserId")) ?? "";
+    } else {
+      // はじめて：前のバージョンで localStorage に保存していた設定があれば、ファイルへ引き継ぐ
+      const local = readLocal();
+      cache = local.settings ?? { ...DEFAULTS };
+      lastId = local.lastUserId;
+      await writeFile();
+      try { [KEY, "theme", LAST_ID_KEY].forEach((k) => localStorage.removeItem(k)); } catch { /* 消せなくてもよい */ }
+    }
+  } catch (err) {
+    console.warn("設定ファイルを読めませんでした。最初の値で起動します。", err);
+    store = null;
+    cache = { ...DEFAULTS };
+  }
+}
+
+/** ファイルへ書く（前の書き込みが終わってから、順番に） */
+function writeFile() {
+  if (!store) return Promise.resolve();
+  writing = writing
+    .then(async () => {
+      await store.set("version", FILE_VERSION);
+      await store.set("settings", cache);
+      await store.set("lastUserId", lastId);
+      await store.save();
+    })
+    .catch((err) => {
+      console.warn("設定ファイルに保存できませんでした。", err);
+      notify({ type: "error", title: "設定ファイルに保存できませんでした", message: String(err), key: "settings-file" });
+    });
+  return writing;
+}
+
+/** 保存先（ブラウザ・まだ読んでいないとき）のとき localStorage に書く */
+function writeLocal() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(cache));
+    if (lastId) localStorage.setItem(LAST_ID_KEY, lastId); else localStorage.removeItem(LAST_ID_KEY);
+  } catch { /* 保存できなくても動く */ }
+}
+
+/** 今の設定（initSettings で読んだもの。読む前なら最初の値） */
+export function loadSettings() {
+  return { ...(cache ?? DEFAULTS) };
+}
+
+/** 設定を保存する（画面にはすぐ反映。ファイルへは裏で書く） */
 export function saveSettings(settings) {
-  try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch { /* 保存できなくても動く */ }
+  cache = merge(settings);
+  if (store) writeFile(); else writeLocal();
+}
+
+/** 設定ファイルの場所（Tauri のときだけ。ブラウザなら ""） */
+export async function settingsFilePath() {
+  if (!inTauri) return "";
+  try { return await join(await appDataDir(), FILE); } catch { return ""; }
 }
 
 /** PC がダークモードか */
@@ -94,24 +205,15 @@ export function watchSystemTheme(fn) {
 }
 
 // ───────── ログイン ID を覚えておく ─────────
+//  設定ファイルの "lastUserId" に保存します
 export function loadLastUserId(settings) {
-  if (!settings.rememberId) return "";
-  try { return localStorage.getItem(LAST_ID_KEY) ?? ""; } catch { return ""; }
+  return settings.rememberId ? lastId : "";
 }
 export function saveLastUserId(settings, userId) {
-  try {
-    if (settings.rememberId) localStorage.setItem(LAST_ID_KEY, userId);
-    else localStorage.removeItem(LAST_ID_KEY);
-  } catch { /* 保存できなくても動く */ }
+  lastId = settings.rememberId ? userId : "";
+  if (store) writeFile(); else writeLocal();
 }
 export function forgetLastUserId() {
-  try { localStorage.removeItem(LAST_ID_KEY); } catch { /* 何もしない */ }
+  lastId = "";
+  if (store) writeFile(); else writeLocal();
 }
-
-/** キーボード操作の一覧（設定画面に出す） */
-export const SHORTCUTS = [
-  { keys: "Ctrl + 1", what: "ホーム" },
-  { keys: "Ctrl + 2〜5", what: "プログラム学習・情報収集・デジタル図鑑・問題作成" },
-  { keys: "Ctrl + ,", what: "設定" },
-  { keys: "Enter", what: "ログイン・保存などのボタンを押す（入力中）" },
-];

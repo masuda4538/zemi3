@@ -1,0 +1,70 @@
+/* ═════════ アチーブ（左に項目・右に一覧。形は main/components/settings-layout.css） ═════════ */
+
+/* 左上 */
+.ach-head { display: flex; align-items: center; gap: 12px; }
+.ach-head-icon {
+  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
+  background: linear-gradient(150deg, #fcd34d, #f59e0b 75%); color: #fff;
+}
+.ach-head-icon .icon { width: 24px; height: 24px; }
+.ach-head-text strong { display: block; font-size: 16px; font-weight: 800; }
+.ach-head-text span { font-size: 12px; color: var(--text-3); }
+
+/* 進み具合（円グラフ） */
+.ach-overview { display: flex; align-items: center; gap: 28px; padding: 20px 24px; flex-wrap: wrap; }
+.ach-main-ring { display: flex; align-items: center; gap: 20px; }
+.ach-main-text { display: flex; flex-direction: column; gap: 2px; }
+.ach-main-text strong { font-size: 16px; }
+.ach-main-text span { font-size: 13px; color: var(--text-2); }
+.ach-mini-rings {
+  flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px;   /* アプリの数だけ 1 列に並べる */
+  padding-left: 24px; border-left: 1px solid var(--border);
+}
+.ach-mini {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 0; padding: 8px 2px; border: 0; border-radius: 12px; cursor: pointer; background: transparent; color: var(--text); font: inherit;
+  transition: background .12s;
+}
+.ach-mini:hover, .ach-mini:focus-visible { background: var(--hover); }
+.ach-mini-name { max-width: 100%; font-size: 11.5px; font-weight: 800; line-height: 1.3; min-height: 2.6em; text-align: center; overflow-wrap: anywhere; }
+.ach-mini-count { font-size: 11px; color: var(--text-3); }
+
+/* 円グラフ（Ring.jsx）：1 つの色で、手に入れたぶんだけ太い線をのばす */
+.ring { position: relative; flex: none; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
+.ring-track { fill: none; stroke: var(--sky-soft); stroke-width: 9; }
+.ring-fill {
+  fill: none; stroke: var(--primary); stroke-width: 9; stroke-linecap: round;
+  animation: ring-grow .8s var(--ease) both;
+}
+@keyframes ring-grow { from { stroke-dasharray: 0 var(--len); } }
+.ring.is-done .ring-fill { stroke: #d97706; }               /* コンプリート（文字でも出している） */
+:root[data-theme="dark"] .ring.is-done .ring-fill { stroke: #fbbf24; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.ring-center strong { font-size: 17px; font-weight: 800; line-height: 1; }
+.ring-center strong small { font-size: .6em; margin-left: 1px; color: var(--text-2); }
+.ring.is-big .ring-center strong { font-size: 34px; }
+.ring-center span { margin-top: 6px; font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+.ring.is-done .ring-center span { color: #d97706; }
+:root[data-theme="dark"] .ring.is-done .ring-center span { color: #fbbf24; }
+
+/* 一覧 */
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.ach-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; }
+.ach-badge {
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; flex: none;
+  background: var(--surface-2); border: 1.5px dashed var(--border-strong); color: var(--text-3);
+}
+.ach-badge .icon { width: 24px; height: 24px; }
+.ach-card.is-got .ach-badge {
+  border: 0; color: #fff;
+  background: linear-gradient(150deg, #fcd34d, #f59e0b 75%);
+  box-shadow: 0 4px 12px rgb(245 158 11 / .35);
+}
+.ach-text { min-width: 0; }
+.ach-text strong { display: block; font-size: 14.5px; }
+.ach-text p { margin-top: 2px; font-size: 12.5px; color: var(--text-2); }
+.ach-text small { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; color: var(--text-3); }
+.ach-card:not(.is-got) .ach-text strong { color: var(--text-2); }
+.ach-app { padding: 1px 8px; border-radius: 99px; background: var(--sky-soft); color: var(--primary); font-weight: 800; }
+.ach-empty, .ach-note { font-size: 12.5px; color: var(--text-3); }
