@@ -1,0 +1,72 @@
+/* ═══════════════════════════════════════════════════════════════
+   プログラム学習：見た目 ★ 自由に書きかえてよい
+   ・main.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
+   ・このページの中だけに効きます（ほかの人の画面には効かないので、クラス名は自由）
+   ・CSS を分けたくなったら、css/ に lesson.css などを作って main.html に <link> を足す
+   ・色は var(--primary) などを使うと、ダークモードにも自動で合う
+       --text（文字） --text-2（うすい文字） --text-3（もっとうすい文字）
+       --surface（枠の中） --surface-2（少し色のついた面） --border（線）
+       --primary（青） --sky（水色） --sky-soft（うすい水色）
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────── ページ全体 ───────── */
+.page { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.card { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; }
+.card-title { font-size: 15px; font-weight: 800; }
+.muted { font-size: 13px; color: var(--text-2); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.error { font-size: 13px; font-weight: 700; color: #dc2626; }
+
+/* ───────── 見出し ───────── */
+.head { display: flex; align-items: center; gap: 14px; }
+.head-img { width: 52px; height: 52px; flex: none; }
+:root[data-theme="dark"] .head-img { filter: drop-shadow(0 0 1.5px #cbd5e1); }   /* ダークのときだけ */
+.head-text { flex: 1; min-width: 0; }
+.title { font-size: 22px; font-weight: 800; }
+.sub { margin-top: 2px; font-size: 13px; color: var(--text-2); }
+
+.progress { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.progress-text { font-size: 13px; color: var(--text-2); }
+.progress-text b { font-size: 20px; color: var(--primary); }
+.progress-bar { width: 180px; height: 8px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.progress-fill { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--primary); transition: width .3s; }
+
+/* ───────── 左：レッスンの一覧 ───────── */
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; align-items: start; }
+.lesson-list { padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; }
+.lesson-list .card-title { padding: 0 8px; }
+.lesson-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.lesson-item {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 10px;
+  border: 0; border-radius: 10px; background: transparent; cursor: pointer; text-align: left;
+}
+.lesson-item:hover { background: var(--hover); }
+.lesson-item.is-active { background: var(--sky-soft); color: var(--primary); font-weight: 800; }
+.lesson-mark {
+  display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%;
+  border: 2px solid var(--border-strong); font-size: 12px; color: transparent;
+}
+.lesson-item.is-done .lesson-mark { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+/* ───────── 右：レッスン ───────── */
+.lesson-level { font-size: 12px; font-weight: 800; color: var(--primary); }
+.lesson-title { font-size: 20px; font-weight: 800; }
+.lesson-text { font-size: 14px; line-height: 1.8; color: var(--text-2); white-space: pre-wrap; }
+.code {
+  margin: 0; padding: 14px 16px; border-radius: 10px; overflow-x: auto;
+  background: #0f172a; color: #e2e8f0; font-family: "Consolas", "Menlo", monospace; font-size: 13px; line-height: 1.7;
+}
+#done-button.is-done { background: var(--surface); color: var(--primary); border-color: var(--primary); }
+
+/* ───────── 下：FizzBuzz ───────── */
+.inline-label { font-size: 13px; font-weight: 700; color: var(--text-2); }
+.input.num { width: 90px; }
+.fizz { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.fizz li { padding: 4px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 700; }
+.fizz li.is-word { background: var(--sky-soft); color: var(--primary); border-color: transparent; }
+
+/* 画面がせまいときは 1 列にする */
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .head { flex-wrap: wrap; }
+}

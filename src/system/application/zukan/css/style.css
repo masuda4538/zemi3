@@ -1,0 +1,67 @@
+/* ═══════════════════════════════════════════════════════════════
+   デジタル図鑑：見た目 ★ 自由に書きかえてよい
+   ・main.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
+   ・このページの中だけに効きます（ほかの人の画面には効かないので、クラス名は自由）
+   ・CSS を分けたくなったら、css/ に card.css などを作って main.html に <link> を足す
+   ・色は var(--primary) などを使うと、ダークモードにも自動で合う
+       --text（文字） --text-2（うすい文字） --text-3（もっとうすい文字）
+       --surface（枠の中） --surface-2（少し色のついた面） --border（線）
+       --primary（青） --sky（水色） --sky-soft（うすい水色）
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────── ページ全体 ───────── */
+.page { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.card { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; }
+.card-title { font-size: 15px; font-weight: 800; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+/* ───────── 見出し ───────── */
+.head { display: flex; align-items: center; gap: 14px; }
+.head-img { width: 52px; height: 52px; flex: none; }
+:root[data-theme="dark"] .head-img { filter: drop-shadow(0 0 1.5px #cbd5e1); }
+.head-text { flex: 1; min-width: 0; }
+.title { font-size: 22px; font-weight: 800; }
+.sub { margin-top: 2px; font-size: 13px; color: var(--text-2); }
+
+/* ───────── 図鑑にのせる ───────── */
+.form-grid { display: grid; grid-template-columns: 1fr 220px; gap: 12px 16px; }
+.span-2 { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+
+/* ───────── 探す ───────── */
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.search { max-width: 260px; height: 38px; }
+.category { width: 160px; height: 38px; }
+.count { margin-left: auto; font-size: 13px; color: var(--text-2); }
+.count b { font-size: 18px; color: var(--primary); }
+
+/* ───────── カードの一覧 ───────── */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.layout:has(.detail:not([hidden])) { grid-template-columns: minmax(0, 1fr) 300px; }   /* くわしくを出しているときは 2 列 */
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.entry {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 10px 12px;
+  border: 1px solid var(--border); border-radius: 14px; background: var(--surface); cursor: pointer;
+  transition: border-color .15s, transform .1s;
+}
+.entry:hover { border-color: var(--primary); transform: translateY(-2px); }
+.entry.is-active { border-color: var(--primary); box-shadow: 0 0 0 2px var(--sky-soft); }
+.entry-img { width: 72px; height: 72px; object-fit: contain; }
+.entry-name { font-size: 14px; font-weight: 800; }
+.entry-category { padding: 1px 8px; border-radius: 99px; background: var(--sky-soft); color: var(--primary); font-size: 11px; font-weight: 800; }
+.empty { font-size: 13px; color: var(--text-3); }
+
+/* ───────── くわしく ───────── */
+.detail { position: sticky; top: 0; align-items: center; text-align: center; }
+.detail-img { width: 120px; height: 120px; object-fit: contain; }
+.detail-category { font-size: 12px; font-weight: 800; color: var(--primary); }
+.detail-name { font-size: 20px; font-weight: 800; }
+.detail-rarity { font-size: 13px; color: var(--text-2); }
+.detail-rarity span { color: #f59e0b; font-size: 16px; letter-spacing: .1em; }
+.detail-text { font-size: 13.5px; line-height: 1.8; color: var(--text-2); text-align: left; white-space: pre-wrap; }
+
+@media (max-width: 760px) {
+  .layout:has(.detail:not([hidden])) { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}

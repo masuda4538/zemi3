@@ -1,24 +1,105 @@
+<!DOCTYPE html>
 <!--
-  問題作成：画面（普通の HTML） ★ このファイルを書きかえていきます
-  ・<html> <head> <body> <script> は書かない（アプリの画面の中に入れるため）
-  ・クラス名は quiz- から始める（ほかのアプリとぶつからないように）
-  ・main.js から使う要素には data-app="名前" を付ける → main.js で app.$("名前") で探せる
-  ・アプリ全体の部品の見た目も使える：btn btn-primary btn-ghost（ボタン）／ panel（枠）／ input（入力欄）
-  ・画像は public/images/quiz/ に置いて <img src="/images/quiz/ファイル名.png"> で出す
--->
-<div class="quiz">
-  <header class="quiz-head">
-    <h1 class="quiz-title">問題作成</h1>
-    <p class="quiz-sub">ここに問題作成を作ります（src/system/application/quiz/main.html）</p>
-  </header>
+  問題作成：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
+  ・このファイル（main.html）と rust/main.rs だけは、名前と場所を変えない（入口）
 
-  <!-- はじめの例：消して、自分の画面を作っていってください -->
-  <section class="panel quiz-card">
-    <h2 class="quiz-card-title">はじめの例</h2>
-    <p class="quiz-text">ボタンを押すと数が増えます。はじめて押したときは、右上にお知らせが出ます。</p>
-    <div class="quiz-row">
-      <button type="button" class="btn btn-primary" data-app="count-button">押してみる</button>
-      <span class="quiz-count"><b data-app="count">0</b> 回</span>
+  いまの見本アプリ（動きます。直しながら広げていってください）
+    「解く」タブ：4 択の問題を順番に解く → 最後に点数（ひょうかは Rust が決める）
+    「作る」タブ：問題を作って足す・消す
+
+  フォルダーの中
+    main.html                     画面（このファイル）
+    css/style.css                 見た目
+    js/main.js                    動きの中心（ボタンを押したら何をするか）
+    js/data.js                    データ（問題を読む・足す・消す・答え合わせ）
+    js/view.js                    表示（データから HTML を作って画面に出す）
+    data/questions.json           はじめから入っている問題
+    images/                       画像
+    rust/main.rs                  Rust の窓口（JS から呼べる関数を登録）
+    rust/logic.rs                 Rust の処理（点数からひょうかを決める）
+    achievements/achievements.js  アチーブ
+
+  ・ファイルを増やしたら、<link> <script> <img> でつなぐ（パスはこのファイルから見た場所）
+  ・何も書かなくても使えるもの：共通の見た目（色・btn・panel・input）と app（お知らせ・アチーブ・Rust）
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>問題作成</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <main class="page">
+    <!-- 見出し -->
+    <header class="head">
+      <img class="head-img" src="./images/sample.svg" alt="">
+      <div class="head-text">
+        <h1 class="title">問題作成</h1>
+        <p class="sub">問題を作って、みんなで解いてみましょう。</p>
+      </div>
+    </header>
+
+    <!-- タブ（押すと下の画面が切りかわる。js/main.js の showTab） -->
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab is-on" data-tab="play">解く</button>
+      <button type="button" class="tab" data-tab="make">作る</button>
     </div>
-  </section>
-</div>
+
+    <!-- ───────── 解く ───────── -->
+    <section class="panel card" id="tab-play">
+      <!-- 問題（js/view.js の drawQuestion が中身を入れる） -->
+      <div id="play-question">
+        <p class="q-number" id="q-number">第 1 問</p>
+        <h2 class="q-text" id="q-text"></h2>
+        <div class="choices" id="choices"></div>
+        <div class="feedback" id="feedback" hidden>
+          <p class="feedback-title" id="feedback-title"></p>
+          <p class="feedback-text" id="feedback-text"></p>
+          <button type="button" class="btn btn-primary" id="next-button">次へ ›</button>
+        </div>
+      </div>
+
+      <!-- 結果（最後の問題のあとに出す。js/view.js の drawResult） -->
+      <div class="result" id="play-result" hidden>
+        <p class="result-score"><b id="result-score">0</b> / <span id="result-total">0</span> 問 正解</p>
+        <p class="result-rank" id="result-rank"></p>
+        <p class="result-message" id="result-message"></p>
+        <button type="button" class="btn btn-primary" id="retry-button">もう一度</button>
+      </div>
+      <p class="empty" id="play-empty" hidden>問題がありません。「作る」タブで問題を作りましょう。</p>
+    </section>
+
+    <!-- ───────── 作る ───────── -->
+    <section class="make" id="tab-make" hidden>
+      <form class="panel card" id="make-form">
+        <h2 class="card-title">問題を作る</h2>
+        <label class="field">
+          <span class="label">問題文（必須）</span>
+          <input class="input" name="text" placeholder="例：1 + 2 は？" required>
+        </label>
+        <div class="field">
+          <span class="label">選択肢（正解に ● を付ける）</span>
+          <div class="choice-inputs">
+            <label class="choice-input"><input type="radio" name="answer" value="0" checked><input class="input" name="choice0" placeholder="選択肢 1" required></label>
+            <label class="choice-input"><input type="radio" name="answer" value="1"><input class="input" name="choice1" placeholder="選択肢 2" required></label>
+            <label class="choice-input"><input type="radio" name="answer" value="2"><input class="input" name="choice2" placeholder="選択肢 3" required></label>
+            <label class="choice-input"><input type="radio" name="answer" value="3"><input class="input" name="choice3" placeholder="選択肢 4" required></label>
+          </div>
+        </div>
+        <label class="field">
+          <span class="label">かいせつ</span>
+          <input class="input" name="explain" placeholder="例：1 と 2 をたすと 3">
+        </label>
+        <button type="submit" class="btn btn-primary">問題を追加</button>
+      </form>
+
+      <!-- 作った問題の一覧（js/view.js の drawQuestionList） -->
+      <div class="panel card">
+        <h2 class="card-title">問題の一覧 <span class="count" id="q-count">0</span></h2>
+        <ol class="q-list" id="q-list"></ol>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

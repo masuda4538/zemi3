@@ -2,20 +2,30 @@
 //  左のアイコンに出すページの一覧
 //  名前・色・アイコンを変えるときは、ここを書きかえます。
 //  色は青で統一しています（var(--primary)）。項目ごとに変えたいときは "#0ea5e9" のように書きます。
-//  ページを増やすときは、src/system/application に項目のフォルダーを作って入口の main.jsx（画面）と処理（.js）を置き、ここに 1 行足します。
-//  （例：src/system/application/programming/main.jsx と programming.js）
 //
-//  load の行は「押されたときに、その画面のプログラム（application/<項目>/main.jsx）を読み込む」という意味です。
+//  load の行は「押されたときに、その画面を読み込む」という意味です。
+//    HTML_FOLDER … HTML・CSS・JS で作るページ。id と同じ名前のフォルダーの main.html を、
+//                  右側の窓の中に普通の Web ページとして開く（main/components/HtmlFolder.jsx）
+//    それ以外   … React で作るページ（アチーブ・設定・アカウント）。application/<id>/main.jsx を読む
+//
+//  ★ HTML・CSS・JS のページを増やすとき
+//    1. src/system/application に、英語の名前でフォルダーを作る（例：memo）
+//    2. その中に main.html を置く（CSS・JS は main.html から自分でつなぐ。achievements/achievements.js は必要になったら）
+//    3. 下の PAGES に 1 行足す（id をフォルダー名と同じにして、load: HTML_FOLDER）
+//    4. Rust を使うときは src-tauri/src/lib.rs にも足す（rust/main.rs を読み込む 2 か所）
 // ═══════════════════════════════════════════════════════════════
 export { APP_TITLE } from "./config";
 
+/** HTML・CSS・JS で作るページの読み込み（フォルダー名 ＝ id） */
+const HTML_FOLDER = () => import("./components/HtmlFolder.jsx");
+
 /** 左の上に並ぶページ（上から順に Ctrl + 1, 2, 3 … で開ける） */
 export const PAGES = [
-  { id: "home",        name: "ホーム",         icon: "home",        color: "var(--primary)", load: () => import("../application/home/main.jsx") },
-  { id: "programming", name: "プログラム学習", icon: "programming", color: "var(--primary)", load: () => import("../application/programming/main.jsx") },
-  { id: "research",    name: "情報収集",       icon: "research",    color: "var(--primary)", load: () => import("../application/research/main.jsx") },
-  { id: "zukan",       name: "デジタル図鑑",   icon: "zukan",       color: "var(--primary)", load: () => import("../application/zukan/main.jsx") },
-  { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "var(--primary)", load: () => import("../application/quiz/main.jsx") },
+  { id: "home",        name: "ホーム",         icon: "home",        color: "var(--primary)", load: HTML_FOLDER },
+  { id: "programming", name: "プログラム学習", icon: "programming", color: "var(--primary)", load: HTML_FOLDER },
+  { id: "research",    name: "情報収集",       icon: "research",    color: "var(--primary)", load: HTML_FOLDER },
+  { id: "zukan",       name: "デジタル図鑑",   icon: "zukan",       color: "var(--primary)", load: HTML_FOLDER },
+  { id: "quiz",        name: "問題作成",       icon: "quiz",        color: "var(--primary)", load: HTML_FOLDER },
 ];
 
 /** 左の下に並ぶページ（上から アチーブ → 設定 → アカウント。その下にホワイト／ダークの切り替え） */

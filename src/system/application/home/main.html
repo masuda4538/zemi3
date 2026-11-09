@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+  ホーム：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
+  ・このファイル（main.html）と rust/main.rs だけは、名前と場所を変えない（入口）
+  ・CSS・JS は下の <link> <script> でつないでいる（ファイルを増やしたら、ここに足す）
+  ・中身（アプリの一覧・アチーブ・お知らせ）は js/main.js が入れる。ここは「枠」だけ
+
+  フォルダーの中（いちばん外は main.html だけ。ほかは種類ごとのフォルダーに入れる）
+    main.html                     画面の入口（このファイル）
+    css/style.css                 見た目
+    js/main.js                    動き
+    images/                       画像
+    data/                         JSON などのデータ
+    rust/main.rs                  Rust の窓口：JS から呼べる関数を登録する
+    rust/logic.rs                 Rust の処理（rust/main.rs から呼ぶ）
+    achievements/achievements.js  アチーブ（無くてもよい）
+
+  ホームに出しているもの（上から）
+    1. 今日の情報 …… 左に時計（時:分:秒）と日付、右に「今日は何の日」（曜日・今年の何日目・今月の残り・次の祝日）
+    2. アプリ ……… 4 つのアプリへのボタン（押すと開く。そのアプリのアチーブの数も出す）
+    3. アチーブ ……… 全体の進み具合の円、最近手に入れたもの、もう少しで手に入るもの
+    4. お知らせ ……… アプリの更新などのお知らせ（js/main.js の NEWS に書く）
+    5. 今日のヒント … 使い方のヒント（js/main.js の TIPS から日替わり）
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ホーム</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <div class="home">
+
+    <!-- 1. 今日の情報 -->
+    <section class="home-hero">
+      <!-- 左：時計（時:分:秒 と 今日の日付） -->
+      <div class="home-clock" aria-label="今の時刻">
+        <span class="home-clock-time" id="clock">00:00:00</span>
+        <span class="home-clock-date" id="date">2026年1月1日（木）</span>
+      </div>
+
+      <!-- 右：今日は何の日（中身は js/main.js が入れる） -->
+      <div class="home-today">
+        <h1 class="home-today-title">今日は何の日</h1>
+        <div class="home-today-list">
+          <div class="home-today-item">
+            <span class="home-today-label">今日</span>
+            <strong id="today-week">木曜日</strong>
+            <span class="home-today-sub" id="today-kind">平日</span>
+          </div>
+          <div class="home-today-item">
+            <span class="home-today-label">今年</span>
+            <strong id="year-day">1 日目</strong>
+            <span class="home-today-bar"><span class="home-today-fill" id="year-bar"></span></span>
+            <span class="home-today-sub" id="year-left">あと 364 日</span>
+          </div>
+          <div class="home-today-item">
+            <span class="home-today-label">今月</span>
+            <strong id="month-left">あと 30 日</strong>
+            <span class="home-today-sub" id="month-end">1月は31日まで</span>
+          </div>
+          <div class="home-today-item">
+            <span class="home-today-label">次の祝日</span>
+            <strong id="holiday-name">元日</strong>
+            <span class="home-today-sub" id="holiday-when">1月1日・あと 0 日</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 左の列：アプリ・お知らせ　右の列：アチーブ・今日のヒント -->
+    <div class="home-grid">
+      <div class="home-col">
+        <!-- 2. アプリ -->
+        <section class="panel home-card home-apps">
+          <div class="home-card-head">
+            <h2>アプリ</h2>
+            <span class="home-card-note">押すと開きます（Ctrl + 2〜5 でも開けます）</span>
+          </div>
+          <div class="home-app-list" id="apps"></div>
+        </section>
+
+        <!-- 4. お知らせ -->
+        <section class="panel home-card">
+          <div class="home-card-head"><h2>お知らせ</h2></div>
+          <ul class="home-news" id="news"></ul>
+        </section>
+      </div>
+
+      <div class="home-col">
+        <!-- 3. アチーブ -->
+        <section class="panel home-card home-achieve">
+          <div class="home-card-head">
+            <h2>アチーブ</h2>
+            <button type="button" class="home-link" id="open-achieve">すべて見る ›</button>
+          </div>
+          <div class="home-achieve-top">
+            <div class="home-ring" id="ring" role="img" aria-label="アチーブの進み具合"></div>
+            <div class="home-achieve-count">
+              <strong id="achieve-count">0 / 0</strong>
+              <span>こ 手に入れた</span>
+            </div>
+          </div>
+          <h3 class="home-small-title">最近手に入れた</h3>
+          <ul class="home-list" id="recent"></ul>
+          <h3 class="home-small-title">もう少しで手に入る</h3>
+          <ul class="home-list" id="near"></ul>
+        </section>
+
+        <!-- 5. 今日のヒント -->
+        <section class="panel home-card home-tip">
+          <div class="home-card-head">
+            <h2>今日のヒント</h2>
+            <button type="button" class="home-link" id="next-tip">次のヒント ›</button>
+          </div>
+          <p class="home-tip-text" id="tip">ヒント</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

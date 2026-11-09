@@ -223,6 +223,7 @@ export default function App() {
                       onSettings={changeSettings}
                       onResetSettings={resetSettings}
                       confirm={confirm}
+                      onOpenPage={setCurrent}
                     />
                   )}
               </section>

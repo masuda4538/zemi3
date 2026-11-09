@@ -1,0 +1,30 @@
+[
+  {
+    "id": "variable",
+    "level": "レッスン 1",
+    "title": "変数",
+    "text": "変数は「名前の付いた箱」です。\n箱に値を入れておくと、あとから名前で取り出せます。",
+    "code": "let name = \"たろう\";\nlet age = 12;\nconsole.log(name + \" は \" + age + \" さい\");"
+  },
+  {
+    "id": "if",
+    "level": "レッスン 2",
+    "title": "if 文",
+    "text": "if 文は「もし〜なら」で、することを分けます。\n条件が合わないときは else のほうが動きます。",
+    "code": "let score = 80;\nif (score >= 60) {\n  console.log(\"合格！\");\n} else {\n  console.log(\"もう少し\");\n}"
+  },
+  {
+    "id": "for",
+    "level": "レッスン 3",
+    "title": "for 文",
+    "text": "for 文は、同じことを何回もくり返します。\n下の例は 1 から 5 までを順番に出します。",
+    "code": "for (let i = 1; i <= 5; i++) {\n  console.log(i);\n}"
+  },
+  {
+    "id": "function",
+    "level": "レッスン 4",
+    "title": "関数",
+    "text": "関数は「よく使う手順に名前を付けたもの」です。\n一度作れば、名前を呼ぶだけで何回でも使えます。",
+    "code": "function hello(name) {\n  return \"こんにちは、\" + name + \" さん\";\n}\nconsole.log(hello(\"はなこ\"));"
+  }
+]

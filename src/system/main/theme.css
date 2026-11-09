@@ -1,0 +1,45 @@
+/* ═══════════════════════════════════════════════════════════════
+   色・文字の決まり（アプリ全体と、各アプリのページ（窓の中）の両方で使う）
+     --primary  … 青（ボタン・選択中の色）
+     --sky      … 水色（アイコンのグラデーション・アクセント）
+     --sky-soft … うすい水色（選択中の背景など）
+   読んでいるところ：main/App.css と main/frame/frame.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────── 色・文字（ホワイト） ───────── */
+:root,
+:root[data-theme="light"] {
+  --bg: #f3f8fd;
+  --surface: #ffffff;
+  --surface-2: #f5f9fe;
+  --hover: #eaf3fd;
+  --border: #dce7f3;
+  --border-strong: #c6d6ea;
+  --text: #16233a;
+  --text-2: #475a75;
+  --text-3: #8496b0;
+  --primary: #2563eb;
+  --sky: #38bdf8;
+  --sky-soft: #e3f3fd;
+  --font: "Segoe UI", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP", system-ui, sans-serif;
+  --radius: 12px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --side-w: 100px;
+  color-scheme: light;
+}
+/* ───────── 色（ダーク） ───────── */
+:root[data-theme="dark"] {
+  --bg: #0b111b;
+  --surface: #121a27;
+  --surface-2: #162132;
+  --hover: #1b283c;
+  --border: #223047;
+  --border-strong: #2e4261;
+  --text: #e6edf7;
+  --text-2: #aebcd0;
+  --text-3: #7a8aa3;
+  --primary: #5b8cff;
+  --sky: #38bdf8;
+  --sky-soft: #10304a;
+  color-scheme: dark;
+}

@@ -1,24 +1,82 @@
+<!DOCTYPE html>
 <!--
-  プログラム学習：画面（普通の HTML） ★ このファイルを書きかえていきます
-  ・<html> <head> <body> <script> は書かない（アプリの画面の中に入れるため）
-  ・クラス名は programming- から始める（ほかのアプリとぶつからないように）
-  ・main.js から使う要素には data-app="名前" を付ける → main.js で app.$("名前") で探せる
-  ・アプリ全体の部品の見た目も使える：btn btn-primary btn-ghost（ボタン）／ panel（枠）／ input（入力欄）
-  ・画像は public/images/programming/ に置いて <img src="/images/programming/ファイル名.png"> で出す
--->
-<div class="programming">
-  <header class="programming-head">
-    <h1 class="programming-title">プログラム学習</h1>
-    <p class="programming-sub">ここにプログラム学習を作ります（src/system/application/programming/main.html）</p>
-  </header>
+  プログラム学習：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
+  ・このファイル（main.html）と rust/main.rs だけは、名前と場所を変えない（入口）
 
-  <!-- はじめの例：消して、自分の画面を作っていってください -->
-  <section class="panel programming-card">
-    <h2 class="programming-card-title">はじめの例</h2>
-    <p class="programming-text">ボタンを押すと数が増えます。はじめて押したときは、右上にお知らせが出ます。</p>
-    <div class="programming-row">
-      <button type="button" class="btn btn-primary" data-app="count-button">押してみる</button>
-      <span class="programming-count"><b data-app="count">0</b> 回</span>
+  いまの見本アプリ（動きます。直しながら広げていってください）
+    左：レッスンの一覧 → 押すと右に説明とコードの例 →「できた！」で印が付く
+    下：Rust でプログラムを動かす（FizzBuzz）
+
+  フォルダーの中
+    main.html                     画面（このファイル）
+    css/style.css                 見た目
+    js/main.js                    動きの中心（ボタンを押したら何をするか）
+    js/data.js                    データ（レッスンを読む・「できた」を覚える）
+    js/view.js                    表示（データから HTML を作って画面に出す）
+    data/lessons.json             レッスンの中身（ここを書きかえるとレッスンが変わる）
+    images/                       画像
+    rust/main.rs                  Rust の窓口（JS から呼べる関数を登録）
+    rust/logic.rs                 Rust の処理（FizzBuzz）
+    achievements/achievements.js  アチーブ
+
+  ・ファイルを増やしたら、<link> <script> <img> でつなぐ（パスはこのファイルから見た場所）
+  ・何も書かなくても使えるもの：共通の見た目（色・btn・panel・input）と app（お知らせ・アチーブ・Rust）
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>プログラム学習</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <main class="page">
+    <!-- 見出し -->
+    <header class="head">
+      <img class="head-img" src="./images/sample.svg" alt="">
+      <div class="head-text">
+        <h1 class="title">プログラム学習</h1>
+        <p class="sub">レッスンを選んで、読んだら「できた！」を押しましょう。</p>
+      </div>
+      <!-- 進み具合（js/view.js の drawProgress が書きかえる） -->
+      <div class="progress" aria-label="進み具合">
+        <span class="progress-text"><b id="done-count">0</b> / <span id="lesson-count">0</span> できた</span>
+        <span class="progress-bar"><span class="progress-fill" id="progress-fill"></span></span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- 左：レッスンの一覧（js/view.js の drawList が中身を作る） -->
+      <nav class="panel lesson-list" aria-label="レッスン">
+        <h2 class="card-title">レッスン</h2>
+        <ul id="lesson-list"></ul>
+      </nav>
+
+      <!-- 右：えらんだレッスン（js/view.js の drawLesson が中身を入れる） -->
+      <article class="panel card lesson" id="lesson">
+        <p class="lesson-level" id="lesson-level"></p>
+        <h2 class="lesson-title" id="lesson-title">レッスンを選んでください</h2>
+        <p class="lesson-text" id="lesson-text"></p>
+        <pre class="code"><code id="lesson-code"></code></pre>
+        <div class="row">
+          <button type="button" class="btn btn-primary" id="done-button">できた！</button>
+          <button type="button" class="btn btn-ghost" id="next-button">次のレッスン ›</button>
+        </div>
+      </article>
     </div>
-  </section>
-</div>
+
+    <!-- 下：Rust でプログラムを動かす（js/main.js → rust/main.rs の fizzbuzz → rust/logic.rs） -->
+    <section class="panel card">
+      <h2 class="card-title">Rust で動かしてみる：FizzBuzz</h2>
+      <p class="muted">1 から順に数えて、3 の倍数は Fizz、5 の倍数は Buzz、両方の倍数は FizzBuzz と言いかえます（if 文と for 文の練習）。</p>
+      <div class="row">
+        <label class="inline-label" for="fizz-n">いくつまで</label>
+        <input class="input num" id="fizz-n" type="number" min="1" max="100" value="15">
+        <button type="button" class="btn btn-ghost" id="fizz-button">Rust で動かす</button>
+      </div>
+      <ol class="fizz" id="fizz-result"></ol>
+      <p class="error" id="fizz-error" hidden></p>
+    </section>
+  </main>
+</body>
+</html>
