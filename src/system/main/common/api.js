@@ -1,12 +1,17 @@
 // ═══════════════════════════════════════════════════════════════
 //  アカウントのデータを扱う関数（今はデータベースなしの「仮」）
 //  画面からは、ここの関数を import して使います。
-//    例）import { login } from "../../main/common/api.js";   // application/<項目>/main.jsx から使うとき
+//    例）import { login } from "../../main/common/api.js";   // src/system/pages/<画面>/main.jsx から使うとき
 //        const user = await login("taro01", "password");
 //
 //  ★ 今はデータベースを使っていません。
-//    ・ログインは、何を入力しても（空でも）入れます
-//    ・新規登録・アカウントの変更・パスワードの変更は、アプリを閉じるまでのあいだだけ覚えています（保存しません）
+//    ・ログインは、ログイン ID を入れれば入れます（パスワードはまだ確かめていません）
+//    ・ログインしている人は PC の中のファイルに保存して、ログアウトするまで覚えています
+//        Windows のアプリ … C:\Users\<名前>\AppData\Roaming\com.nkc-user.tauri-app\session.json
+//        WSL で開発中     … ~/.local/share/com.nkc-user.tauri-app/session.json
+//        ブラウザで開いたとき（npm run dev）は localStorage
+//      起動したとき（src/main.jsx）に await initSession() で読んでおく
+//    ・新規登録・アカウントの変更は、ログインしている人として保存します（パスワードはまだ保存しません）
 //    ・性別・言語と試験の一覧は、下の GENDERS・LANGUAGES に書いてあります
 //    あとでデータベースをつなぐときは、この中身を Rust（invoke）を呼ぶ形に書きかえます。
 //    画面（main.jsx など）は書きかえなくて大丈夫なように、関数の名前と返す形はそのままにしています。
@@ -14,11 +19,14 @@
 //  失敗したときは、画面に出せる文（文字列）が throw されます。
 // ═══════════════════════════════════════════════════════════════
 
+import { load } from "@tauri-apps/plugin-store";
+
 /** Tauri のアプリとして動いているか（ブラウザで開いたときは false） */
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 /** 開発中（npm run tauri dev）か。exe にしたときは false */
 export const isDev = import.meta.env.DEV;
+
 
 // ───────── 仮のデータ（アプリを閉じると元に戻る） ─────────
 
@@ -38,6 +46,45 @@ const LANGUAGES = [
 ].map((name, i) => ({ languageId: `lang${i + 1}`, languageName: name }));
 
 let me = null;   // ログインしている人（ログアウト中は null）
+
+// ───────── ログインしている人を覚えておく（ログアウトするまで） ─────────
+const SESSION_FILE = "session.json";
+const SESSION_KEY = "session";       // ブラウザのとき（localStorage）
+let sessionStore = null;
+
+/** 起動したときに 1 回だけ呼ぶ：前にログインしていた人を読む（src/main.jsx） */
+export async function initSession() {
+  try {
+    if (inTauri) {
+      sessionStore = await load(SESSION_FILE, { autoSave: false, defaults: {} });
+      me = (await sessionStore.get("user")) ?? null;
+    } else {
+      me = JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null");
+    }
+  } catch (err) {
+    console.warn("ログインの記録を読めませんでした。", err);
+    me = null;
+  }
+}
+
+/** 今の me を保存する（null ならログアウト → 消す） */
+async function saveSession() {
+  try {
+    if (sessionStore) {
+      if (me) await sessionStore.set("user", me);
+      else await sessionStore.delete("user");
+      await sessionStore.save();
+    } else if (!inTauri) {
+      if (me) localStorage.setItem(SESSION_KEY, JSON.stringify(me));
+      else localStorage.removeItem(SESSION_KEY);
+    }
+  } catch (err) {
+    console.warn("ログインの記録を保存できませんでした。", err);
+  }
+}
+
+/** 起動したときにログインしている人（していなければ null）。App.jsx が最初に使う */
+export const savedUser = () => (me ? copy(me) : null);
 
 const pad = (n) => String(n).padStart(2, "0");
 const nowText = () => {
@@ -88,22 +135,27 @@ export async function addLanguage(name) {
 export async function register(input) {
   await wait();
   me = makeUser(input);
+  await saveSession();
   return copy(me);
 }
 
-/** ログイン：今は何を入力しても入れる（空のときは「ゲスト」） */
+/** ログイン：今はログイン ID を入れれば入れる（パスワードはまだ確かめない） */
 export async function login(userId, _password) {
   await wait();
-  const id = (userId ?? "").trim() || "guest";
-  me = makeUser({ userId: id, name: id === "guest" ? "ゲスト" : id, mail: `${id}@example.com` });
+  const id = (userId ?? "").trim();
+  if (!id) throw "ログイン ID を入力してください。";
+  me = makeUser({ userId: id, name: id, mail: `${id}@example.com` });
+  await saveSession();
   return copy(me);
 }
 
 /** ログインしている人の ID（していなければ ""）。アチーブを人ごとに分けるのに使う */
 export const currentUserId = () => me?.userId ?? "";
 
+/** ログアウト（覚えていたログインも消す） */
 export async function logout() {
   me = null;
+  await saveSession();
 }
 
 /** ログインしている人の最新の情報 */
@@ -112,20 +164,22 @@ export async function getMe() {
   return copy(me);
 }
 
-/** ログインしている人の情報を変更する（変更後の情報が返る）。アプリを閉じると元に戻る */
+/** ログインしている人の情報を変更する（変更後の情報が返る） */
 export async function updateMe(input) {
   await wait();
   if (!me) throw "ログインしていません。もう一度ログインしてください。";
   me = { ...makeUser({ ...input, userId: me.userId, avatar: me.avatar }), createdAt: me.createdAt, updatedAt: nowText() };
+  await saveSession();
   return copy(me);
 }
 
-/** アイコンの画像を変える（dataUrl は画像の data URL。"" で画像なし）。変更後の情報が返る。アプリを閉じると元に戻る
+/** アイコンの画像を変える（dataUrl は画像の data URL。"" で画像なし）。変更後の情報が返る
  *  あとで保存するようにするときは、ここで画像をファイル（AppData の images）か DB に書く */
 export async function updateAvatar(dataUrl) {
   await wait();
   if (!me) throw "ログインしていません。もう一度ログインしてください。";
   me = { ...me, avatar: dataUrl, updatedAt: nowText() };
+  await saveSession();
   return copy(me);
 }
 

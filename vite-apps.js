@@ -1,35 +1,48 @@
 // ═══════════════════════════════════════════════════════════════
-//  各アプリのページ（src/system/application/<id>/ の HTML）を、普通の Web ページとして動かすための設定
+//  窓（iframe）の中に出す HTML を、普通の Web ページとして動かすための設定
 //  （vite.config.js から読む。★ このファイルは触らなくて大丈夫です）
 //
-//  1. 各アプリの HTML の <head> のいちばん上に、自動で 2 つ入れる
+//  窓の中に出す HTML のフォルダー（どちらも「フォルダー/index.html」が入口）
+//    src/system/application/<id>/  … 各アプリ（右側の窓）
+//    src/system/sidebar/           … 左のサイドバー（左側の窓）
+//
+//  1. その HTML の <head> のいちばん上に、自動で 2 つ入れる
 //       ・共通の見た目（main/frame/frame.css）… 色・ダークモード・btn・panel・input
 //       ・window.app を用意する短いスクリプト（中身は main/frame/bridge.js）
 //  2. 保存したとき（npm run tauri dev の間）
 //       ・CSS … そのまま見た目だけ入れかわる
-//       ・HTML … そのページの窓だけ読み直す
-//       ・JS など … そのアプリの窓だけ読み直す（外の画面は読み直さない → ログインしたまま）
+//       ・HTML … その窓だけ読み直す
+//       ・JS など … その窓だけ読み直す（外の画面は読み直さない → ログインしたまま）
 //       ・Rust（.rs）… 何もしない（tauri dev が Rust を作り直す）
 //  3. アプリを作るとき（npm run tauri build）
-//       ・各アプリの HTML も、ページとして作る
-//       ・各アプリのフォルダーの画像などのファイルを、そのままの場所にコピーする
+//       ・窓の HTML も、ページとして作る
+//       ・フォルダーの画像などのファイルを、そのままの場所にコピーする
 //         （JS の中で "./images/cat.png" のように書いた画像も見つかるように）
 // ═══════════════════════════════════════════════════════════════
 import fs from "node:fs";
 import path from "node:path";
 
-const APP_DIR = path.resolve("src/system/application");
+/** 窓の HTML を置くフォルダー
+ *  root の中の、ids に書いたフォルダー（ids が無いときは、root の中のすべてのフォルダー）が 1 つの窓 */
+const WINDOWS = [
+  { root: path.resolve("src/system/application") },                 // 各アプリ
+  { root: path.resolve("src/system"), ids: ["sidebar"] },           // 左のサイドバー
+];
 const slash = (p) => p.replace(/\\/g, "/");
 
-/** そのファイルが「各アプリのフォルダーの中」なら { id, name }（name はフォルダーの中での場所） */
+/** そのファイルが窓のフォルダーの中なら { root, id, name }（name はフォルダーの中での場所） */
 function appFile(file) {
-  const rel = slash(path.relative(APP_DIR, file));
-  if (rel.startsWith("..") || path.isAbsolute(rel)) return null;
-  const [id, ...rest] = rel.split("/");
-  return rest.length ? { id, name: rest.join("/") } : null;
+  for (const { root, ids } of WINDOWS) {
+    const rel = slash(path.relative(root, file));
+    if (rel.startsWith("..") || path.isAbsolute(rel)) continue;
+    const [id, ...rest] = rel.split("/");
+    if (ids && !ids.includes(id)) continue;
+    if (rest.length) return { root, id, name: rest.join("/") };
+  }
+  return null;
 }
 
-/** 各アプリのフォルダーの中のファイルをすべて集める */
+/** フォルダーの中のファイルをすべて集める */
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -41,8 +54,8 @@ function walk(dir, out = []) {
   return out;
 }
 
-/** HTML・CSS・JS で作るページか（そのフォルダーに main.html がある） */
-const isHtmlApp = (id) => fs.existsSync(path.join(APP_DIR, id, "main.html"));
+/** HTML で作る窓か（そのフォルダーに index.html がある） */
+const isWindow = (f) => fs.existsSync(path.join(f.root, f.id, "index.html"));
 
 // 窓の中で window.app を用意する（外の画面の bridge.js から受け取る。単体で開いたときは、お試し用の app）
 const BOOT = `
@@ -68,27 +81,31 @@ const BOOT = `
 
 export default function appsPlugin() {
   let outDir = "dist";
+  let root = process.cwd();
   return {
     name: "zemi-apps",
 
-    // アプリを作るとき：各アプリの HTML もページとして作る
+    // アプリを作るとき：窓の HTML もページとして作る
     config(config, { command }) {
       if (command !== "build") return;
       const input = { main: path.resolve("index.html") };
-      for (const file of walk(APP_DIR)) {
+      for (const file of WINDOWS.flatMap((w) => (w.ids ?? [""]).flatMap((id) => walk(path.join(w.root, id))))) {
         const f = appFile(file);
-        if (f && f.name.endsWith(".html") && isHtmlApp(f.id)) input[`app/${f.id}/${f.name}`] = file;
+        if (f && f.name.endsWith(".html") && isWindow(f)) input[slash(path.relative(process.cwd(), file))] = file;
       }
       return { build: { rolldownOptions: { input } } };
     },
-    configResolved(c) { outDir = path.resolve(c.root, c.build.outDir); },
+    configResolved(c) {
+      root = c.root;
+      outDir = path.resolve(c.root, c.build.outDir);
+    },
 
-    // 各アプリの HTML に、共通の見た目と window.app を入れる
+    // 窓の HTML に、共通の見た目と window.app を入れる
     transformIndexHtml: {
       order: "pre",
       handler(html, ctx) {
         const f = appFile(ctx.filename ?? "");
-        if (!f || !isHtmlApp(f.id)) return;
+        if (!f || !isWindow(f)) return;
         return [
           { tag: "link", attrs: { rel: "stylesheet", href: "/src/system/main/frame/frame.css" }, injectTo: "head-prepend" },
           { tag: "script", children: BOOT, injectTo: "head-prepend" },
@@ -99,10 +116,10 @@ export default function appsPlugin() {
     // 保存したとき：外の画面（ログインしている画面）を読み直さないようにする
     handleHotUpdate({ file, server }) {
       const f = appFile(file);
-      if (!f || !isHtmlApp(f.id)) return;
+      if (!f || !isWindow(f)) return;
       if (f.name === "achievements/achievements.js") return;   // アチーブの一覧（外の画面で使う）→ ふつうどおり
       if (f.name.endsWith(".css")) return;                 // CSS は見た目だけ入れかえ（Vite がする）
-      if (f.name.endsWith(".html")) {                      // HTML はそのページ（窓）だけ読み直す
+      if (f.name.endsWith(".html")) {                      // HTML はその窓だけ読み直す
         server.ws.send({ type: "full-reload", path: "/" + slash(path.relative(server.config.root, file)) });
         return [];
       }
@@ -111,12 +128,12 @@ export default function appsPlugin() {
       return [];
     },
 
-    // アプリを作ったあと：各アプリのフォルダーのファイル（画像など）を、同じ場所にコピーする
+    // アプリを作ったあと：窓のフォルダーのファイル（画像など）を、同じ場所にコピーする
     writeBundle() {
-      for (const file of walk(APP_DIR)) {
+      for (const file of WINDOWS.flatMap((w) => (w.ids ?? [""]).flatMap((id) => walk(path.join(w.root, id))))) {
         const f = appFile(file);
-        if (!f || !isHtmlApp(f.id) || /\.(html|rs|md)$/.test(f.name)) continue;
-        const to = path.join(outDir, "src/system/application", f.id, f.name);
+        if (!f || !isWindow(f) || /\.(html|rs|md)$/.test(f.name)) continue;
+        const to = path.join(outDir, path.relative(root, file));
         if (fs.existsSync(to)) continue;
         fs.mkdirSync(path.dirname(to), { recursive: true });
         fs.copyFileSync(file, to);

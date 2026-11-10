@@ -1,16 +1,84 @@
 <!doctype html>
 <html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>学習支援アプリ</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>学習支援システム</title>
-</head>
+    <!-- ロード画面の色を、前回のホワイト／ダークに合わせる（settings.js の applySettings が覚えておく） -->
+    <script>
+      try { document.documentElement.dataset.theme = localStorage.getItem("boot-theme") || "light"; } catch (e) {}
+    </script>
 
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
+    <!-- ═════ ロード画面の見た目（アプリのプログラムより先に出したいので、ここに直接書く） ═════
+         水色〜青のグラデーション（ホームの帯と同じ色）の上で、ぼんやりした光がゆっくり動き、
+         白い文字のアプリ名がふわっと浮かび上がる。下でくるくる回る白い点 -->
+    <style>
+      .boot {
+        position: fixed; inset: 0; z-index: 100; overflow: hidden;
+        display: grid; place-content: center; justify-items: center;
+        background: linear-gradient(120deg, #38bdf8, #2563eb 70%);
+        color: #fff;
+        font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP", system-ui, sans-serif;
+        transition: opacity .5s ease, visibility 0s .5s;
+        user-select: none;
+      }
+      [data-theme="dark"] .boot { background: linear-gradient(120deg, #0c4a6e, #1e3a8a 70%); }
+      .boot.is-leaving { opacity: 0; visibility: hidden; }
 
+      /* うしろの光（ふちがぼんやりした丸が 3 つ、ゆっくり動く）
+         ぼかし（filter: blur）は重いので、まん中から外へうすくなる色（radial-gradient）で作る */
+      .boot-glow { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform; }
+      .boot-glow.g1 { width: 60vmax; height: 60vmax; left: -20vmax; top: -24vmax; background: radial-gradient(closest-side, rgb(165 243 252 / .75), transparent); animation: boot-drift 7s ease-in-out infinite alternate; }
+      .boot-glow.g2 { width: 56vmax; height: 56vmax; right: -22vmax; bottom: -26vmax; background: radial-gradient(closest-side, rgb(129 140 248 / .7), transparent); animation: boot-drift 8s ease-in-out -2s infinite alternate-reverse; }
+      .boot-glow.g3 { width: 32vmax; height: 32vmax; left: 50%; top: 12%; background: radial-gradient(closest-side, rgb(224 242 254 / .45), transparent); animation: boot-drift 6s ease-in-out -1s infinite alternate; }
+      [data-theme="dark"] .boot-glow { opacity: .55; }
+      @keyframes boot-drift { to { transform: translate(6vmax, 4vmax) scale(1.12); } }
+
+      /* アプリ名（ふわっと浮かび上がる）と英語の名前 */
+      .boot-title {
+        position: relative; margin: 0; font-size: 34px; font-weight: 800; letter-spacing: .14em;
+        text-shadow: 0 6px 24px rgb(15 40 110 / .35);
+        animation: boot-rise .9s cubic-bezier(.2, .8, .2, 1) both;
+      }
+      .boot-sub {
+        position: relative; margin: 10px 0 0; font-size: 12px; font-weight: 700; letter-spacing: .45em; text-indent: .45em;
+        text-transform: uppercase; opacity: .8;
+        animation: boot-rise .9s .15s cubic-bezier(.2, .8, .2, 1) both;
+      }
+      @keyframes boot-rise { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } }
+
+      /* くるくる回る点（8 つの白い点が順番に濃くなる） */
+      .boot-dots { position: relative; width: 44px; height: 44px; margin-top: 34px; animation: boot-rise .9s .3s cubic-bezier(.2, .8, .2, 1) both; }
+      .boot-dots i {
+        position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+        background: #fff; opacity: .2; box-shadow: 0 0 8px rgb(255 255 255 / .7);
+        transform: rotate(calc(var(--n) * 45deg)) translateY(-17px);
+        animation: boot-dot .8s linear infinite;
+        animation-delay: calc(var(--n) * .1s - .8s);
+      }
+      @keyframes boot-dot { 0% { opacity: 1; } 100% { opacity: .2; } }
+
+      /* PC の「アニメーションを減らす」がオンのとき */
+      @media (prefers-reduced-motion: reduce) {
+        .boot-glow, .boot-title, .boot-sub, .boot-dots { animation: none; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ロード画面（起動して 2 秒くらいたったら、src/main.jsx が消す） -->
+    <div id="boot" class="boot" role="status" aria-label="読み込んでいます">
+      <span class="boot-glow g1"></span><span class="boot-glow g2"></span><span class="boot-glow g3"></span>
+      <h1 class="boot-title">学習支援アプリ</h1>
+      <p class="boot-sub">Learning Support</p>
+      <div class="boot-dots" aria-hidden="true">
+        <i style="--n: 0"></i><i style="--n: 1"></i><i style="--n: 2"></i><i style="--n: 3"></i>
+        <i style="--n: 4"></i><i style="--n: 5"></i><i style="--n: 6"></i><i style="--n: 7"></i>
+      </div>
+    </div>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

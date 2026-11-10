@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  右上に出すお知らせ（トースト通知）。どの画面・どのファイルからでも使えます
-//    import { notify } from "../../main/common/notify.js";
+//    import { notify } from "../../main/common/notify.js";   // src/system/pages/<画面>/ から使うとき（HTML のアプリからは app.notify）
 //    notify({ type: "success", title: "保存しました", message: "プロフィールを更新しました。" });
 //
 //  type     … "success"（できた）/ "info"（お知らせ）/ "warning"（注意）/ "error"（失敗）/ "achieve"（アチーブ）

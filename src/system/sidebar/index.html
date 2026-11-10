@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+  左のサイドバー：画面の入口 ★ 書きかえてよい（このファイルの名前と場所だけは変えない）
+  ・アプリの左側の窓の中に開きます（main/components/HtmlSidebar.jsx が窓を作る）
+  ・右側のアプリと同じく、普通の HTML・CSS・JS で作れます
+
+  フォルダーの中
+    index.html      画面（このファイル）。ボタンの中身は js/main.js が作る
+    css/style.css  見た目
+    js/main.js     動き（ボタンを作る・押したらページを開く・隠す）
+    js/icons.js    アイコンの絵（SVG）
+
+  ・使えるもの（js/main.js から）
+      app.sidebar.state()          今の状態 { current（開いているページ）, theme, user, top（上のページ）, bottom（下のページ） }
+      app.sidebar.onChange(関数)   状態が変わったら呼ばれる
+      app.open("quiz")             そのページを開く
+      app.sidebar.setTheme("dark") ホワイト／ダークを切りかえる（今はサイドバーには出していない。設定の画面で切りかえる）
+      app.sidebar.hide()           サイドバーを隠す（出すボタンは外側にある）
+  ・ページの一覧（名前・アイコン・順番）は src/system/main/apps.js で決めています
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>サイドバー</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <nav class="sidebar" aria-label="アプリ">
+    <!-- 上：ホームと各アプリ（js/main.js が中身を作る） -->
+    <div class="side-group" id="top"></div>
+
+    <!-- 下：アチーブ・設定・アカウント、隠すボタン -->
+    <div class="side-group bottom">
+      <div id="bottom" class="side-group"></div>
+      <button type="button" class="side-hide" id="hide-button" title="サイドバーを隠す" aria-label="サイドバーを隠す"><span data-icon="sideClose"></span></button>
+    </div>
+  </nav>
+</body>
+</html>

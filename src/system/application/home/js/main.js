@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  ホーム：動き（普通の JavaScript） ★ 自由に書きかえてよい
-//  main.html の <script type="module" src="./js/main.js"> で読まれています。
+//  index.html の <script type="module" src="./js/main.js"> で読まれています。
 //    要素は $("id") で探す（document.getElementById の短い書き方。下で作っている）
 //    app.user                   ログインしている人（app.user.name で名前）
 //    app.pages                  左に並ぶページの一覧 / app.open("quiz") でそのページを開く

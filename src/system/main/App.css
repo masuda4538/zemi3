@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   卒業研究アプリ — 見た目
+   学習支援アプリ — 見た目
    左にアプリのアイコン、右にアプリの画面。影は使わず、細い枠線と色で区切る
    色は theme.css でまとめて決めています（青・水色・白が基調）
      --primary  … 青（ボタン・選択中の色）
@@ -33,100 +33,47 @@ h1, h2, p { margin: 0; }
   grid-template-columns: var(--side-w) minmax(0, 1fr);
 }
 
-/* ── 左のサイドバー ── */
-.sidebar {
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 12px 6px; min-height: 0; overflow-y: auto; overflow-x: hidden;
-  background: var(--surface); border-right: 1px solid var(--border);
+/* ── 左のサイドバー ──
+   中身は普通の HTML（src/system/sidebar/）。ここでは窓（iframe）の大きさと、隠すときの動きだけ */
+.sidebar-frame {
+  display: block; width: 100%; height: 100%; min-height: 0; border: 0;
+  border-right: 1px solid var(--border); background: var(--surface);
+  transition: transform .25s var(--ease), visibility 0s;
 }
-.side-group { display: flex; flex-direction: column; gap: 6px; }
-.side-group.bottom { padding-top: 10px; }
-.side-item {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  width: 100%; padding: 9px 2px 8px; border-radius: 12px; cursor: pointer;
-  border: 0; background: transparent; color: var(--text-2);
-  transition: background .15s, color .15s;
-}
-.side-item:hover { background: var(--hover); color: var(--text); }
-.side-ico { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; transition: background .15s, color .15s; }
-.side-ico .icon { width: 23px; height: 23px; stroke-width: 1.9; }
-.side-label {
-  max-width: 100%; padding: 0 2px;
-  font-size: 11px; font-weight: 700; line-height: 1.2;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-/* 選んでいるアプリは、そのアプリの色で塗る */
-.side-item.active { background: var(--sky-soft); color: var(--accent); }
-.side-item.active .side-ico { background: linear-gradient(150deg, var(--sky), var(--accent)); color: #fff; }
-.side-item.active::before {
-  content: ""; position: absolute; left: -6px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0;
-  background: var(--accent);
-}
-/* ホワイト／ダークの切り替え（縦に 2 つ） */
-.side-theme {
-  display: flex; flex-direction: column; gap: 2px;
-  margin: 2px 4px 0; padding: 3px; border-radius: 12px;
-  border: 1px solid var(--border-strong); background: var(--surface-2);
-}
-.side-theme button {
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  height: 28px; padding: 0 4px; border: 0; border-radius: 9px; cursor: pointer;
-  background: transparent; color: var(--text-2);
-  font-size: 11px; font-weight: 700; white-space: nowrap;
-}
-.side-theme .icon { width: 13px; height: 13px; stroke-width: 2.2; }
-.side-theme button:hover:not(.active) { background: var(--hover); color: var(--text); }
-.side-theme button.active { background: var(--text); color: var(--surface); }
-
-/* サイドバーを隠すボタン（いちばん下・正方形） */
-.side-hide {
-  display: grid; place-items: center; align-self: center;
-  width: 42px; height: 42px; margin-top: 6px; padding: 0; cursor: pointer;
-  border: 1px solid var(--border-strong); border-radius: 12px;
-  background: var(--surface-2); color: var(--text-2);
-  transition: background .15s, color .15s, border-color .15s;
-}
-.side-hide .icon { width: 22px; height: 22px; stroke-width: 1.9; }
-.side-hide:hover { background: var(--hover); color: var(--primary); border-color: var(--primary); }
 
 /* サイドバーを隠したとき：左へすべって消え、右の画面が広がる */
 .shell { transition: grid-template-columns .25s var(--ease); }
-.sidebar { transition: transform .25s var(--ease), visibility 0s; }
 .shell.is-side-hidden { grid-template-columns: 0 minmax(0, 1fr); }
-.shell.is-side-hidden .sidebar { transform: translateX(-100%); visibility: hidden; transition: transform .25s var(--ease), visibility 0s .25s; }
+.shell.is-side-hidden .sidebar-frame { transform: translateX(-100%); visibility: hidden; transition: transform .25s var(--ease), visibility 0s .25s; }
 
-/* 隠しているときに左下に出る「出す」ボタン（正方形で大きめ・見つけやすいように青） */
+/* 隠しているときに左下に出る「出す」ボタン（components/SideReveal.jsx）
+   隠すボタン（src/system/sidebar の .side-hide）と同じ場所・同じ大きさ・同じ見た目で出て、
+   サイドバーが消えていくあいだに青い「出す」ボタンに変わる（ボタンだけその場に残って見える） */
 .side-reveal {
-  position: fixed; left: 12px; bottom: 16px; z-index: 5;
-  display: grid; place-items: center; width: 52px; height: 52px; padding: 0; cursor: pointer;
-  border: 0; border-radius: 14px;
-  background: linear-gradient(150deg, var(--sky), var(--primary)); color: #fff;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 35%, transparent);
-  transition: transform .15s, box-shadow .15s;
-  animation: side-reveal-in .25s .15s var(--ease) both;
+  position: fixed; left: 10px; bottom: 12px; z-index: 5;
+  display: grid; place-items: center; width: calc(var(--side-w) - 21px); height: 42px; padding: 0; cursor: pointer;
+  border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; isolation: isolate;
+  background: var(--surface-2); color: var(--text-2);              /* はじめは隠すボタンと同じ見た目 */
+  transition: color .25s, border-color .25s, box-shadow .25s;
 }
-.side-reveal .icon { width: 26px; height: 26px; stroke-width: 2; }
-.side-reveal:hover { transform: translateY(-2px); box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 45%, transparent); }
-@keyframes side-reveal-in { from { opacity: 0; transform: translateX(-24px); } }
+.side-reveal::before {   /* 青いグラデーション（opacity で、ふわっと出し入れする） */
+  content: ""; position: absolute; inset: -1px; z-index: -1;
+  background: linear-gradient(150deg, var(--sky), var(--primary));
+  opacity: 0; transition: opacity .25s;
+}
+.side-reveal.is-on { color: #fff; border-color: transparent; box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 35%, transparent); }
+.side-reveal.is-on::before { opacity: 1; }
+.side-reveal.is-on:hover { box-shadow: 0 8px 22px color-mix(in srgb, var(--primary) 50%, transparent); }   /* 位置は動かさない（その場に残っているように見せるため） */
+.side-reveal:disabled { cursor: default; }
+/* 絵：隠す（sideClose）→ 出す（sideOpen）に入れかわる */
+.side-reveal .icon { grid-area: 1 / 1; width: 22px; height: 22px; stroke-width: 1.9; transition: opacity .2s; }
+.side-reveal .icon-open, .side-reveal.is-on .icon-close { opacity: 0; }
+.side-reveal.is-on .icon-open { opacity: 1; }
 
 /* ── 右：アプリの画面 ── */
 .stage { min-width: 0; min-height: 0; overflow-y: auto; padding: 20px 24px 28px; }
 .page { min-height: 100%; }
 
-/* ═════════ 仮の画面（中央にアイコンと名前） ═════════ */
-.page-center { min-height: calc(100vh - 48px); display: grid; place-items: center; }
-.app-title { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; margin-top: -4vh; }
-.app-title-icon {
-  display: grid; place-items: center; width: 132px; height: 132px; border-radius: 34px;
-  background:
-    radial-gradient(circle at 28% 18%, rgb(255 255 255 / .22), transparent 55%),
-    linear-gradient(150deg, var(--sky), var(--accent) 70%);
-  color: #fff;
-}
-.app-title-icon .icon { width: 66px; height: 66px; stroke-width: 1.6; }
-.app-title h1 { font-size: 30px; font-weight: 800; letter-spacing: .04em; }
-.app-title-note { color: var(--text-3); font-size: 13px; }
 
 /* ═════════ 設定 ═════════ */
 .page-narrow { max-width: 780px; display: flex; flex-direction: column; gap: 16px; }
@@ -155,7 +102,6 @@ h1, h2, p { margin: 0; }
 .win-btn:hover { background: var(--hover); color: var(--text); }
 .win-btn.close:hover { background: #e81123; color: #fff; }
 .stage { flex: 1; padding-top: 4px; }
-.page-center { min-height: calc(100vh - 68px); }
 
 /* 読み込めなかったときのメッセージ */
 .page-error {
@@ -176,11 +122,7 @@ h1, h2, p { margin: 0; }
 }
 .reduce-motion .spinner { animation-duration: .7s !important; }
 /* サイドバーの文字を隠す（アイコンだけ） */
-.compact-sidebar { --side-w: 68px; }
-.compact-sidebar .side-label { display: none; }
-.compact-sidebar .side-item { padding: 7px 2px; }
-.compact-sidebar .side-theme button { font-size: 0; gap: 0; }
-.compact-sidebar .side-theme .icon { width: 15px; height: 15px; }
+:root.compact-sidebar { --side-w: 68px; }   /* :root を付けて、theme.css の --side-w より強くする */
 
 /* ── アカウントのアイコン（components/Avatar.jsx） ── */
 .avatar {
@@ -190,9 +132,6 @@ h1, h2, p { margin: 0; }
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* サイドバーの「アカウント」は、アイコンの代わりに自分の画像を出す */
-.side-ico .avatar { box-shadow: 0 0 0 2px var(--surface); }
-.side-item.active .side-ico:has(.avatar) { background: none; }
-.side-item.active .side-ico .avatar { box-shadow: 0 0 0 2.5px var(--primary); }
 
 /* ── トースト通知：右上のお知らせ（components/Toaster.jsx・common/notify.js） ── */
 .toaster {

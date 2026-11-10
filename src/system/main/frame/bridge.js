@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  各アプリのページ（窓の中）で使える「app」を作る
-//  窓の中の main.html が開くと、いちばん最初に window.parent.__zemiApp(window) が呼ばれ（vite-apps.js が入れる）、
+//  窓の中の index.html が開くと、いちばん最初に window.parent.__zemiApp(window) が呼ばれ（vite-apps.js が入れる）、
 //  ここで作った app が、窓の中の window.app になります。
 //
 //  窓の中で使えるもの（各アプリの main.js から）
@@ -15,8 +15,14 @@
 //    app.achievements()              … すべてのアチーブと、手に入れたか・今の数
 //    app.onAchievementsChange(関数)  … アチーブが変わったら呼ぶ
 //
+//  左のサイドバー（src/system/sidebar/index.html）だけで使えるもの（main/components/HtmlSidebar.jsx が足す）
+//    app.sidebar.state()             … { current（開いているページの id）, theme, user, top: [ページ], bottom: [ページ] }
+//    app.sidebar.onChange(関数)      … 上の state が変わったら呼ぶ
+//    app.sidebar.setTheme("dark")    … ホワイト／ダークを切りかえる
+//    app.sidebar.hide()              … サイドバーを隠す
+//
 //  ほかに、ここでしていること
-//    ・ホワイト／ダークなどを、窓の中にも同じように付ける
+//    ・ホワイト／ダーク・アニメーションを減らす・サイドバーを小さく を、窓の中にも同じように付ける
 //    ・窓の中で押したショートカット（Ctrl + 1 など）を、外の画面に伝える
 // ═══════════════════════════════════════════════════════════════
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
@@ -27,12 +33,13 @@ import { inTauri } from "../common/api.js";
 import {
   unlockAchievement, addProgress, setProgress, getUnlocked, getProgress, onAchievementsChange,
 } from "../common/achievements.js";
-import { ALL } from "../../application/achieve/achieve.js";
+import { ALL } from "../../pages/achieve/achieve.js";
 
-/** 窓（iframe）→ { page, getUser, open, stop: 前の app の後片付け } */
+/** 窓（iframe）→ { page, getUser, open, extra, stop: 前の app の後片付け } */
 const frames = new Map();
 
-/** HtmlFolder.jsx から呼ぶ：窓を登録する。やめるときは返ってきた関数を呼ぶ */
+/** HtmlFolder.jsx・HtmlSidebar.jsx から呼ぶ：窓を登録する。やめるときは返ってきた関数を呼ぶ
+ *  info.extra({ watch }) を渡すと、その窓の app に機能を足せる（サイドバーの app.sidebar など） */
 export function registerFrame(iframe, info) {
   frames.set(iframe, { ...info, stop: null });
   return () => {
@@ -55,7 +62,7 @@ function invokeApp(appId, name, args = {}) {
   });
 }
 
-/** 窓の中の main.html が開いたときに呼ばれる（窓の中の window を受け取って、app を返す） */
+/** 窓の中の index.html が開いたときに呼ばれる（窓の中の window を受け取って、app を返す） */
 function createApp(win) {
   const frame = [...frames.entries()].find(([el]) => el.contentWindow === win);
   if (!frame) return null;
@@ -72,6 +79,7 @@ function createApp(win) {
     const from = document.documentElement;
     to.dataset.theme = from.dataset.theme ?? "light";
     to.classList.toggle("reduce-motion", from.classList.contains("reduce-motion"));
+    to.classList.toggle("compact-sidebar", from.classList.contains("compact-sidebar"));
   };
   copyLook();
   const look = new MutationObserver(copyLook);
@@ -90,6 +98,12 @@ function createApp(win) {
   };
   win.addEventListener("keydown", onKey);
   stops.push(() => { try { win.removeEventListener("keydown", onKey); } catch { /* 窓がもうない */ } });
+
+  // ───────── ファイルを窓に落としたときに、窓の中がそのファイルに切りかわらないようにする ─────────
+  //   （窓の中で受け取りたいときは、その要素で drop を受け取れば使える）
+  const stopFileDrop = (e) => e.preventDefault();
+  for (const type of ["dragover", "drop"]) win.addEventListener(type, stopFileDrop);
+  stops.push(() => { try { for (const type of ["dragover", "drop"]) win.removeEventListener(type, stopFileDrop); } catch { /* 窓がもうない */ } });
 
   // ───────── 窓の中の関数を、外から安全に呼ぶ（窓が閉じたあとは呼ばない） ─────────
   const watch = (subscribe, fn) => {
@@ -125,6 +139,7 @@ function createApp(win) {
       }));
     },
     onAchievementsChange: (fn) => watch(onAchievementsChange, fn),
+    ...(info.extra?.({ watch }) ?? {}),
   };
 }
 
