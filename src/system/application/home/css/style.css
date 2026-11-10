@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    ホーム：見た目（普通の CSS） ★ 自由に書きかえてよい
-   ・main.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
+   ・index.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
    ・このページの中だけに効きます（ほかの人の画面には効かないので、クラス名は自由）
    ・色は var(--primary) などを使うと、ダークモードにも自動で合う
        --text（文字） --text-2（うすい文字） --text-3（もっとうすい文字）

@@ -1,40 +1,35 @@
 // ═══════════════════════════════════════════════════════════════
-//  画面全体
-//    ログイン前 … 起動画面（main/login/main.jsx）
-//    ログイン後 … 左にアプリのアイコン、右に選んだアプリの画面
+//  画面全体：左にサイドバー（src/system/sidebar/index.html）、右に選んだアプリの画面
 //  右の一番上は、最小化・最大化・閉じるのボタンがある帯（WindowControls）です。
 //  ページの一覧は apps.js、それぞれの項目（画面と処理）は src/system/application/<項目>/ の中にあります。
 //
-//  ・起動したときは、必ず起動画面 → ログイン後はホームを開きます。
+//  ・起動したら、すぐにホームを開きます（ログインしていなくても、ゲストとして全部使える）。
+//  ・ログインは、左の「アカウント」を押して行います（src/system/pages/account/）。
+//    一度ログインしたら、ログアウトするまで覚えています（main/common/api.js の session.json）。
+//    アチーブは、ログインしているときだけ記録します。
 //  ・アプリを押したときに、その画面のプログラムを読み込んで表示します（アニメーションなし）。
 //  ・左のサイドバーは、いちばん下のボタンで隠せます（左下の「»」で出す。保存はしない）。
-//  ・設定（application/settings/settings.js）はここで持ち、画面全体に反映します。
+//  ・設定（src/system/pages/settings/settings.js）はここで持ち、画面全体に反映します。
 //  ・各画面には次のものを渡します：
-//      page / user / onUserChange / onLogout / settings / onSettings / onResetSettings / confirm
+//      page / user / onUserChange / onLogin / onLogout / settings / onSettings / onResetSettings / confirm / onOpenPage
 // ═══════════════════════════════════════════════════════════════
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import Sidebar from "./components/Sidebar";
-import Icon from "./components/Icon";
+import HtmlSidebar from "./components/HtmlSidebar";   // 左のサイドバー（中身は src/system/sidebar/index.html）
+import SideReveal from "./components/SideReveal";
 import WindowControls from "./components/WindowControls";
 import ConfirmDialog from "./components/ConfirmDialog";
 import Toaster from "./components/Toaster";
 import { notify } from "./common/notify.js";
 import { unlockAchievement, onAchievementUnlocked } from "./common/achievements.js";
-import { findAchievement } from "../application/achieve/achieve.js";
-import Start from "./login/main.jsx";
-import { logout, inTauri } from "./common/api.js";
+import { findAchievement } from "../pages/achieve/achieve.js";
+import { logout, inTauri, savedUser } from "./common/api.js";
 import {
   DEFAULTS, loadSettings, saveSettings, applySettings, applyStartup, effectiveTheme, watchSystemTheme,
-} from "../application/settings/settings.js";
+} from "../pages/settings/settings.js";
 import { APP_TITLE, START_PAGE, findPage } from "./apps";
 import { comboFromEvent, actionOfCombo } from "./shortcuts.js";
 import "./App.css";
-
-/** 起動画面からアプリの画面へ切り替わる時間（ミリ秒）。login/login.css のアニメーションと合わせる */
-const LEAVE_MS = 750;
-/** アプリの画面が組み上がるアニメーションの時間（ミリ秒） */
-const ENTER_MS = 1300;
 
 // 一度読み込んだ画面は覚えておく（2 回目からはすぐ出る）
 const loaded = new Map();
@@ -49,10 +44,8 @@ const loadPage = (page) => {
 };
 
 export default function App() {
-  const [user, setUser] = useState(null);               // ログインしている人（ログイン前は null）
-  const [phase, setPhase] = useState("start");          // "start"：起動画面 / "leaving"：切り替え中 / "app"：アプリの画面
-  const [entering, setEntering] = useState(false);      // アプリの画面が組み上がるアニメーション中
-  const [current, setCurrent] = useState(START_PAGE);   // 左で選んでいるページ（ログイン後は必ずホーム）
+  const [user, setUser] = useState(savedUser);          // ログインしている人（ゲストのときは null）。前回のログインを覚えている
+  const [current, setCurrent] = useState(START_PAGE);   // 左で選んでいるページ（起動したときはホーム）
   const [sideHidden, setSideHidden] = useState(false);   // 左のサイドバーを隠しているか（アプリを閉じると元にもどる）
   const [shown, setShown] = useState(null);             // 右に出しているページ { page, Component }
   const [error, setError] = useState("");
@@ -101,11 +94,11 @@ export default function App() {
     return () => { unlisten.then((off) => off()); };
   }, [confirm]);
 
-  // ───── ページが選ばれたら：読み込んで入れ替える（起動画面の間にホームを先に読み込んでおく） ─────
+  // ───── ページが選ばれたら：読み込んで入れ替える ─────
   useEffect(() => {
     const page = findPage(current);
     const my = ++ticket.current;
-    if (phase !== "start") document.title = `${page.name} - ${APP_TITLE}`;
+    document.title = `${page.name} - ${APP_TITLE}`;
     loadPage(page)
       .then((Component) => {
         if (my !== ticket.current) return;
@@ -120,20 +113,19 @@ export default function App() {
       });
   }, [current]);
 
-  // ───── キーボードのショートカット（ログイン後だけ） ─────
+  // ───── キーボードのショートカット ─────
   //  どのキーで何をするかは、設定の settings.shortcuts（設定 → キーボード で登録できる）
   //  操作の一覧は shortcuts.js。操作を増やしたら、ここに動きを足す
   const runShortcut = (id) => {
     if (id.startsWith("page:")) { setCurrent(id.slice(5)); return; }
     if (id === "sidebar") { setSideHidden((v) => !v); return; }
     if (id === "theme") { changeSettings({ theme: effectiveTheme(settingsRef.current) === "dark" ? "light" : "dark" }); return; }
-    if (id === "logout") { handleLogout(); }
+    if (id === "logout" && user) { handleLogout(); }
   };
   const runShortcutRef = useRef(runShortcut);
   runShortcutRef.current = runShortcut;
 
   useEffect(() => {
-    if (phase !== "app") return;
     const onKey = (e) => {
       if (dialog || e.repeat) return;
       const combo = comboFromEvent(e);
@@ -144,7 +136,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, dialog]);
+  }, [dialog]);
 
   // アチーブを手に入れたら、右上にお知らせ（押すとアチーブのページを開く）
   useEffect(() => onAchievementUnlocked(({ appId, achId }) => {
@@ -158,26 +150,20 @@ export default function App() {
 
   // ホームのアチーブ「夜ふかし」：ログイン中にダークモードになったら
   const theme0 = effectiveTheme(settings);
-  useEffect(() => { if (phase === "app" && theme0 === "dark") unlockAchievement("home", "night-mode"); }, [phase, theme0]);
+  useEffect(() => { if (user && theme0 === "dark") unlockAchievement("home", "night-mode"); }, [user, theme0]);
 
-  // ログインできたとき：ホームを開いて、起動画面からアプリの画面へ切り替える
-  const handleLoggedIn = (u) => {
+  // ログインできたとき（アカウントのページから呼ばれる）：アカウントのページのまま、プロフィールが出る
+  const handleLogin = (u) => {
     setUser(u);
-    // ホームのアチーブ「はじめまして」（アプリの画面が出てから、お知らせを出す）
-    setTimeout(() => unlockAchievement("home", "first-login"), LEAVE_MS + 900);
-    setCurrent(START_PAGE);
-    setPhase("leaving");
-    setEntering(true);
-    document.title = `${findPage(START_PAGE).name} - ${APP_TITLE}`;
-    setTimeout(() => setPhase("app"), LEAVE_MS);
-    setTimeout(() => setEntering(false), ENTER_MS);
+    notify({ type: "success", title: "ログインしました", message: `ようこそ、${u.name} さん` });
+    setTimeout(() => unlockAchievement("home", "first-login"), 600);   // ホームのアチーブ「はじめまして」
   };
 
-  // ログアウト：（設定によっては確認してから）起動画面に戻る。戻ったら true
+  // ログアウト：（設定によっては確認してから）ゲストに戻る。戻ったら true
   const handleLogout = async () => {
     if (settings.confirmLogout) {
       const ok = await confirm({
-        title: "ログアウトしますか？", message: "起動画面に戻ります。",
+        title: "ログアウトしますか？", message: "ゲストに戻ります。もう一度ログインするまで、アチーブは記録されません。",
         okLabel: "ログアウト", cancelLabel: "まだいる", danger: true,
         cat: { says: "ログアウトするの…？", bye: "またね！" },
       });
@@ -185,10 +171,8 @@ export default function App() {
     }
     try { await logout(); } catch { /* つながらなくても画面は戻す */ }
     setUser(null);
-    setCurrent(START_PAGE);
-    setSideHidden(false);
-    setPhase("start");
-    document.title = APP_TITLE;
+    setCurrent("account");   // ログインのフォームを出す
+    notify({ type: "info", title: "ログアウトしました" });
     return true;
   };
 
@@ -198,40 +182,34 @@ export default function App() {
 
   return (
     <>
-      {phase !== "start" && user && (
-        <div className={`shell${entering ? " is-entering" : ""}${sideHidden ? " is-side-hidden" : ""}`}>
-          <Sidebar current={current} onSelect={setCurrent} theme={theme} onTheme={(t) => changeSettings({ theme: t })} onHide={() => setSideHidden(true)} user={user} />
-          {/* サイドバーを隠しているときだけ、左下に「出す」ボタン */}
-          {sideHidden && (
-            <button type="button" className="side-reveal" onClick={() => setSideHidden(false)} title="サイドバーを出す" aria-label="サイドバーを出す">
-              <Icon name="sideOpen" />
-            </button>
-          )}
-          <div className="main-col">
-            <WindowControls />
-            <main className="stage" ref={stageRef} style={{ "--accent": accent }}>
-              <section className="page">
-                {error
-                  ? <p className="page-error">{error}</p>
-                  : Page && (
-                    <Page
-                      page={shown.page}
-                      user={user}
-                      onUserChange={setUser}
-                      onLogout={handleLogout}
-                      settings={settings}
-                      onSettings={changeSettings}
-                      onResetSettings={resetSettings}
-                      confirm={confirm}
-                      onOpenPage={setCurrent}
-                    />
-                  )}
-              </section>
-            </main>
-          </div>
+      <div className={`shell${sideHidden ? " is-side-hidden" : ""}`}>
+        <HtmlSidebar current={current} onSelect={setCurrent} theme={theme} onTheme={(t) => changeSettings({ theme: t })} onHide={() => setSideHidden(true)} user={user} />
+        {/* サイドバーを隠しているときは、左下に「出す」ボタン（隠すボタンと同じ場所に残る） */}
+        <SideReveal hidden={sideHidden} onShow={() => setSideHidden(false)} />
+        <div className="main-col">
+          <WindowControls />
+          <main className="stage" ref={stageRef} style={{ "--accent": accent }}>
+            <section className="page">
+              {error
+                ? <p className="page-error">{error}</p>
+                : Page && (
+                  <Page
+                    page={shown.page}
+                    user={user}
+                    onUserChange={setUser}
+                    onLogin={handleLogin}
+                    onLogout={handleLogout}
+                    settings={settings}
+                    onSettings={changeSettings}
+                    onResetSettings={resetSettings}
+                    confirm={confirm}
+                    onOpenPage={setCurrent}
+                  />
+                )}
+            </section>
+          </main>
         </div>
-      )}
-      {phase !== "app" && <Start leaving={phase === "leaving"} settings={settings} onLoggedIn={handleLoggedIn} />}
+      </div>
       <ConfirmDialog dialog={dialog} onAnswer={answer} />
       <Toaster />
     </>

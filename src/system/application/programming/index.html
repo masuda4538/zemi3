@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!--
+  プログラム学習：画面の入口 ★ このフォルダーの中は、全部自由に作ってよい
+  ・左のアイコン「プログラム学習」を押すと、このファイルが右側の窓の中に開きます
+  ・このファイル（index.html）の名前と場所だけは変えない（入口）
+  ・普通の Web ページと同じように作れます。ファイルを増やしたら、パスを書いてつなぐ（パスはこのファイルから見た場所）
+      CSS   … css/style.css を作って  <link rel="stylesheet" href="./css/style.css">
+      JS    … js/main.js を作って     <script type="module" src="./js/main.js"></script>
+      画像  … images/cat.png を置いて  <img src="./images/cat.png" alt="">
+  ・Rust を使うとき … rust/main.rs を作る（自動で読み込まれる。書き方はホームの rust/ が見本）
+  ・アチーブを作るとき … achievements/achievements.js を作る（自動で読み込まれる。ホームが見本）
+  ・何も書かなくても使えるもの
+      共通の見た目 … 色 var(--primary) など（ダークモードにも合う）、btn btn-primary btn-ghost（ボタン）、panel（枠）、input（入力欄）
+      app          … JS で app.notify(…)（お知らせ）、app.unlock(…)（アチーブ）、await app.invoke(…)（Rust）など
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>プログラム学習</title>
+  <!-- 今は見た目をここに書いています。CSS のファイルを作ったら、この <style> は消して <link> にしてよい -->
+  <style>
+    .intro { min-height: 80vh; display: grid; place-content: center; gap: 10px; text-align: center; }
+    .intro h1 { font-size: 30px; font-weight: 800; letter-spacing: .04em; }
+    .intro p { font-size: 14px; color: var(--text-2); }
+  </style>
+</head>
+<body>
+  <main class="intro">
+    <h1>プログラム学習</h1>
+    <p>プログラムの書き方を学ぶアプリです。ここにプログラム学習を作っていきます。</p>
+  </main>
+</body>
+</html>

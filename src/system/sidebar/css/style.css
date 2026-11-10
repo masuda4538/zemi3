@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════
+   左のサイドバー：見た目 ★ 書きかえてよい
+   ・index.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
+   ・この窓の中だけに効きます
+   ・サイドバーの幅は、外側（main/theme.css の --side-w）で決めています
+   ・設定の「サイドバーを小さくする」がオンのときは、html に compact-sidebar が付きます
+   ═══════════════════════════════════════════════════════════════ */
+
+html, body { height: 100%; }
+body { padding: 0; overflow: hidden; user-select: none; }
+
+.sidebar {
+  height: 100%;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 12px 6px; overflow-y: auto; overflow-x: hidden;
+}
+.side-group { display: flex; flex-direction: column; gap: 6px; }
+.side-group.bottom { padding-top: 10px; }
+
+/* ───────── ページのボタン ───────── */
+.side-item {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  width: 100%; padding: 9px 2px 8px; border-radius: 12px; cursor: pointer;
+  border: 0; background: transparent; color: var(--text-2);
+  transition: background .15s, color .15s;
+  animation: item-in .35s var(--ease) both;          /* 開いたときに 1 つずつ出てくる */
+  animation-delay: calc(var(--i, 0) * 40ms + 120ms);
+}
+@keyframes item-in { from { opacity: 0; transform: translateX(-10px); } }
+.side-item:hover { background: var(--hover); color: var(--text); }
+.side-ico { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; transition: background .15s, color .15s; }
+.side-ico svg { width: 23px; height: 23px; stroke-width: 1.9; }
+.side-label {
+  max-width: 100%; padding: 0 2px;
+  font-size: 11px; font-weight: 700; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 開いているページ */
+.side-item.active { background: var(--sky-soft); color: var(--primary); }
+.side-item.active .side-ico { background: linear-gradient(150deg, var(--sky), var(--primary)); color: #fff; }
+.side-item.active::before {
+  content: ""; position: absolute; left: -6px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--primary);
+}
+
+/* アイコン（js/icons.js の線の絵） */
+.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* アカウントの丸（画像があれば画像、なければ名前の 1 文字） */
+.avatar {
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; overflow: hidden;
+  background: linear-gradient(150deg, var(--sky), var(--primary)); color: #fff; font-size: 14px; font-weight: 800;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.side-item.active .side-ico:has(.avatar) { background: none; }
+.side-item.active .side-ico .avatar { box-shadow: 0 0 0 2.5px var(--primary); }
+
+/* ───────── サイドバーを隠すボタン（いちばん下・横いっぱい） ───────── */
+.side-hide {
+  display: grid; place-items: center; align-self: stretch;
+  height: 42px; margin: 6px 4px 0; padding: 0; cursor: pointer;
+  border: 1px solid var(--border-strong); border-radius: 12px;
+  background: var(--surface-2); color: var(--text-2);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.side-hide svg { width: 22px; height: 22px; stroke-width: 1.9; }
+.side-hide:hover { background: var(--hover); color: var(--primary); border-color: var(--primary); }
+
+/* ───────── 設定の「サイドバーを小さくする」 ───────── */
+.compact-sidebar .side-label { display: none; }
+.compact-sidebar .side-item { padding: 7px 2px; }

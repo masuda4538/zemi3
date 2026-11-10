@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  キーボードのショートカット（登録できる操作の一覧と、キーの読み取り）
-//    ・登録した内容は設定（settings.json の settings.shortcuts）に保存します（application/settings/settings.js）
-//    ・押したときの動きは App.jsx、登録する画面は application/settings/ShortcutEditor.jsx
+//    ・登録した内容は設定（settings.json の settings.shortcuts）に保存します（src/system/pages/settings/settings.js）
+//    ・押したときの動きは App.jsx、登録する画面は src/system/pages/settings/ShortcutEditor.jsx
 //  キーは "Ctrl+Shift+D" のような文字で持ちます（"" は「なし」）。
 //  操作を増やすときは、下の ACTIONS に 1 行足して、App.jsx の runShortcut に動きを足します。
 // ═══════════════════════════════════════════════════════════════

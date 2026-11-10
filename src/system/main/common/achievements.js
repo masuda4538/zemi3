@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
 //  アチーブ（実績）を手に入れる・調べる（どのアプリからでも使える）
-//    import { unlockAchievement } from "../../main/common/achievements.js";
+//    import { unlockAchievement } from "../../main/common/achievements.js";   // src/system/pages/<画面>/ から使うとき
 //    unlockAchievement("quiz", "first-correct");   // アプリの id と、アチーブの id
 //  アチーブの名前と説明は、各アプリのフォルダーの achievements.js に書きます
-//    （例：application/quiz/achievements.js）。一覧の画面は application/achieve/
+//    （例：application/quiz/achievements/achievements.js）。HTML のアプリからは app.unlock("id")。一覧の画面は src/system/pages/achieve/
 //  手に入れると、右上に「アチーブを手に入れた！」のお知らせが出ます（main/App.jsx → common/notify.js）。
 //  一度手に入れたアチーブは、もう一度 unlockAchievement を呼んでも何も起きません（お知らせも出ない）。
 //
@@ -28,7 +28,7 @@
 import { load } from "@tauri-apps/plugin-store";
 import { currentUserId, inTauri } from "./api.js";
 import { notify } from "./notify.js";
-import { findAchievement } from "../../application/achieve/achieve.js";
+import { findAchievement } from "../../pages/achieve/achieve.js";
 
 const FILE = "achievements.json";
 const FILE_VERSION = 1;
@@ -132,7 +132,7 @@ export function setProgress(appId, achId, value) {
 function checkId(appId, achId) {
   const def = findAchievement(appId, achId);
   if (!def && import.meta.env.DEV) {
-    console.warn(`アチーブ「${appId}:${achId}」は application/${appId}/achievements.js にありません。ID の書きまちがいかもしれません。`);
+    console.warn(`アチーブ「${appId}:${achId}」は application/${appId}/achievements/achievements.js にありません。ID の書きまちがいかもしれません。`);
   }
   return def;
 }
