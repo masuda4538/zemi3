@@ -71,8 +71,12 @@ const BOOT = `
       notify: function (o) { console.log("[お知らせ]", o && o.title, (o && o.message) || ""); },
       unlock: function () { return false; }, addProgress: function () { return 0; }, setProgress: function () { return 0; },
       invoke: only, open: function () {}, openUrl: function (u) { window.open(u, "_blank", "noopener"); },
-      achievements: function () { return []; },
-      onAchievementsChange: function () { return function () {}; }
+      achievements: function () { return []; }, rarities: [],
+      onAchievementsChange: function () { return function () {}; },
+      loginDays: function () { return null; },
+      onLoginDaysChange: function () { return function () {}; },
+      usage: function () { return null; },
+      onUsageChange: function () { return function () {}; }
     };
   }
   window.app = app;
@@ -117,7 +121,6 @@ export default function appsPlugin() {
     handleHotUpdate({ file, server }) {
       const f = appFile(file);
       if (!f || !isWindow(f)) return;
-      if (f.name === "achievements/achievements.js") return;   // アチーブの一覧（外の画面で使う）→ ふつうどおり
       if (f.name.endsWith(".css")) return;                 // CSS は見た目だけ入れかえ（Vite がする）
       if (f.name.endsWith(".html")) {                      // HTML はその窓だけ読み直す
         server.ws.send({ type: "full-reload", path: "/" + slash(path.relative(server.config.root, file)) });

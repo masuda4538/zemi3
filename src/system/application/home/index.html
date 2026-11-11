@@ -3,7 +3,7 @@
   ホーム：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
   ・このファイル（index.html）と rust/main.rs だけは、名前と場所を変えない（入口）
   ・CSS・JS は下の <link> <script> でつないでいる（ファイルを増やしたら、ここに足す）
-  ・中身（アプリの一覧・アチーブ・お知らせ）は js/main.js が入れる。ここは「枠」だけ
+  ・中身（ログイン日数・アチーブ・使った時間）は js/main.js が入れる。ここは「枠」だけ
 
   フォルダーの中（いちばん外は index.html だけ。ほかは種類ごとのフォルダーに入れる）
     index.html                     画面の入口（このファイル）
@@ -13,14 +13,16 @@
     data/                         JSON などのデータ
     rust/main.rs                  Rust の窓口：JS から呼べる関数を登録する
     rust/logic.rs                 Rust の処理（rust/main.rs から呼ぶ）
-    achievements/achievements.js  アチーブ（無くてもよい）
+    ※ アチーブは、このフォルダーの外の src/system/achieve_setting/home.js に書く
 
   ホームに出しているもの（上から）
-    1. 今日の情報 …… 左に時計（時:分:秒）と日付、右に「今日は何の日」（曜日・今年の何日目・今月の残り・次の祝日）
-    2. アプリ ……… 4 つのアプリへのボタン（押すと開く。そのアプリのアチーブの数も出す）
-    3. アチーブ ……… 全体の進み具合の円、最近手に入れたもの、もう少しで手に入るもの
-    4. お知らせ ……… アプリの更新などのお知らせ（js/main.js の NEWS に書く）
-    5. 今日のヒント … 使い方のヒント（js/main.js の TIPS から日替わり）
+    1. 時計の帯 …… 左に今日の日付、まん中に今の時刻（時:分:秒）、右にログイン日数・連続日数（白黒）
+    2. アチーブ …… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れた 2 つ
+                   （「すべて見る」でアチーブのページへ）
+    ※ グラフは小さめにして、画面に収まるように並べている（せまいときは、たてに並ぶ）
+    3. 使った時間 … アプリごとの円グラフ ＋ 日：何時に／週：何曜日に／月：カレンダー／年：何月に 使ったかのグラフ
+                   日・週・月・年で切りかえ、‹ › で前後へ
+                   （計っているのは main/common/usage.js。プログラム学習〜問題作成を右に出しているあいだ。ホームは計らない）
 -->
 <html lang="ja">
 <head>
@@ -32,92 +34,85 @@
 <body>
   <div class="home">
 
-    <!-- 1. 今日の情報 -->
-    <section class="home-hero">
-      <!-- 左：時計（時:分:秒 と 今日の日付） -->
-      <div class="home-clock" aria-label="今の時刻">
-        <span class="home-clock-time" id="clock">00:00:00</span>
-        <span class="home-clock-date" id="date">2026年1月1日（木）</span>
+    <!-- 1. 時計の帯（白黒）：左に日付、まん中に時刻、右にログイン日数 -->
+    <section class="home-hero" aria-label="今の時刻">
+      <span class="home-clock-date" id="date">2026年1月1日（木）</span>   <!-- 左はし -->
+      <span class="home-clock-time" id="clock">00:00:00</span>          <!-- まん中 -->
+      <!-- 右はし：ログイン日数（ゲストのときは「ログインすると記録されます」） -->
+      <div class="home-hero-login" id="login-stats">
+        <span>ログイン <b id="login-total">0</b> 日</span>
+        <span class="home-hero-sep" aria-hidden="true"></span>
+        <span>連続 <b id="login-streak">0</b> 日</span>
       </div>
+      <button type="button" class="home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
+    </section>
 
-      <!-- 右：今日は何の日（中身は js/main.js が入れる） -->
-      <div class="home-today">
-        <h1 class="home-today-title">今日は何の日</h1>
-        <div class="home-today-list">
-          <div class="home-today-item">
-            <span class="home-today-label">今日</span>
-            <strong id="today-week">木曜日</strong>
-            <span class="home-today-sub" id="today-kind">平日</span>
+    <!-- 2. アチーブ（横いっぱい。左に円とレア度ごとの数、右に最近手に入れた 2 つ） -->
+    <section class="panel home-card home-achieve">
+      <div class="home-card-head">
+        <h2>アチーブ</h2>
+        <button type="button" class="home-link" id="open-achieve">すべて見る ›</button>
+      </div>
+      <!-- 3 つに分ける：全体の円 ｜ レア度ごとの数 ｜ 最近手に入れた 2 つ -->
+      <div class="home-achieve-body">
+        <div class="home-achieve-all">
+          <div class="home-ring" id="ring" role="img" aria-label="アチーブの進み具合"></div>
+          <div class="home-achieve-count">
+            <strong id="achieve-count">0 / 0</strong>
+            <span>こ 手に入れた</span>
           </div>
-          <div class="home-today-item">
-            <span class="home-today-label">今年</span>
-            <strong id="year-day">1 日目</strong>
-            <span class="home-today-bar"><span class="home-today-fill" id="year-bar"></span></span>
-            <span class="home-today-sub" id="year-left">あと 364 日</span>
-          </div>
-          <div class="home-today-item">
-            <span class="home-today-label">今月</span>
-            <strong id="month-left">あと 30 日</strong>
-            <span class="home-today-sub" id="month-end">1月は31日まで</span>
-          </div>
-          <div class="home-today-item">
-            <span class="home-today-label">次の祝日</span>
-            <strong id="holiday-name">元日</strong>
-            <span class="home-today-sub" id="holiday-when">1月1日・あと 0 日</span>
-          </div>
+        </div>
+        <div class="home-achieve-col">
+          <h3 class="home-small-title">レア度ごと</h3>
+          <!-- ゴールド・シルバー・ブロンズごとの数（バーの色はレア度の色） -->
+          <ul class="home-rarity" id="rarity-bars"></ul>
+        </div>
+        <div class="home-achieve-col">
+          <h3 class="home-small-title">最近手に入れた</h3>
+          <ul class="home-list" id="recent"></ul>
         </div>
       </div>
     </section>
 
-    <!-- 左の列：アプリ・お知らせ　右の列：アチーブ・今日のヒント -->
-    <div class="home-grid">
-      <div class="home-col">
-        <!-- 2. アプリ -->
-        <section class="panel home-card home-apps">
-          <div class="home-card-head">
-            <h2>アプリ</h2>
-            <span class="home-card-note">押すと開きます（Ctrl + 2〜5 でも開けます）</span>
-          </div>
-          <div class="home-app-list" id="apps"></div>
-        </section>
-
-        <!-- 4. お知らせ -->
-        <section class="panel home-card">
-          <div class="home-card-head"><h2>お知らせ</h2></div>
-          <ul class="home-news" id="news"></ul>
-        </section>
+    <!-- 3. 使った時間（画面の残りいっぱい。左に円グラフとアプリごとの時間、右に棒グラフ・カレンダー。中身は js/main.js） -->
+    <section class="panel home-card home-usage">
+      <div class="home-usage-head">
+        <h2>使った時間</h2>
+        <!-- 見ている期間（‹ › で前後へ） -->
+        <div class="home-usage-nav">
+          <button type="button" class="home-nav-btn" id="usage-prev" aria-label="前へ" title="前へ">‹</button>
+          <strong id="usage-title">2026年1月1日（木）</strong>
+          <button type="button" class="home-nav-btn" id="usage-next" aria-label="次へ" title="次へ">›</button>
+          <button type="button" class="home-link" id="usage-now" hidden>今日</button>
+        </div>
+        <div class="home-seg" id="usage-tabs" role="group" aria-label="期間">
+          <button type="button" data-span="day">日</button>
+          <button type="button" data-span="week">週</button>
+          <button type="button" data-span="month">月</button>
+          <button type="button" data-span="year">年</button>
+        </div>
       </div>
-
-      <div class="home-col">
-        <!-- 3. アチーブ -->
-        <section class="panel home-card home-achieve">
-          <div class="home-card-head">
-            <h2>アチーブ</h2>
-            <button type="button" class="home-link" id="open-achieve">すべて見る ›</button>
-          </div>
-          <div class="home-achieve-top">
-            <div class="home-ring" id="ring" role="img" aria-label="アチーブの進み具合"></div>
-            <div class="home-achieve-count">
-              <strong id="achieve-count">0 / 0</strong>
-              <span>こ 手に入れた</span>
-            </div>
-          </div>
-          <h3 class="home-small-title">最近手に入れた</h3>
-          <ul class="home-list" id="recent"></ul>
-          <h3 class="home-small-title">もう少しで手に入る</h3>
-          <ul class="home-list" id="near"></ul>
-        </section>
-
-        <!-- 5. 今日のヒント -->
-        <section class="panel home-card home-tip">
-          <div class="home-card-head">
-            <h2>今日のヒント</h2>
-            <button type="button" class="home-link" id="next-tip">次のヒント ›</button>
-          </div>
-          <p class="home-tip-text" id="tip">ヒント</p>
-        </section>
+      <!-- ログインしているとき -->
+      <div class="home-usage-main" id="usage-body">
+        <!-- 左：円グラフと、アプリごとの時間 -->
+        <div class="home-usage-left">
+          <h3 class="home-small-title">アプリごと</h3>
+          <div class="home-pie" id="usage-pie" role="img"></div>
+          <ul class="home-usage-list" id="usage-list"></ul>
+          <p class="home-usage-note" id="usage-note"></p>
+        </div>
+        <!-- 右：円グラフだけでは分からないこと（日 → 何時に／週 → 何曜日に／月 → カレンダー／年 → 何月に） -->
+        <div class="home-usage-chart" id="usage-chart-box">
+          <h3 class="home-small-title" id="usage-chart-title">時間ごと</h3>
+          <div class="home-usage-chart-body" id="usage-chart"></div>
+        </div>
       </div>
-    </div>
+      <!-- ゲストのとき -->
+      <div class="home-guest" id="usage-guest" hidden>
+        <p>ログインすると、アプリを開いている時間が記録されます。</p>
+        <button type="button" class="btn btn-primary" id="usage-login">ログインする</button>
+      </div>
+    </section>
   </div>
 </body>
 </html>

@@ -12,6 +12,7 @@ const PATHS = {
   lock: <><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5" /></>,              // パスワード
   monitor: <><rect x="3" y="4" width="18" height="12.5" rx="2" /><path d="M8.5 20.5h7M12 16.5v4" /></>,                              // 表示
   pointer: <><path d="M6 3.5 18.5 12l-5.5 1.3L16 19.5l-2.6 1.2-3-6.3L6 18z" /></>,                                                 // 操作
+  mouse: <><rect x="6" y="2.5" width="12" height="19" rx="6" /><path d="M12 6.5v3.5" /></>,                                         // マウス
   keyboard: <><rect x="2.5" y="6" width="19" height="12" rx="2" /><path d="M6 9.5h.01M9.5 9.5h.01M13 9.5h.01M16.5 9.5h.01M6.5 13h.01M17.5 13h.01M9 15h6" /></>, // キーボード
   power: <><path d="M12 3v8.5" /><path d="M7.2 6.3a7.5 7.5 0 1 0 9.6 0" /></>,                                                     // 起動
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.8v.01" /></>,                                                    // 情報
@@ -20,6 +21,9 @@ const PATHS = {
   trophy: <><path d="M7.5 4h9v5.5a4.5 4.5 0 0 1-9 0z" /><path d="M7.5 6H4.5v1.5A3 3 0 0 0 7.6 10.5M16.5 6h3v1.5a3 3 0 0 1-3.1 3M12 14v3.5M8.5 20.5h7M9.5 17.5h5v3h-5z" /></>, // アチーブ
   check: <><circle cx="12" cy="12" r="9" /><path d="m8 12.3 2.7 2.7L16.2 9.5" /></>,                      // できた
   alert: <><path d="M12 3.5 21.5 20h-19z" /><path d="M12 10v4.5M12 17.3v.01" /></>,                       // 注意・エラー
+  list: <><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" /></>,          // 1 列に並べる
+  columns: <><rect x="3" y="4" width="5" height="16" rx="1.5" /><rect x="9.5" y="4" width="5" height="16" rx="1.5" /><rect x="16" y="4" width="5" height="16" rx="1.5" /></>,   // 横に 3 つ並べる
+  search: <><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></>,                              // さがす
   sideClose: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16M16 9.5 13.5 12l2.5 2.5" /></>,   // サイドバーを隠す
   sideOpen: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16M13.5 9.5 16 12l-2.5 2.5" /></>,    // サイドバーを出す
 };

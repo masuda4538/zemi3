@@ -10,6 +10,8 @@
 //  そのアプリの rust/main.rs の hello が呼ばれます（下の invoke_handler がアプリごとに分けて渡す）。
 //  ほかのアプリに同じ名前の関数があっても大丈夫です。
 //
+//  WSL で重くならないように、起動したときに WEBKIT_DISABLE_DMABUF_RENDERER=1 にしている（run の最初）
+//
 //  使っているプラグイン
 //    opener … URL やフォルダーを開く（設定画面の「フォルダを開く」、app.openUrl）
 //    store  … 設定をファイル（AppData の settings.json）に保存する（src/system/pages/settings/settings.js）
@@ -47,6 +49,15 @@ fn app_of<R: Runtime>(invoke: &Invoke<R>) -> Option<String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Linux（WSL で開発するとき）だけ：画面の描き方を、WSL でも軽く動くものにする
+    //   WebKitGTK の「DMABUF」という描き方は、WSL ではとても重くなることがあるので使わない
+    //   （Windows のアプリには関係ない。自分で WEBKIT_DISABLE_DMABUF_RENDERER を決めているときは、そちらを使う）
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+        // SAFETY: 起動してすぐ（ほかのスレッドがまだ動いていないとき）に 1 回だけ設定する
+        unsafe { std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1") };
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::new().build())

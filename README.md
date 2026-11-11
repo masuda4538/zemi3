@@ -53,6 +53,9 @@ tauri-app/
 │     │  ├─ settings/       main.jsx・settings.js・settings.css・ShortcutEditor.jsx … 設定（PC の中に保存）
 │     │  └─ account/        main.jsx・LoginForm.jsx・register.js・account.js・account.css … アカウント・ログイン・新規登録
 │     ├─ sidebar/           … 左のサイドバー（普通の HTML・CSS・JS。窓の中に出す）
+│     ├─ achieve_setting/   … ★ 各ページのアチーブ（1 ページ 1 ファイル。自分の担当のファイルだけ書きかえる）
+│     │  ├─ home.js  programming.js  research.js  zukan.js  quiz.js   … 各アプリ
+│     │  └─ achieve.js  settings.js  account.js                     … アチーブ・設定・アカウント
 │     └─ application/       … ★ 各アプリの画面（担当者ごとにフォルダーを分ける）
 │        ├─ home/           … ホーム（作り方の見本）
 │        │  ├─ index.html       画面の入口（名前と場所は変えない）
@@ -60,8 +63,7 @@ tauri-app/
 │        │  ├─ js/main.js       動き
 │        │  ├─ images/  data/   画像・データ
 │        │  ├─ rust/main.rs     Rust の窓口（JS から呼ぶ関数を登録）
-│        │  ├─ rust/logic.rs    Rust の処理（main.rs から呼ぶ）
-│        │  └─ achievements/achievements.js  アチーブ
+│        │  └─ rust/logic.rs    Rust の処理（main.rs から呼ぶ）
 │        ├─ programming/    … プログラム学習（今は index.html だけ。中は担当者が自由に作る）
 │        ├─ research/       … 情報収集（同上）
 │        ├─ zukan/          … デジタル図鑑（同上）
@@ -94,11 +96,17 @@ tauri-app/
   - `images/`・`data/` … 画像・JSON など。HTML や `fetch("./data/〇〇.json")` から使う
   - `rust/main.rs` … Rust の窓口（名前と場所だけは変えない）。`#[tauri::command]` を付けた関数を、いちばん下の `crate::commands![ ]` に並べる
   - `rust/` のほかのファイル … Rust の処理。`main.rs` に `mod 〇〇;` と書いてつなぎ、`〇〇::関数名()` で呼ぶ
-  - `achievements/achievements.js` … アチーブ（名前・説明。数をためるものは `goal: 10`）。無くてもよい
   - 保存すると、そのページの窓だけが新しくなる（ログインしたまま）
-  - 4 つのアプリは `index.html` だけ。CSS・JS・画像・Rust・アチーブは、必要になったらフォルダーを作って足す（ホームが見本）
+  - 4 つのアプリは `index.html` だけ。CSS・JS・画像・Rust は、必要になったらフォルダーを作って足す（ホームが見本）
   - Rust は `rust/main.rs` を作るだけで自動で読み込まれる（`src-tauri/build.rs` が探す。`lib.rs` は書きかえなくてよい）
   - しくみ：`main/components/HtmlFolder.jsx`（窓）・`main/frame/bridge.js`（app）・`main/frame/frame.css`（共通の見た目）・`vite-apps.js`
+- **アチーブ** … `src/system/achieve_setting/<ページの id>.js` に、1 ページ 1 ファイルで書きます（例：問題作成 → `quiz.js`、設定 → `settings.js`）。
+  自分のアプリのファイルだけを書きかえるので、ほかの人とコンフリクトしません。ファイルを置くだけで自動で読み込まれます。
+  - 1 行に 1 つ `{ id: "first-open", name: "名前", desc: "説明", icon: "quiz" }`。数をためるものは `goal: 10` を足す
+  - レア度（カードの枠の色）は `rarity: "bronze"`（ブロンズ）/ `"silver"`（シルバー）/ `"gold"`（ゴールド）。書かなければ bronze
+  - 手に入れるときは、そのアプリの JS で `app.unlock("first-open")`・`app.addProgress("open-10")`
+    （アチーブ・設定・アカウントの React では `unlockAchievement("settings", "night-mode")`）
+  - アプリを増やしたら、同じ名前（id）のファイルを作る
 - みんなで使う部品・処理は、`src/system/pages/〇〇/`（React の画面）から次のように読み込みます。HTML のアプリからは `app` を使います。
   ```js
   import { Field } from "../../main/components/Form";

@@ -8,7 +8,7 @@
       JS    … js/main.js を作って     <script type="module" src="./js/main.js"></script>
       画像  … images/cat.png を置いて  <img src="./images/cat.png" alt="">
   ・Rust を使うとき … rust/main.rs を作る（自動で読み込まれる。書き方はホームの rust/ が見本）
-  ・アチーブを作るとき … achievements/achievements.js を作る（自動で読み込まれる。ホームが見本）
+  ・アチーブ … src/system/achieve_setting/research.js に書く（このフォルダーの外。research.js だけは自分で書きかえてよい）
   ・何も書かなくても使えるもの
       共通の見た目 … 色 var(--primary) など（ダークモードにも合う）、btn btn-primary btn-ghost（ボタン）、panel（枠）、input（入力欄）
       app          … JS で app.notify(…)（お知らせ）、app.unlock(…)（アチーブ）、await app.invoke(…)（Rust）など
@@ -29,5 +29,11 @@
     <h1>情報収集</h1>
     <p>気になることを調べて集めるアプリです。ここに情報収集を作っていきます。</p>
   </main>
+
+  <!-- アチーブの例（achieve_setting/research.js に書いたもの）。使わなければ、この <script> と achieve_setting/research.js の例を消してよい -->
+  <script>
+    app.unlock("first-open");     // はじめて開いた
+    app.addProgress("open-10");   // 開いた回数を 1 つ増やす（10 回で手に入る）
+  </script>
 </body>
 </html>

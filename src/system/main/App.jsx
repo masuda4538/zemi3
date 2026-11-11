@@ -21,9 +21,11 @@ import WindowControls from "./components/WindowControls";
 import ConfirmDialog from "./components/ConfirmDialog";
 import Toaster from "./components/Toaster";
 import { notify } from "./common/notify.js";
-import { unlockAchievement, onAchievementUnlocked } from "./common/achievements.js";
-import { findAchievement } from "../pages/achieve/achieve.js";
+import { unlockAchievement, setProgress, getUnlocked, onAchievementUnlocked, onAchievementsChange } from "./common/achievements.js";
+import { findAchievement, ALL } from "../pages/achieve/achieve.js";
 import { logout, inTauri, savedUser } from "./common/api.js";
+import { recordLogin } from "./common/logins.js";
+import { setUsagePage, flushUsage } from "./common/usage.js";
 import {
   DEFAULTS, loadSettings, saveSettings, applySettings, applyStartup, effectiveTheme, watchSystemTheme,
 } from "../pages/settings/settings.js";
@@ -82,6 +84,7 @@ export default function App() {
     if (!inTauri) return;
     const win = getCurrentWindow();
     const unlisten = win.onCloseRequested(async (event) => {
+      flushUsage();   // 使った時間を、閉じる前に記録に足す
       if (!settingsRef.current.confirmClose) return;   // 確認しない設定なら、そのまま閉じる
       event.preventDefault();
       const ok = await confirm({
@@ -143,20 +146,38 @@ export default function App() {
     const ach = findAchievement(appId, achId);
     if (!ach) return;
     notify({
-      type: "achieve", icon: ach.icon, title: ach.name, message: `${ach.appName}・${ach.desc}`,
+      type: "achieve", icon: ach.icon, title: ach.name, message: `${ach.rarityName}・${ach.appName}・${ach.desc}`,
       onClick: () => setCurrent("achieve"),
     });
   }), []);
 
-  // ホームのアチーブ「夜ふかし」：ログイン中にダークモードになったら
+  // ログインした日を記録する（ログインした・ログインしたまま起動した・開いたまま 0 時をこえた）→ ホームのカレンダー
+  //   ログアウトしたときも呼ぶ（ホームに「ゲストになった」と知らせるため。記録はしない）
+  useEffect(() => {
+    recordLogin();
+    const timer = setInterval(recordLogin, 60 * 1000);   // 1 分ごとに日付を確かめる（同じ日なら何もしない）
+    return () => clearInterval(timer);
+  }, [user]);
+
+  // 使った時間を計る：右に出しているページ・ログインしている人が変わったら知らせる（common/usage.js）
+  useEffect(() => { setUsagePage(current); }, [current, user]);
+
+  // 設定のアチーブ「夜ふかし」：ログイン中にダークモードになったら（achieve_setting/settings.js）
   const theme0 = effectiveTheme(settings);
-  useEffect(() => { if (user && theme0 === "dark") unlockAchievement("home", "night-mode"); }, [user, theme0]);
+  useEffect(() => { if (user && theme0 === "dark") unlockAchievement("settings", "night-mode"); }, [user, theme0]);
+
+  // アチーブのページのアチーブ「コレクター」：手に入れたアチーブの数を数える（achieve_setting/achieve.js）
+  useEffect(() => {
+    const count = () => { const got = getUnlocked(); setProgress("achieve", "collect-5", ALL.filter((a) => got[a.key]).length); };
+    count();
+    return onAchievementsChange(count);
+  }, [user]);
 
   // ログインできたとき（アカウントのページから呼ばれる）：アカウントのページのまま、プロフィールが出る
   const handleLogin = (u) => {
     setUser(u);
     notify({ type: "success", title: "ログインしました", message: `ようこそ、${u.name} さん` });
-    setTimeout(() => unlockAchievement("home", "first-login"), 600);   // ホームのアチーブ「はじめまして」
+    setTimeout(() => unlockAchievement("account", "first-login"), 600);   // アカウントのアチーブ「はじめまして」（achieve_setting/account.js）
   };
 
   // ログアウト：（設定によっては確認してから）ゲストに戻る。戻ったら true

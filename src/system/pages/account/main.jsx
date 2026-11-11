@@ -19,6 +19,7 @@ import { Field, PasswordInput, GenderPicker, BirthDateSelect, Spinner } from "..
 import { getGenders, getLanguages, updateMe, updateAvatar, changePassword } from "../../main/common/api.js";
 import { noErrors } from "../../main/common/validate.js";
 import { notify } from "../../main/common/notify.js";
+import { unlockAchievement } from "../../main/common/achievements.js";
 import {
   toProfileForm, checkProfile, toProfileInput, isBasicChanged, isLanguagesChanged, checkPasswordForm, checkAvatarFile, toAvatarDataUrl,
 } from "./account.js";
@@ -148,6 +149,7 @@ function AvatarCard({ user, onUserChange }) {
     try {
       onUserChange(await updateAvatar(dataUrl));
       notify({ type: "success", title: doneText, key: "account-avatar" });
+      if (dataUrl) unlockAchievement("account", "change-avatar");   // アチーブ「イメチェン」（achieve_setting/account.js）
     } catch (err) {
       setError(String(err));
     } finally {

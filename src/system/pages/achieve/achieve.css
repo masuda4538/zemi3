@@ -17,7 +17,7 @@
 .ach-main-text strong { font-size: 16px; }
 .ach-main-text span { font-size: 13px; color: var(--text-2); }
 .ach-mini-rings {
-  flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px;   /* アプリの数だけ 1 列に並べる */
+  flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 2px;   /* 入るだけ横に並べて、入らなければ次の段へ */
   padding-left: 24px; border-left: 1px solid var(--border);
 }
 .ach-mini {
@@ -33,10 +33,8 @@
 .ring { position: relative; flex: none; }
 .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
 .ring-track { fill: none; stroke: var(--sky-soft); stroke-width: 9; }
-.ring-fill {
-  fill: none; stroke: var(--primary); stroke-width: 9; stroke-linecap: round;
-  animation: ring-grow .8s var(--ease) both;
-}
+.ring-fill { fill: none; stroke: var(--primary); stroke-width: 9; stroke-linecap: round; }
+.ring.is-big .ring-fill { animation: ring-grow .6s var(--ease) both; }   /* のびるアニメーションは大きい円だけ（小さい円まで動かすと重い） */
 @keyframes ring-grow { from { stroke-dasharray: 0 var(--len); } }
 .ring.is-done .ring-fill { stroke: #d97706; }               /* コンプリート（文字でも出している） */
 :root[data-theme="dark"] .ring.is-done .ring-fill { stroke: #fbbf24; }
@@ -48,31 +46,73 @@
 .ring.is-done .ring-center span { color: #d97706; }
 :root[data-theme="dark"] .ring.is-done .ring-center span { color: #fbbf24; }
 
-/* 一覧 */
-.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.ach-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; }
+/* ───────── 絞り込み（さがす・レア度・未取得）と並べ方 ───────── */
+.ach-filter { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; }
+.ach-search {
+  display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px;
+  border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface);
+}
+.ach-search:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--sky-soft); }
+.ach-search .icon { width: 17px; height: 17px; color: var(--text-3); flex: none; }
+.ach-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-size: 13.5px; }
+.ach-filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.ach-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
+.ach-seg button {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 12.5px; font-weight: 800; white-space: nowrap;
+}
+.ach-seg button .icon { width: 15px; height: 15px; }
+.ach-seg button:hover { color: var(--primary); }
+.ach-seg button.is-on { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgb(15 30 60 / .14); }
+.ach-seg button.is-rarity { color: var(--rarity-text); }                                   /* レア度のボタンは、その色の文字 */
+.ach-seg button.is-rarity.is-on { box-shadow: inset 0 0 0 1.5px var(--rarity-line), 0 1px 3px rgb(15 30 60 / .14); }
+.ach-view { margin-left: auto; }
+.ach-result { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 800; color: var(--text-3); }
+.ach-clear { border: 0; background: none; padding: 2px 4px; cursor: pointer; color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800; }
+.ach-clear:hover { text-decoration: underline; }
+
+/* ───────── 一覧 ─────────
+   1 列（is-list）  … 左にバッジ、まん中に名前・説明・進み具合、右にアプリのアイコン・取った日
+   横に 3 つ（is-grid）… せまいときは 2 つ・1 つに減らす */
+.ach-grid { display: grid; gap: 8px; }
+.ach-grid.is-list { grid-template-columns: 1fr; }
+.ach-grid.is-grid { grid-template-columns: repeat(auto-fill, minmax(max(210px, calc((100% - 24px) / 3)), 1fr)); gap: 12px; }
+.ach-card { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
+/* カードの枠を、レア度の色（ブロンズ・シルバー・ゴールド）にする（色は main/theme.css）。まだのものは少しうすく */
+.ach-card.panel { border: 2px solid var(--rarity-line); }
+.ach-card:not(.is-got).panel { border-color: color-mix(in srgb, var(--rarity-line) 45%, var(--border)); }
 .ach-badge {
-  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; flex: none;
+  display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; flex: none;
   background: var(--surface-2); border: 1.5px dashed var(--border-strong); color: var(--text-3);
 }
 .ach-badge .icon { width: 24px; height: 24px; }
-.ach-card.is-got .ach-badge {
-  border: 0; color: #fff;
-  background: linear-gradient(150deg, #fcd34d, #f59e0b 75%);
-  box-shadow: 0 4px 12px rgb(245 158 11 / .35);
-}
-.ach-text { min-width: 0; }
-.ach-text strong { display: block; font-size: 14.5px; }
+/* 手に入れたバッジ（色はどのレア度も同じ） */
+.ach-card.is-got .ach-badge { border: 0; color: #fff; background: linear-gradient(150deg, var(--sky), var(--primary) 80%); }
+.ach-text { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: center; }
+.ach-text > :not(small) { grid-column: 1; }
+.ach-title { display: flex; align-items: center; gap: 8px; min-width: 0; }   /* レア度 ＋ 名前 */
+.ach-title strong { min-width: 0; font-size: 14.5px; overflow-wrap: anywhere; }
 .ach-text p { margin-top: 2px; font-size: 12.5px; color: var(--text-2); }
-.ach-text small { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; color: var(--text-3); }
-.ach-card:not(.is-got) .ach-text strong { color: var(--text-2); }
+.ach-text small { grid-column: 2; grid-row: 1 / span 3; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); }
+.ach-card:not(.is-got) .ach-title strong { color: var(--text-2); }
+/* 横に 3 つのとき：上から 名前 → 説明 → 進み具合 → アプリ・日付 の順にたてに並べる */
+.ach-grid.is-grid .ach-card { align-items: flex-start; padding: 14px; }
+.ach-grid.is-grid .ach-text { display: flex; flex-direction: column; align-items: stretch; }
+.ach-grid.is-grid .ach-count { max-width: none; }
+.ach-grid.is-grid .ach-title { flex-wrap: wrap; gap: 4px 8px; }
+.ach-grid.is-grid .ach-text small { justify-content: flex-start; margin-top: 8px; }
 /* 数をためるアチーブの進み具合（2 / 10） */
-.ach-count { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.ach-count { display: flex; align-items: center; gap: 10px; max-width: 320px; margin-top: 6px; }
 .ach-count-bar { flex: 1; height: 6px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
 .ach-count-fill { height: 100%; border-radius: 99px; background: var(--primary); transition: width .4s var(--ease); }
-.ach-card.is-got .ach-count-fill { background: #d97706; }
-:root[data-theme="dark"] .ach-card.is-got .ach-count-fill { background: #fbbf24; }
+
 .ach-count span { flex: none; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .ach-count b { font-size: 14px; color: var(--text); }
-.ach-app { padding: 1px 8px; border-radius: 99px; background: var(--sky-soft); color: var(--primary); font-weight: 800; }
+/* どのアプリのアチーブか（アイコンだけ。名前はマウスをのせると出る） */
+.ach-app {
+  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; flex: none;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+}
+.ach-app .icon { width: 15px; height: 15px; }
 .ach-empty, .ach-note { font-size: 12.5px; color: var(--text-3); }
+.ach-grid .ach-empty { grid-column: 1 / -1; padding: 18px 4px; }

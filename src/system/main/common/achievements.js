@@ -2,17 +2,17 @@
 //  アチーブ（実績）を手に入れる・調べる（どのアプリからでも使える）
 //    import { unlockAchievement } from "../../main/common/achievements.js";   // src/system/pages/<画面>/ から使うとき
 //    unlockAchievement("quiz", "first-correct");   // アプリの id と、アチーブの id
-//  アチーブの名前と説明は、各アプリのフォルダーの achievements.js に書きます
-//    （例：application/quiz/achievements/achievements.js）。HTML のアプリからは app.unlock("id")。一覧の画面は src/system/pages/achieve/
+//  アチーブの名前と説明は、src/system/achieve_setting/<アプリの id>.js に書きます
+//    （例：achieve_setting/quiz.js）。HTML のアプリからは app.unlock("id")。一覧の画面は src/system/pages/achieve/
 //  手に入れると、右上に「アチーブを手に入れた！」のお知らせが出ます（main/App.jsx → common/notify.js）。
 //  一度手に入れたアチーブは、もう一度 unlockAchievement を呼んでも何も起きません（お知らせも出ない）。
 //
 //  数をためるアチーブ（「10 問正解」など）
-//    achievements.js に goal: 10 と書いて、数えたいところで
+//    achieve_setting/<アプリの id>.js に goal: 10 と書いて、数えたいところで
 //      addProgress("quiz", "ten-correct");        // 1 つ増える（2 つ目に数を入れると、その数だけ増える）
 //      setProgress("programming", "streak-7", 3); // 今の数を直接決める（「〇日つづけた」など、数を別で数えているとき）
 //    goal に届いたら自動で手に入ります。アチーブの画面には「2 / 10」と進み具合が出ます。
-//  achievements.js にない ID は手に入りません。開発中はコンソールに警告が出ます（書きまちがいに気づけるように）。
+//  achieve_setting にない ID は手に入りません。開発中はコンソールに警告が出ます（書きまちがいに気づけるように）。
 //
 //  ★ 保存先：PC の中のファイル（設定の settings.json と同じフォルダーの achievements.json）
 //      Windows のアプリ … C:\Users\<名前>\AppData\Roaming\com.nkc-user.tauri-app\achievements.json
@@ -44,6 +44,17 @@ const changeListeners = new Set();   // 手に入れた・数が増えたとき�
 const pad = (n) => String(n).padStart(2, "0");
 const now = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
+/** 前に別のページに書いていたアチーブ（古い key → 新しい key）。手に入れた記録を引きつぐ */
+const MOVED = { "home:first-login": "account:first-login", "home:night-mode": "settings:night-mode" };
+function moveOld() {
+  for (const mine of Object.values(users)) {
+    for (const [from, to] of Object.entries(MOVED)) {
+      if (mine[from] && !mine[to]) mine[to] = mine[from];
+      delete mine[from];
+    }
+  }
+}
+
 // ───────── 読み込み・保存 ─────────
 /** 起動したときに 1 回だけ呼ぶ：保存してあるアチーブを読んでおく（src/main.jsx） */
 export async function initAchievements() {
@@ -53,12 +64,14 @@ export async function initAchievements() {
       users = saved.users ?? (saved.version ? {} : saved);   // 前の形（users だけ）も読める
       progress = saved.progress ?? {};
     } catch { users = {}; progress = {}; }
+    moveOld();
     return;
   }
   try {
     store = await load(FILE, { autoSave: false, defaults: {} });
     users = (await store.get("users")) ?? {};
     progress = (await store.get("progress")) ?? {};
+    moveOld();
   } catch (err) {
     console.warn("アチーブのファイルを読めませんでした。", err);
     store = null;
@@ -90,7 +103,7 @@ function writeAll() {
 export function unlockAchievement(appId, achId) {
   const userId = currentUserId();
   if (!userId) return false;      // ログインしていないときは数えない
-  if (!checkId(appId, achId)) return false;   // achievements.js にない ID は手に入らない（書きまちがい）
+  if (!checkId(appId, achId)) return false;   // achieve_setting にない ID は手に入らない（書きまちがい）
   const key = `${appId}:${achId}`;
   const mine = users[userId] ?? {};
   if (mine[key]) return false;    // もう持っている → お知らせも出さない
@@ -111,9 +124,9 @@ export function setProgress(appId, achId, value) {
   const userId = currentUserId();
   if (!userId) return 0;
   const def = checkId(appId, achId);
-  if (!def) return 0;                          // achievements.js にない ID は数えない（書きまちがい）
+  if (!def) return 0;                          // achieve_setting にない ID は数えない（書きまちがい）
   if (!def.goal) {
-    if (import.meta.env.DEV) console.warn(`アチーブ「${appId}:${achId}」には goal がありません。achievements.js に goal: 10 のように書いてください。`);
+    if (import.meta.env.DEV) console.warn(`アチーブ「${appId}:${achId}」には goal がありません。achieve_setting/${appId}.js に goal: 10 のように書いてください。`);
     return 0;
   }
   const key = `${appId}:${achId}`;
@@ -128,11 +141,11 @@ export function setProgress(appId, achId, value) {
   return n;
 }
 
-/** 開発中だけ：achievements.js にない ID なら警告を出す（書きまちがいに気づけるように）。定義が返る */
+/** 開発中だけ：achieve_setting にない ID なら警告を出す（書きまちがいに気づけるように）。定義が返る */
 function checkId(appId, achId) {
   const def = findAchievement(appId, achId);
   if (!def && import.meta.env.DEV) {
-    console.warn(`アチーブ「${appId}:${achId}」は application/${appId}/achievements/achievements.js にありません。ID の書きまちがいかもしれません。`);
+    console.warn(`アチーブ「${appId}:${achId}」は achieve_setting/${appId}.js にありません。ID の書きまちがいかもしれません。`);
   }
   return def;
 }
