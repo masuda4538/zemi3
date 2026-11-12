@@ -11,6 +11,7 @@
 //  ほかのアプリに同じ名前の関数があっても大丈夫です。
 //
 //  WSL で重くならないように、起動したときに WEBKIT_DISABLE_DMABUF_RENDERER=1 にしている（run の最初）
+//  WSL でスクロールがもたつかないように、「なめらかスクロール」を切っている（setup。Linux だけ）
 //
 //  使っているプラグイン
 //    opener … URL やフォルダーを開く（設定画面の「フォルダを開く」、app.openUrl）
@@ -18,6 +19,8 @@
 // ═══════════════════════════════════════════════════════════════
 use tauri::ipc::{Invoke, InvokeBody};
 use tauri::Runtime;
+#[cfg(target_os = "linux")]
+use tauri::Manager;
 
 /// 各アプリの rust/main.rs のいちばん下に書く：crate::commands![hello, add];
 /// 並べた関数を、画面から呼べるようにする（中で Tauri の generate_handler! を使っている）
@@ -61,6 +64,19 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        // Linux（WSL）だけ：「なめらかスクロール」を切る（WSL では、ホイールを回してから動くまでに遅れが出て、ラグに感じるため）
+        .setup(|_app| {
+            #[cfg(target_os = "linux")]
+            for (_, window) in _app.webview_windows() {
+                let _ = window.with_webview(|webview| {
+                    use webkit2gtk::{SettingsExt, WebViewExt};
+                    if let Some(settings) = webview.inner().settings() {
+                        settings.set_enable_smooth_scrolling(false);
+                    }
+                });
+            }
+            Ok(())
+        })
         // どのアプリの rust/main.rs に渡すかを決める（どのアプリでもない →「コマンドが見つかりません」のエラー）
         .invoke_handler(|invoke| match app_of(&invoke) {
             Some(app) => route(&app, invoke),

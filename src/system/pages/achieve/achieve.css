@@ -77,7 +77,10 @@
 .ach-grid { display: grid; gap: 8px; }
 .ach-grid.is-list { grid-template-columns: 1fr; }
 .ach-grid.is-grid { grid-template-columns: repeat(auto-fill, minmax(max(210px, calc((100% - 24px) / 3)), 1fr)); gap: 12px; }
-.ach-card { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
+.ach-card {
+  display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+  content-visibility: auto; contain-intrinsic-size: auto 84px;   /* 画面の外のカードは描かない（スクロールが軽くなる） */
+}
 /* カードの枠を、レア度の色（ブロンズ・シルバー・ゴールド）にする（色は main/theme.css）。まだのものは少しうすく */
 .ach-card.panel { border: 2px solid var(--rarity-line); }
 .ach-card:not(.is-got).panel { border-color: color-mix(in srgb, var(--rarity-line) 45%, var(--border)); }

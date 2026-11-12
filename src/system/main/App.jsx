@@ -56,6 +56,17 @@ export default function App() {
   const [, setTick] = useState(0);                      // 「PC に合わせる」で PC の色が変わったとき用
   const ticket = useRef(0);   // 連続で押されたときに、最後に押したページだけを出すための番号
   const stageRef = useRef(null);
+  const scrollTimer = useRef(0);
+
+  // スクロールしているあいだは、右の画面の中のマウスの当たり判定を止める（App.css の .is-scrolling）
+  //   → スクロール中に、ボタンの色やマウスカーソルを何度も計算しなおさないので、軽くなる
+  const onStageScroll = () => {
+    const el = stageRef.current;
+    if (!el) return;
+    el.classList.add("is-scrolling");
+    clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(() => el.classList.remove("is-scrolling"), 150);
+  };
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
 
@@ -209,7 +220,7 @@ export default function App() {
         <SideReveal hidden={sideHidden} onShow={() => setSideHidden(false)} />
         <div className="main-col">
           <WindowControls />
-          <main className="stage" ref={stageRef} style={{ "--accent": accent }}>
+          <main className="stage" ref={stageRef} style={{ "--accent": accent }} onScroll={onStageScroll}>
             <section className="page">
               {error
                 ? <p className="page-error">{error}</p>

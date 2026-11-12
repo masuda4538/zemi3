@@ -73,6 +73,7 @@ h1, h2, p { margin: 0; }
 
 /* ── 右：アプリの画面 ── */
 .stage { min-width: 0; min-height: 0; overflow-y: auto; padding: 20px 24px 28px; }
+.stage.is-scrolling > .page { pointer-events: none; }   /* スクロール中はマウスの当たり判定を止めて軽くする（App.jsx の onStageScroll） */
 .page { min-height: 100%; }
 
 
