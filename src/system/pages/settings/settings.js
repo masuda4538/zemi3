@@ -20,6 +20,7 @@ import { load } from "@tauri-apps/plugin-store";
 import { inTauri } from "../../main/common/api.js";
 import { DEFAULT_SHORTCUTS } from "../../main/shortcuts.js";
 import { notify } from "../../main/common/notify.js";
+import { applyCursor } from "../../main/common/cursor.js";
 
 /** 設定ファイルの名前（AppData の中のアプリのフォルダーに作られる） */
 const FILE = "settings.json";
@@ -37,9 +38,19 @@ export const DEFAULTS = {
   fontSize: "medium",      // "small" / "medium" / "large"
   reduceMotion: false,     // アニメーションを減らす
   compactSidebar: false,   // サイドバーの文字を隠す（アイコンだけ）
+  // マウス（main/common/cursor.js）
+  cursorFill: "#ffffff",   // 本体の色
+  cursorLine: "#111111",   // ふちの色
+  cursorSize: 26,          // 大きさ（ピクセル。18〜64）
+  cursorShadow: true,      // 影を付ける
+  clickEffect: false,      // クリックしたところに波紋
+  cursorTrail: false,      // 動きの軌跡
+  effectColor: "#2563eb",  // 波紋と軌跡の色
   // 操作
   confirmLogout: true,     // ログアウトの前に確認する
   confirmClose: true,      // アプリを閉じる前に確認する（猫が「もう帰るの…？」と聞く）
+  // アチーブのページ
+  achieveView: "list",     // "list"：1 行に 1 つ / "grid"：横に 3 つ（アチーブのページの一覧の右上で切り替える）
   // 起動
   startMaximized: true,    // 起動したときに最大化する
   // キーボード
@@ -169,13 +180,14 @@ const prefersDark = () => typeof window !== "undefined" && window.matchMedia?.("
 export const effectiveTheme = (settings) =>
   settings.theme === "system" ? (prefersDark() ? "dark" : "light") : settings.theme;
 
-/** 設定を画面に反映する（色・文字の大きさ・アニメーション・サイドバー） */
+/** 設定を画面に反映する（色・文字の大きさ・アニメーション・サイドバー・マウス） */
 export function applySettings(settings) {
   const root = document.documentElement;
   root.dataset.theme = effectiveTheme(settings);
   try { localStorage.setItem("boot-theme", root.dataset.theme); } catch { /* 覚えられなくてもよい */ }   // 次のロード画面の色（index.html）
   root.classList.toggle("reduce-motion", settings.reduceMotion);
   root.classList.toggle("compact-sidebar", settings.compactSidebar);
+  applyCursor(settings);   // マウスカーソル（main/common/cursor.js）
 
   const zoom = FONT_SIZES.find((f) => f.id === settings.fontSize)?.zoom ?? 1;
   if (inTauri) {

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  設定：画面（見た目）　［このフォルダーの入口：main.jsx］
 //  GitHub の Settings のように、左に項目、右に選んだ項目の中身を出します（main/components/SettingsLayout.jsx）。
-//    表示 / 操作 / キーボード（ショートカットの登録。ShortcutEditor.jsx）/ 起動 / 情報 / リセット（下の SECTIONS）
+//    表示 / マウス / 操作 / キーボード（ショートカットの登録。ShortcutEditor.jsx）/ 起動 / 情報 / リセット（下の SECTIONS）
 //  変えるとすぐ反映され、その PC の中のファイル（AppData の settings.json）に保存されます（データベースには入れません）。
 //  main/App.jsx から settings（今の設定）、onSettings（変更）、onResetSettings、confirm を受け取ります。
 // ═══════════════════════════════════════════════════════════════
@@ -14,13 +14,16 @@ import { APP_TITLE } from "../../main/config";
 import { inTauri, isDev } from "../../main/common/api.js";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { THEMES, FONT_SIZES, settingsFilePath } from "./settings.js";
+import { CURSOR_PRESETS, CURSOR_SIZE_MIN, CURSOR_SIZE_MAX, cursorPreview } from "../../main/common/cursor.js";
 import ShortcutEditor from "./ShortcutEditor";
 import { notify } from "../../main/common/notify.js";
+import { unlockAchievement } from "../../main/common/achievements.js";
 import "./settings.css";
 
 /** 左の項目（上から順に並ぶ） */
 const SECTIONS = [
   { id: "display",  name: "表示",           icon: "monitor",  desc: "画面の見た目を変えます。" },
+  { id: "mouse",    name: "マウス",         icon: "mouse",    desc: "このアプリの中だけで使うマウスカーソルの色・大きさ・影と、クリックや動きの効果を変えます。" },
   { id: "behavior", name: "操作",           icon: "pointer",  desc: "うっかり操作を防ぎます。" },
   { id: "keyboard", name: "キーボード",     icon: "keyboard", desc: "ショートカットを登録できます。「変更」を押してから、使いたいキーを押してください。" },
   { id: "startup",  name: "起動", icon: "power",    desc: "次に起動したときから反映されます。" },
@@ -28,11 +31,24 @@ const SECTIONS = [
   { id: "reset",    name: "リセット",       icon: "reset",    desc: "設定を最初の状態に戻します。" },
 ];
 
+/** マウスの設定の名前（どれかを変えたら、アチーブ「マイカーソル」） */
+const MOUSE_KEYS = ["cursorFill", "cursorLine", "cursorSize", "cursorShadow", "clickEffect", "cursorTrail", "effectColor"];
+const checkMouse = (patch) => {
+  if (Object.keys(patch).some((k) => MOUSE_KEYS.includes(k))) unlockAchievement("settings", "mouse-custom");   // achieve_setting/settings.js
+};
+
 export default function Settings({ settings, onSettings, onResetSettings, confirm, user }) {
   const [current, setCurrent] = useState("display");
   // 設定を変える → すぐ保存して、右上に短くお知らせ（続けて変えたときは 1 つにまとめる）
   const set = (key) => (value) => {
     onSettings({ [key]: value });
+    checkMouse({ [key]: value });
+    notify({ type: "success", title: "設定を保存しました", duration: 2000, key: "settings" });
+  };
+  // いくつかまとめて変える（色の組み合わせなど）
+  const setMany = (patch) => {
+    onSettings(patch);
+    checkMouse(patch);
     notify({ type: "success", title: "設定を保存しました", duration: 2000, key: "settings" });
   };
   const section = SECTIONS.find((x) => x.id === current);
@@ -61,6 +77,61 @@ export default function Settings({ settings, onSettings, onResetSettings, confir
             <Switch checked={settings.compactSidebar} onChange={set("compactSidebar")} label="サイドバーの文字を隠す" />
           </Row>
         </Card>
+      )}
+
+      {current === "mouse" && (
+        <>
+          <Card>
+            <Row title="色の組み合わせ" desc="押すと、本体とふちの色がまとめて変わります。">
+              <div className="cursor-presets">
+                {CURSOR_PRESETS.map((c) => (
+                  <button
+                    key={c.name} type="button" title={c.name} aria-label={c.name}
+                    className={`cursor-preset${settings.cursorFill === c.fill && settings.cursorLine === c.line ? " active" : ""}`}
+                    style={{ "--fill": c.fill, "--line": c.line }}
+                    onClick={() => setMany({ cursorFill: c.fill, cursorLine: c.line })}
+                  />
+                ))}
+              </div>
+            </Row>
+            <Row title="本体の色">
+              <input type="color" className="set-color" value={settings.cursorFill} aria-label="本体の色" onChange={(e) => set("cursorFill")(e.target.value)} />
+            </Row>
+            <Row title="ふちの色">
+              <input type="color" className="set-color" value={settings.cursorLine} aria-label="ふちの色" onChange={(e) => set("cursorLine")(e.target.value)} />
+            </Row>
+            <Row title="大きさ" desc={`${CURSOR_SIZE_MIN}〜${CURSOR_SIZE_MAX} ピクセル（ふつうは 26）`}>
+              <input
+                type="range" className="set-range" min={CURSOR_SIZE_MIN} max={CURSOR_SIZE_MAX} step={1}
+                value={settings.cursorSize} aria-label="カーソルの大きさ"
+                onChange={(e) => set("cursorSize")(Number(e.target.value))}
+              />
+              <span className="set-range-value">{settings.cursorSize}px</span>
+            </Row>
+            <Row title="影" desc="カーソルの右下に、うすい影を付けます。">
+              <Switch checked={settings.cursorShadow} onChange={set("cursorShadow")} label="影" />
+            </Row>
+          </Card>
+
+          <Card>
+            <Row title="クリックの効果" desc="クリックしたところに、波紋が広がります。">
+              <Switch checked={settings.clickEffect} onChange={set("clickEffect")} label="クリックの効果" />
+            </Row>
+            <Row title="動きの軌跡" desc="マウスを動かしたあとに、光のしっぽが少し残ります。">
+              <Switch checked={settings.cursorTrail} onChange={set("cursorTrail")} label="動きの軌跡" />
+            </Row>
+            <Row title="効果の色" desc="波紋と軌跡の色です。">
+              <input type="color" className="set-color" value={settings.effectColor} aria-label="効果の色" onChange={(e) => set("effectColor")(e.target.value)} disabled={!settings.clickEffect && !settings.cursorTrail} />
+            </Row>
+            {settings.reduceMotion && (
+              <Row title="※ 「アニメーションを減らす」がオンのため、効果は出ません" desc="表示 → アニメーションを減らす をオフにすると出ます。" />
+            )}
+          </Card>
+
+          <Card>
+            <CursorPreview settings={settings} />
+          </Card>
+        </>
       )}
 
       {current === "behavior" && (
@@ -137,8 +208,38 @@ function InfoCard({ user }) {
       >
         {path && <button type="button" className="btn btn-ghost btn-sm" onClick={openFolder}>フォルダを開く</button>}
       </Row>
-      <Row title="アカウントの保存" desc="今はデータベースを使っていません。アカウントの内容はアプリを閉じると消えます。" />
+      <Row title="アカウントの保存" desc="今はデータベースを使っていません。ログインしている人はこの PC の中（AppData の session.json）に保存し、ログアウトすると消えます。" />
     </Card>
+  );
+}
+
+/** マウス：今の設定のカーソルの見本（矢印・手・I・禁止）と、試す場所 */
+function CursorPreview({ settings }) {
+  const imgs = cursorPreview(settings);
+  const size = settings.cursorSize;
+  const items = [["default", "ふつう"], ["pointer", "押せるところ"], ["text", "文字を入れるところ"], ["not-allowed", "押せないところ"]];
+  return (
+    <div className="set-row set-cursor">
+      <div>
+        <strong>見本</strong>
+        <p>下のボタンや入力欄にマウスをのせたり、クリックしたりして試せます。</p>
+      </div>
+      <div className="cursor-preview">
+        <div className="cursor-samples">
+          {items.map(([name, label]) => (
+            <figure key={name} className="cursor-sample">
+              <span className="cursor-sample-box"><img src={imgs[name]} width={size} height={size} alt="" /></span>
+              <figcaption>{label}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className="cursor-try">
+          <button type="button" className="btn btn-ghost btn-sm">ボタン</button>
+          <input className="input" placeholder="入力欄" aria-label="カーソルを試す入力欄" />
+          <button type="button" className="btn btn-ghost btn-sm" disabled>押せない</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -160,11 +261,11 @@ function Row({ title, desc, children }) {
   );
 }
 
-function Segment({ options, value, onChange }) {
+function Segment({ options, value, onChange, disabled = false }) {
   return (
-    <div className="seg" role="radiogroup">
+    <div className={`seg${disabled ? " is-disabled" : ""}`} role="radiogroup">
       {options.map((o) => (
-        <button key={o.id} type="button" role="radio" aria-checked={value === o.id} className={value === o.id ? "active" : ""} onClick={() => onChange(o.id)}>
+        <button key={o.id} type="button" role="radio" aria-checked={value === o.id} className={value === o.id ? "active" : ""} onClick={() => onChange(o.id)} disabled={disabled}>
           {o.name}
         </button>
       ))}

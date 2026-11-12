@@ -10,9 +10,10 @@
 //
 //  ★ HTML・CSS・JS のページを増やすとき
 //    1. src/system/application に、英語の名前でフォルダーを作る（例：memo）
-//    2. その中に index.html を置く（CSS・JS は index.html から自分でつなぐ。achievements/achievements.js は必要になったら）
+//    2. その中に index.html を置く（CSS・JS は index.html から自分でつなぐ）
 //    3. 下の PAGES に 1 行足す（id をフォルダー名と同じにして、load: HTML_FOLDER）
-//    4. Rust を使うときは src-tauri/src/lib.rs にも足す（rust/main.rs を読み込む 2 か所）
+//    4. アチーブを作るときは src/system/achieve_setting/<id>.js を作る（自動で読み込まれる）
+//    5. Rust を使うときは、そのフォルダーに rust/main.rs を作る（自動で読み込まれる。lib.rs は書きかえなくてよい）
 // ═══════════════════════════════════════════════════════════════
 export { APP_TITLE } from "./config";
 

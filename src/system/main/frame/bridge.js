@@ -12,8 +12,14 @@
 //    app.open("quiz")                … ほかのページを開く（id は main/apps.js）
 //    app.openUrl("https://…")        … PC のブラウザで Web ページを開く
 //    app.pages                       … 左に並ぶページの一覧 [{ id, name }]
-//    app.achievements()              … すべてのアチーブと、手に入れたか・今の数
+//    app.rarities                    … レア度の一覧 [{ id: "bronze", name: "ブロンズ" }, …]（手に入れにくいものほど後ろ）
+//    app.achievements()              … すべてのアチーブと、手に入れたか・今の数・レア度（rarity / rarityName）
 //    app.onAchievementsChange(関数)  … アチーブが変わったら呼ぶ
+//    app.loginDays()                 … ログインした日 { days: ["2026-11-10", …], total, streak, best }（ゲストなら null）
+//    app.onLoginDaysChange(関数)     … ログインした日・ログインしている人が変わったら呼ぶ
+//    app.usage("2026-11-01", "2026-11-30") … その間にアプリを開いていた時間（ゲストなら null）
+//                                      { total: 秒, apps: { quiz: 秒, … }, days, byDay: { 日付: { total, apps } }, byHour: [0〜23 時の { total, apps }] }
+//    app.onUsageChange(関数)         … 使った時間の記録が増えたら呼ぶ（30 秒ごとなど）
 //
 //  左のサイドバー（src/system/sidebar/index.html）だけで使えるもの（main/components/HtmlSidebar.jsx が足す）
 //    app.sidebar.state()             … { current（開いているページの id）, theme, user, top: [ページ], bottom: [ページ] }
@@ -22,7 +28,7 @@
 //    app.sidebar.hide()              … サイドバーを隠す
 //
 //  ほかに、ここでしていること
-//    ・ホワイト／ダーク・アニメーションを減らす・サイドバーを小さく を、窓の中にも同じように付ける
+//    ・ホワイト／ダーク・アニメーションを減らす・サイドバーを小さく・マウスカーソル を、窓の中にも同じように付ける
 //    ・窓の中で押したショートカット（Ctrl + 1 など）を、外の画面に伝える
 // ═══════════════════════════════════════════════════════════════
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
@@ -30,10 +36,13 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { PAGES } from "../apps";
 import { notify } from "../common/notify.js";
 import { inTauri } from "../common/api.js";
+import { CURSOR_VARS, cursorMoved, cursorClicked } from "../common/cursor.js";
 import {
   unlockAchievement, addProgress, setProgress, getUnlocked, getProgress, onAchievementsChange,
 } from "../common/achievements.js";
-import { ALL } from "../../pages/achieve/achieve.js";
+import { getLoginDays, onLoginsChange } from "../common/logins.js";
+import { getUsage, onUsageChange } from "../common/usage.js";
+import { ALL, RARITIES } from "../../pages/achieve/achieve.js";
 
 /** 窓（iframe）→ { page, getUser, open, extra, stop: 前の app の後片付け } */
 const frames = new Map();
@@ -80,11 +89,25 @@ function createApp(win) {
     to.dataset.theme = from.dataset.theme ?? "light";
     to.classList.toggle("reduce-motion", from.classList.contains("reduce-motion"));
     to.classList.toggle("compact-sidebar", from.classList.contains("compact-sidebar"));
+    to.classList.toggle("custom-cursor", from.classList.contains("custom-cursor"));   // マウスカーソル（main/common/cursor.js）
+    for (const v of CURSOR_VARS) {
+      const value = from.style.getPropertyValue(v);
+      if (value) to.style.setProperty(v, value); else to.style.removeProperty(v);
+    }
   };
   copyLook();
   const look = new MutationObserver(copyLook);
-  look.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
+  look.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
   stops.push(() => look.disconnect());
+
+  // ───────── 窓の中のマウスの動き・クリックを、外の画面のカーソルの効果に伝える（main/common/cursor.js） ─────────
+  const iframe = frame[0];
+  const toOuter = (e) => { const r = iframe.getBoundingClientRect(); return [r.left + e.clientX, r.top + e.clientY]; };
+  const onMove = (e) => cursorMoved(...toOuter(e));
+  const onDown = (e) => cursorClicked(...toOuter(e));
+  win.addEventListener("pointermove", onMove, { passive: true });
+  win.addEventListener("pointerdown", onDown, { passive: true });
+  stops.push(() => { try { win.removeEventListener("pointermove", onMove); win.removeEventListener("pointerdown", onDown); } catch { /* 窓がもうない */ } });
 
   // ───────── 窓の中で押したショートカットを、外の画面に伝える ─────────
   const onKey = (e) => {
@@ -128,17 +151,23 @@ function createApp(win) {
       if (!/^https?:\/\//i.test(String(url))) return Promise.reject(new Error("http:// か https:// の URL だけ開けます"));
       return inTauri ? openUrl(url) : Promise.resolve(window.open(url, "_blank", "noopener"));
     },
+    rarities: RARITIES.map((r) => ({ id: r.id, name: r.name })),   // レア度の一覧（ブロンズ → シルバー → ゴールド の順）
     achievements: () => {
       const unlocked = getUnlocked();
       const progress = getProgress();
       return ALL.map((a) => ({
         key: a.key, appId: a.key.split(":")[0], appName: a.appName,
         id: a.id, name: a.name, desc: a.desc ?? "", icon: a.icon, goal: a.goal ?? 0,
+        rarity: a.rarity, rarityName: a.rarityName,          // レア度（"bronze" / "silver" / "gold"）と、その名前（「ゴールド」など）
         gotAt: unlocked[a.key] ?? null,                     // 手に入れた日時（まだなら null）
         now: unlocked[a.key] ? (a.goal ?? 0) : (progress[a.key] ?? 0),   // 数をためるアチーブの今の数
       }));
     },
     onAchievementsChange: (fn) => watch(onAchievementsChange, fn),
+    loginDays: () => getLoginDays(),
+    onLoginDaysChange: (fn) => watch(onLoginsChange, fn),
+    usage: (from, to) => getUsage(from, to),
+    onUsageChange: (fn) => watch(onUsageChange, fn),
     ...(info.extra?.({ watch }) ?? {}),
   };
 }
