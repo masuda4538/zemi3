@@ -1,0 +1,35 @@
+/* ═══════════════════════════════════════════════════════════════
+   細いスクロールバー（中身の上に重ねて出す）
+   ふつうのバーは見えないようにします（幅を取らないので、バーが出ても中身が「ガクッ」とずれない）。
+   かわりのバーは main/common/scrollbar.js が描きます。色・太さはここで変えられます。
+   読んでいるところ：main/App.css（外の画面）と main/frame/frame.css（アプリ・サイドバーの窓の中）
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ふつうのバーを消す（スクロールはホイール・キーボード・下の細いバーでできる） */
+* { scrollbar-width: none; }
+::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+/* 細いバーを描く透明な板（マウスの操作はじゃましない） */
+.ovs-layer { position: fixed; inset: 0; z-index: 9990; pointer-events: none; overflow: hidden; }
+
+/* バー（つかみやすいように 12px の幅を取り、その中に細い線を描く） */
+.ovs-thumb { position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.ovs-thumb.y { width: 12px; }
+.ovs-thumb.x { height: 12px; }
+.ovs-thumb::before {
+  content: ""; position: absolute; border-radius: 99px;
+  background: color-mix(in srgb, var(--text-3) 55%, transparent);
+  transition: width .15s, height .15s, background-color .15s;
+}
+.ovs-thumb.y::before { top: 2px; bottom: 2px; right: 3px; width: 5px; }
+.ovs-thumb.x::before { left: 2px; right: 2px; bottom: 3px; height: 5px; }
+
+/* 出ているとき（スクロール中・右端にマウスが来たとき） */
+.ovs-thumb.on { opacity: 1; pointer-events: auto; }
+/* マウスを近づけた・つかんでいるときは、少し太く・濃く */
+.ovs-thumb.y.big::before, .ovs-thumb.y.drag::before { width: 8px; }
+.ovs-thumb.x.big::before, .ovs-thumb.x.drag::before { height: 8px; }
+.ovs-thumb.big::before, .ovs-thumb.drag::before { background: color-mix(in srgb, var(--text-3) 90%, transparent); }
+
+/* 設定の「アニメーションを減らす」 */
+.reduce-motion .ovs-thumb, .reduce-motion .ovs-thumb::before { transition: none; }

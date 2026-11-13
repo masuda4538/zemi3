@@ -10,7 +10,9 @@
 //  うまくいかないときは、ターミナルに出る「日本語入力：…」の行と、~/.cache/zemi3-fcitx5.log を見てください。
 //
 //  Windows・Mac で実行したとき、npm run tauri build などのときは、何もしないで tauri をそのまま動かします。
+//  （Windows で動かすと、Windows の日本語入力がそのまま使えます。準備は setup-kit v2 の「環境を作る」）
 //  日本語入力の準備をしたくないとき：ZEMI_NO_IME=1 npm run tauri dev
+//  起動の前に、Node.js の版が package.json の "engines" と合っているかも確かめます（違っても知らせるだけ）
 // ═══════════════════════════════════════════════════════════════
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -20,6 +22,18 @@ import readline from "node:readline/promises";
 
 const args = process.argv.slice(2);
 const env = { ...process.env };
+
+// Node.js の版の確認（package.json の "engines" に書いた版。違っても止めずに知らせるだけ）
+//   Rust の版は rust-toolchain.toml で自動でそろうので、ここでは調べません
+try {
+  const want = JSON.parse(fs.readFileSync("package.json", "utf8")).engines?.node ?? "";
+  const wantMajor = Number((want.match(/\d+/) ?? [])[0]);
+  const nowMajor = Number(process.versions.node.split(".")[0]);
+  if (wantMajor && nowMajor !== wantMajor) {
+    console.log(`\n! Node.js ${process.versions.node} で動かしています。このプロジェクトは Node.js ${wantMajor} 系にそろえています。`);
+    console.log("  setup-kit のダッシュボードで「差分を直す」を押すと、決められた版に入れ直せます。\n");
+  }
+} catch { /* 調べられなくても、そのまま動かす */ }
 
 /** WSL の中か（Linux で、/proc/version に microsoft と書いてある） */
 const inWsl = () => {
@@ -134,8 +148,8 @@ if (args[0] === "dev" && inWsl() && !process.env.ZEMI_NO_IME) {
   try { await setupJapaneseInput(); } catch (err) { console.log("日本語入力の準備でエラーが出ました（そのまま起動します）：", err.message); }
 }
 
-// tauri を動かす（node_modules/.bin/tauri）
-const bin = path.resolve("node_modules", ".bin", process.platform === "win32" ? "tauri.cmd" : "tauri");
-const child = spawn(bin, args, { stdio: "inherit", env, shell: process.platform === "win32" });
+// tauri を動かす（@tauri-apps/cli の tauri.js を、今の node で動かす。Windows・WSL のどちらでも同じ）
+const cli = path.resolve("node_modules", "@tauri-apps", "cli", "tauri.js");
+const child = spawn(process.execPath, [cli, ...args], { stdio: "inherit", env });
 child.on("exit", (code, signal) => process.exit(signal ? 1 : code ?? 0));
 for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => child.kill(sig));

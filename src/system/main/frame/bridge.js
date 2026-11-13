@@ -28,7 +28,7 @@
 //    app.sidebar.hide()              … サイドバーを隠す
 //
 //  ほかに、ここでしていること
-//    ・ホワイト／ダーク・アニメーションを減らす・サイドバーを小さく・マウスカーソル を、窓の中にも同じように付ける
+//    ・ホワイト／ダーク・アニメーションを減らす・サイドバーを小さく・細いスクロールバー を、窓の中にも同じように付ける
 //    ・窓の中で押したショートカット（Ctrl + 1 など）を、外の画面に伝える
 // ═══════════════════════════════════════════════════════════════
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
@@ -36,7 +36,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { PAGES } from "../apps";
 import { notify } from "../common/notify.js";
 import { inTauri } from "../common/api.js";
-import { CURSOR_VARS, cursorMoved, cursorClicked } from "../common/cursor.js";
+import { cursorMoved, cursorClicked } from "../common/cursor.js";
+import { installScrollbars } from "../common/scrollbar.js";
 import {
   unlockAchievement, addProgress, setProgress, getUnlocked, getProgress, onAchievementsChange,
 } from "../common/achievements.js";
@@ -89,13 +90,9 @@ function createApp(win) {
     to.dataset.theme = from.dataset.theme ?? "light";
     to.classList.toggle("reduce-motion", from.classList.contains("reduce-motion"));
     to.classList.toggle("compact-sidebar", from.classList.contains("compact-sidebar"));
-    to.classList.toggle("custom-cursor", from.classList.contains("custom-cursor"));   // マウスカーソル（main/common/cursor.js）
-    for (const v of CURSOR_VARS) {
-      const value = from.style.getPropertyValue(v);
-      if (value) to.style.setProperty(v, value); else to.style.removeProperty(v);
-    }
   };
   copyLook();
+  installScrollbars(win.document);   // 細いスクロールバー（main/common/scrollbar.js）
   const look = new MutationObserver(copyLook);
   look.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
   stops.push(() => look.disconnect());

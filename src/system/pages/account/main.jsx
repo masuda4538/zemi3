@@ -1,29 +1,29 @@
 // ═══════════════════════════════════════════════════════════════
 //  アカウント：画面（見た目）　［このフォルダーの入口：main.jsx］
-//  GitHub の Settings のように、左に項目、右に選んだ項目の中身を出します（main/components/SettingsLayout.jsx）。
+//  GitHub の Settings のように、左に項目、右に選んだ項目の中身を出します（core/components/SettingsLayout.jsx）。
 //    左上   … 名前・ログイン ID
 //    左の項目 … プロフィール / 言語・試験 / パスワード（下の SECTIONS）
 //    左下   … ログアウト
 //  それぞれの「保存」は、その項目の内容だけを保存します。
-//  保存していない変更があるまま別の項目を押すと、猫が「まだ保存してないよ…？」と聞きます。
-//  「保存しました」などは右上のお知らせ（main/common/notify.js）、入力のエラーはボタンの横に出します（画面はずれません）。
-//  main/App.jsx から user（ログインしている人）、onUserChange、onLogin、onLogout、confirm を受け取ります。
-//  ログインしていないとき（user が null）は、ログイン・新規登録のフォームを出します（LoginForm.jsx）。
+//  保存していない変更があるまま別の項目を押すと、「保存していない変更があります」と確認します。
+//  「保存しました」などは右上のお知らせ（core/utils/notify.js）、入力のエラーはボタンの横に出します（画面はずれません）。
+//  core/App.jsx から user（ログインしている人）、onUserChange、onLogin、onLogout、confirm を受け取ります。
+//  ログインしていないとき（user が null）は、ログイン・新規登録のフォームを出します（log_in/LoginForm.jsx）。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useMemo, useRef, useState } from "react";
-import SettingsLayout from "../../main/components/SettingsLayout";
-import LanguagePicker from "../../main/components/LanguagePicker";
-import Icon from "../../main/components/Icon";
-import Avatar from "../../main/components/Avatar";
-import { Field, PasswordInput, GenderPicker, BirthDateSelect, Spinner } from "../../main/components/Form";
-import { getGenders, getLanguages, updateMe, updateAvatar, changePassword } from "../../main/common/api.js";
-import { noErrors } from "../../main/common/validate.js";
-import { notify } from "../../main/common/notify.js";
-import { unlockAchievement } from "../../main/common/achievements.js";
+import SettingsLayout from "../../core/components/SettingsLayout";
+import LanguagePicker from "../../core/components/LanguagePicker";
+import Icon from "../../core/components/Icon";
+import Avatar from "../../core/components/Avatar";
+import { Field, PasswordInput, GenderPicker, BirthDateSelect, Spinner } from "../../core/components/Form";
+import { getGenders, getLanguages, updateMe, updateAvatar, changePassword } from "../../core/storage/account.js";
+import { noErrors } from "../../core/utils/validate.js";
+import { notify } from "../../core/utils/notify.js";
+import { unlockAchievement } from "../../core/storage/achievements.js";
 import {
   toProfileForm, checkProfile, toProfileInput, isBasicChanged, isLanguagesChanged, checkPasswordForm, checkAvatarFile, toAvatarDataUrl,
 } from "./account.js";
-import LoginForm from "./LoginForm";
+import LoginForm from "../../log_in/LoginForm";
 import "./account.css";
 
 /** 左の項目（上から順に並ぶ） */
@@ -55,7 +55,7 @@ function AccountSettings({ user, onUserChange, onLogout, confirm }) {
     x.id, (value) => setDirty((d) => (d[x.id] === value ? d : { ...d, [x.id]: value })),
   ])), []);
 
-  // 左の項目を押したとき：保存していない変更があれば、猫に聞いてもらう
+  // 左の項目を押したとき：保存していない変更があれば、確認する
   const select = async (id) => {
     if (id === current) return;
     if (dirty[current]) {
@@ -63,7 +63,6 @@ function AccountSettings({ user, onUserChange, onLogout, confirm }) {
         title: "保存していない変更があります",
         message: "移動すると、入力した内容は元に戻ります。",
         okLabel: "移動する", cancelLabel: "もどる",
-        cat: { says: "まだ保存してないよ…？", bye: "わかった！" },
       });
       if (!ok) return;
       setDirty((d) => ({ ...d, [current]: false }));

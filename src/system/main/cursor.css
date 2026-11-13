@@ -1,30 +1,22 @@
 /* ═══════════════════════════════════════════════════════════════
-   このアプリ専用のマウスカーソル（色・大きさなどは設定の「マウス」）
-   html に custom-cursor が付き、絵は --cur-default などに入る（main/common/cursor.js が作る）。
+   マウスカーソル
+   見た目は、いつもの Windows（PC）のカーソルのままです。
+   押せるところは指の形（手）、押せないところは禁止のしるしにします。
+   ・:where( ) で書いているので、それぞれの CSS で cursor を書けば、そちらが使われます（強さ 0）
    読んでいるところ：main/App.css（外の画面）と main/frame/frame.css（アプリ・サイドバーの窓の中）
-   いちばん下は、クリックの効果・動きの軌跡（外の画面のいちばん上に重ねる透明な板）
+   いちばん下は、クリックの効果・動きの軌跡（外の画面のいちばん上に重ねる透明な板。main/common/cursor.js）
    ═══════════════════════════════════════════════════════════════ */
 
-/* ふつうは矢印（いちばん上だけに絵を付けて、ほかの要素は親と同じにする → 軽い） */
-:root.custom-cursor { cursor: var(--cur-default) !important; }
-:root.custom-cursor * { cursor: inherit !important; }
+/* 押せるところは指の形（手） */
+:where(
+  button, a[href], select, summary, label:has(> input[type="checkbox"], > input[type="radio"]), .switch,
+  [role="button"], [role="tab"], [role="radio"], [role="switch"], [role="link"], [role="option"],
+  input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"], input[type="file"],
+  input[type="button"], input[type="submit"], input[type="reset"]
+) { cursor: pointer; }
 
-/* 文字を入れるところは I */
-:root.custom-cursor :is(
-  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"], [type="reset"]),
-  textarea, [contenteditable="true"]
-) { cursor: var(--cur-text) !important; }
-
-/* 押せるところは手（中の文字やアイコンは、上の inherit で同じ手になる） */
-:root.custom-cursor :is(
-  button, a[href], select, summary, .switch, [role="button"], [role="tab"], [role="radio"], [role="switch"], [role="link"],
-  input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"], input[type="file"], input[type="button"], input[type="submit"]
-) {
-  cursor: var(--cur-pointer) !important;
-}
-
-/* 押せないところは禁止 */
-:root.custom-cursor :is(button, input, select, textarea):disabled { cursor: var(--cur-not-allowed) !important; }
+/* 押せないところは禁止のしるし */
+:where(button, input, select, textarea):disabled { cursor: not-allowed; }
 
 /* ───────── クリックの効果・動きの軌跡（main/common/cursor.js の startEffects） ───────── */
 .cursor-fx { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }

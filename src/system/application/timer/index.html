@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!--
+  タイマー：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
+  ・このファイル（index.html）だけは、名前と場所を変えない（入口）
+  ・見た目は css/style.css、動きは js/main.js
+  ・アチーブは、このフォルダーの外の src/system/achieve_setting/timer.js に書く
+  ・ほかのページに切りかえても、タイマーは止まらずに動き続けます（core/page-list.js の keepAlive: true）
+
+  3 つのタイマー（上の切りかえで選ぶ）
+    ストップウォッチ … スタートから時間を数える。ラップ（区切り）も取れる
+    カウントダウン   … 決めた時間から減らしていき、0 になったら音とお知らせ
+    ポモドーロ       … 勉強（25 分）→ 休憩（5 分）をくり返す。4 回ごとに長い休憩（15 分）。時間は変えられる
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>タイマー</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <div class="tm">
+    <!-- 上：見出しと、3 つのタイマーの切りかえ -->
+    <header class="tm-head">
+      <h1>タイマー</h1>
+      <div class="tm-seg" id="modes" role="tablist" aria-label="タイマーの種類">
+        <button type="button" role="tab" data-mode="stopwatch">ストップウォッチ</button>
+        <button type="button" role="tab" data-mode="countdown">カウントダウン</button>
+        <button type="button" role="tab" data-mode="pomodoro">ポモドーロ</button>
+      </div>
+    </header>
+
+    <div class="tm-main">
+      <!-- 左：大きな時計（まわりの輪は、カウントダウン・ポモドーロの進み具合） -->
+      <section class="panel tm-clock-card">
+        <div class="tm-phase" id="phase">ストップウォッチ</div>
+        <div class="tm-dial">
+          <svg class="tm-ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="tm-ring-track" cx="60" cy="60" r="54"/>
+            <circle class="tm-ring-val" id="ring" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="tm-time" id="time" aria-live="off">00:00</div>
+          <div class="tm-sub" id="sub"></div>
+        </div>
+        <div class="tm-buttons">
+          <button type="button" class="btn btn-primary tm-btn-main" id="start">スタート</button>
+          <button type="button" class="btn btn-ghost" id="lap">ラップ</button>
+          <button type="button" class="btn btn-ghost" id="skip">次へ</button>
+          <button type="button" class="btn btn-ghost" id="reset">リセット</button>
+        </div>
+        <p class="tm-hint">スペースキーでスタート／一時停止</p>
+      </section>
+
+      <!-- 右：それぞれのタイマーの設定・記録（選んでいるタイマーのものだけ出す） -->
+      <section class="panel tm-side">
+        <!-- ストップウォッチ：ラップの一覧 -->
+        <div class="tm-pane" data-pane="stopwatch">
+          <h2>ラップ</h2>
+          <ol class="tm-laps" id="laps"></ol>
+          <p class="tm-empty" id="laps-empty">「ラップ」を押すと、ここに区切りの時間が並びます。</p>
+        </div>
+
+        <!-- カウントダウン：時間を決める -->
+        <div class="tm-pane" data-pane="countdown">
+          <h2>時間</h2>
+          <div class="tm-presets" id="presets"></div>
+          <div class="tm-custom">
+            <label for="cd-min">好きな時間</label>
+            <div class="tm-step">
+              <button type="button" class="tm-step-btn" data-step="-1" aria-label="1 分へらす">−</button>
+              <input class="input" id="cd-min" type="number" min="1" max="600" step="1" inputmode="numeric">
+              <button type="button" class="tm-step-btn" data-step="1" aria-label="1 分ふやす">＋</button>
+              <span>分</span>
+            </div>
+          </div>
+          <p class="tm-note">動いている間は時間を変えられません（リセットすると変えられます）。</p>
+        </div>
+
+        <!-- ポモドーロ：時間の設定と、今日の回数 -->
+        <div class="tm-pane" data-pane="pomodoro">
+          <h2>設定</h2>
+          <div class="tm-rows">
+            <label class="tm-row"><span>勉強</span><span class="tm-step"><input class="input" id="pm-work" type="number" min="1" max="180"><span>分</span></span></label>
+            <label class="tm-row"><span>休憩</span><span class="tm-step"><input class="input" id="pm-short" type="number" min="1" max="60"><span>分</span></span></label>
+            <label class="tm-row"><span>長い休憩（4 回ごと）</span><span class="tm-step"><input class="input" id="pm-long" type="number" min="1" max="90"><span>分</span></span></label>
+            <label class="tm-row"><span>終わったら次をすぐ始める</span><input type="checkbox" id="pm-auto" class="tm-check"></label>
+          </div>
+          <h2>今日の勉強</h2>
+          <div class="tm-today">
+            <div><b id="pm-count">0</b><span>回</span></div>
+            <div><b id="pm-minutes">0</b><span>分</span></div>
+          </div>
+          <div class="tm-dots" id="pm-dots" aria-label="4 回のうち何回目か"></div>
+        </div>
+
+        <!-- どのタイマーでも：音 -->
+        <label class="tm-row tm-sound"><span>終わったときに音を鳴らす</span><input type="checkbox" id="sound" class="tm-check"></label>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

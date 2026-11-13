@@ -2,7 +2,7 @@
    左のサイドバー：見た目 ★ 書きかえてよい
    ・index.html の <link rel="stylesheet" href="./css/style.css"> で読まれています
    ・この窓の中だけに効きます
-   ・サイドバーの幅は、外側（main/theme.css の --side-w）で決めています
+   ・サイドバーの幅は、外側（core/styles/theme.css の --side-w）で決めています
    ・設定の「サイドバーを小さくする」がオンのときは、html に compact-sidebar が付きます
    ═══════════════════════════════════════════════════════════════ */
 

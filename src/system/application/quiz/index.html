@@ -34,6 +34,9 @@
   <script>
     app.unlock("first-open");     // はじめて開いた
     app.addProgress("open-10");   // 開いた回数を 1 つ増やす（10 回で手に入る）
+    // ホームのカードに出す学習時間（src/system/home_setting/quiz.js に書いたもの。今は例）。計りたいところで呼ぶ
+    // app.startStudy("make");            // 学習をはじめた（app.stopStudy() でやめる。ページを閉じても止まる）
+    // app.addStat("answered");                // 問題に解答したとき（ホームのカードの下の数。home_setting/quiz.js の stats）
   </script>
 </body>
 </html>

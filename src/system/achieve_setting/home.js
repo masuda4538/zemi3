@@ -1,14 +1,14 @@
 // ═══════════════════════════════════════════════════════════════
 //  ホームのアチーブ ★ ホームの担当者だけが書きかえる（ほかのファイルは触らない → コンフリクトしない）
-//  ファイル名 ＝ ページの id（main/apps.js）。このフォルダーの .js は自動で読み込まれます（どこにも登録しなくてよい）
+//  ファイル名 ＝ ページの id（core/page-list.js）。このフォルダーの .js は自動で読み込まれます（どこにも登録しなくてよい）
 //
 //  1 行に 1 つ、{ } で書きます
 //    id    … 英語の名前（このファイルの中で同じものを使わない）。手に入れるときに使う
 //    name  … アチーブの名前（画面に出る）
 //    desc  … 説明（どうしたら手に入るか）
-//    icon  … 絵（main/components/Icon.jsx にある名前。書かなければトロフィー）
 //    goal  … 数をためるアチーブだけ書く（例：goal: 10 → 10 回で手に入る）
 //    rarity … レア度（カードの枠の色）。"bronze"（ブロンズ）/ "silver"（シルバー）/ "gold"（ゴールド）。書かなければ bronze
+//  ※ アチーブの絵は、そのアプリのアイコン（core/page-list.js の icon）が自動で使われます（書かなくてよい）
 //
 //  手に入れ方（application/home の JS で）
 //    ふつうのアチーブ   … app.unlock("id");
@@ -18,6 +18,6 @@
 
 // ↓ どちらも application/home/js/main.js の drawLogin が、ログイン日数から数えている
 export default [
-  { id: "streak-3", name: "三日坊主じゃない", desc: "3 日つづけてログインした", icon: "home", goal: 3, rarity: "silver" },
-  { id: "days-10",  name: "常連さん",         desc: "合計 10 日ログインした",   icon: "home", goal: 10, rarity: "gold" },
+  { id: "streak-3", name: "三日坊主じゃない", desc: "3 日つづけてログインした", goal: 3, rarity: "silver" },
+  { id: "days-10",  name: "常連さん",         desc: "合計 10 日ログインした", goal: 10, rarity: "gold" },
 ];

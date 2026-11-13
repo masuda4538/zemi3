@@ -1,0 +1,93 @@
+/* ═══════════════════════════════════════════════════════════════
+   タイマー：見た目（普通の CSS） ★ 自由に書きかえてよい
+   ・色は var(--primary) などを使うと、ダークモードにも自動で合う
+   ・休憩中は --tm-color を水色にする（js/main.js が .tm に is-break を付ける）
+   ═══════════════════════════════════════════════════════════════ */
+.tm { --tm-color: var(--primary); max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.tm.is-break { --tm-color: #14b8a6; }
+.tm [hidden] { display: none !important; }
+
+/* ───────── 上：見出しと切りかえ ───────── */
+.tm-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.tm-head h1 { font-size: 22px; font-weight: 800; }
+.tm-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
+.tm-seg button {
+  height: 32px; padding: 0 16px; border: 0; border-radius: 8px; background: transparent; cursor: pointer;
+  color: var(--text-2); font-size: 13px; font-weight: 700;
+}
+.tm-seg button:hover { color: var(--text); }
+.tm-seg button[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+
+/* ───────── まん中：時計（左）と設定（右） ───────── */
+.tm-main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 14px; align-items: start; }
+
+.tm-clock-card { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 22px 20px 18px; }
+.tm-phase {
+  padding: 4px 14px; border-radius: 99px; font-size: 13px; font-weight: 800;
+  color: var(--tm-color); background: color-mix(in srgb, var(--tm-color) 12%, transparent);
+}
+.tm-dial { position: relative; width: min(340px, 70vw); aspect-ratio: 1; display: grid; place-items: center; }
+.tm-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.tm-ring circle { fill: none; stroke-width: 6; }
+.tm-ring-track { stroke: var(--surface-2); }
+.tm-ring-val { stroke: var(--tm-color); stroke-linecap: round; transition: stroke-dashoffset .25s linear, stroke .3s; }
+.tm-time {
+  position: relative; font-size: clamp(44px, 7vw, 68px); font-weight: 800; letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;   /* 数字の幅をそろえて、変わっても横に動かないように */
+}
+.tm-sub { position: absolute; top: 64%; font-size: 13px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+.tm-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.tm-buttons .btn { min-width: 104px; }
+.tm-btn-main { min-width: 150px !important; background: var(--tm-color); border-color: var(--tm-color); }
+.tm-hint { font-size: 12px; color: var(--text-3); }
+
+/* ───────── 右：設定・記録 ───────── */
+.tm-side { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; }
+.tm-side h2 { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+.tm-pane { display: flex; flex-direction: column; }
+.tm-pane h2:not(:first-child) { margin-top: 16px; }
+.tm-empty, .tm-note { font-size: 12.5px; color: var(--text-2); }
+.tm-note { margin-top: 10px; }
+
+/* ラップ */
+.tm-laps { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow: auto; display: flex; flex-direction: column; }
+.tm-laps li { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; padding: 7px 4px; border-top: 1px solid var(--border); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.tm-laps li:first-child { border-top: 0; }
+.tm-laps li span:first-child { color: var(--text-2); font-weight: 700; }
+.tm-laps li b { text-align: right; }
+.tm-laps li em { font-style: normal; color: var(--text-2); }
+
+/* カウントダウンの時間 */
+.tm-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tm-presets button {
+  height: 38px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); cursor: pointer;
+  color: var(--text); font-size: 13.5px; font-weight: 700;
+}
+.tm-presets button:hover:not(:disabled) { border-color: var(--tm-color); }
+.tm-presets button.on { border-color: var(--tm-color); background: color-mix(in srgb, var(--tm-color) 10%, transparent); color: var(--tm-color); }
+.tm-presets button:disabled { opacity: .5; }
+.tm-custom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 13.5px; font-weight: 700; }
+.tm-step { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.tm-step .input { width: 72px; height: 34px; text-align: center; }
+.tm-step-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 16px; color: var(--text); }
+.tm-step-btn:disabled { opacity: .45; }
+
+/* ポモドーロの設定 */
+.tm-rows { display: flex; flex-direction: column; }
+.tm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13.5px; font-weight: 700; }
+.tm-rows .tm-row:first-child { border-top: 0; }
+.tm-check { width: 18px; height: 18px; accent-color: var(--primary); }
+.tm-sound { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 2px; }
+
+.tm-today { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tm-today div { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; color: var(--text-2); font-weight: 700; }
+.tm-today b { margin-right: 4px; font-size: 24px; color: var(--text); font-variant-numeric: tabular-nums; }
+.tm-dots { display: flex; gap: 8px; margin-top: 12px; }
+.tm-dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--tm-color); }
+.tm-dots i.on { background: var(--tm-color); }
+
+/* せまいときは、たてに並べる */
+@media (max-width: 900px) {
+  .tm-main { grid-template-columns: 1fr; }
+}

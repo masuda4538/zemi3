@@ -7,8 +7,8 @@
 //    src/system/sidebar/           … 左のサイドバー（左側の窓）
 //
 //  1. その HTML の <head> のいちばん上に、自動で 2 つ入れる
-//       ・共通の見た目（main/frame/frame.css）… 色・ダークモード・btn・panel・input
-//       ・window.app を用意する短いスクリプト（中身は main/frame/bridge.js）
+//       ・共通の見た目（core/frame/frame.css）… 色・ダークモード・btn・panel・input
+//       ・window.app を用意する短いスクリプト（中身は core/frame/bridge.js）
 //  2. 保存したとき（npm run tauri dev の間）
 //       ・CSS … そのまま見た目だけ入れかわる
 //       ・HTML … その窓だけ読み直す
@@ -111,7 +111,7 @@ export default function appsPlugin() {
         const f = appFile(ctx.filename ?? "");
         if (!f || !isWindow(f)) return;
         return [
-          { tag: "link", attrs: { rel: "stylesheet", href: "/src/system/main/frame/frame.css" }, injectTo: "head-prepend" },
+          { tag: "link", attrs: { rel: "stylesheet", href: "/src/system/core/frame/frame.css" }, injectTo: "head-prepend" },
           { tag: "script", children: BOOT, injectTo: "head-prepend" },
         ];
       },

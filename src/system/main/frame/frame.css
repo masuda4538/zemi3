@@ -8,6 +8,7 @@
 @import "../theme.css";
 @import "../components/form.css";
 @import "../cursor.css";   /* マウスカーソル（設定の「マウス」） */
+@import "../scrollbar.css";   /* 細いスクロールバー（中身の上に重ねる。main/common/scrollbar.js） */
 
 * { box-sizing: border-box; }
 html { background: transparent; }
@@ -22,7 +23,6 @@ body {
 h1, h2, h3, p { margin: 0; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
 
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 

@@ -17,10 +17,10 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { load } from "@tauri-apps/plugin-store";
-import { inTauri } from "../../main/common/api.js";
-import { DEFAULT_SHORTCUTS } from "../../main/shortcuts.js";
-import { notify } from "../../main/common/notify.js";
-import { applyCursor } from "../../main/common/cursor.js";
+import { inTauri } from "../../core/storage/account.js";
+import { DEFAULT_SHORTCUTS } from "../../core/shortcuts.js";
+import { notify } from "../../core/utils/notify.js";
+import { applyCursor } from "../../core/effects/mouse-effects.js";
 
 /** 設定ファイルの名前（AppData の中のアプリのフォルダーに作られる） */
 const FILE = "settings.json";
@@ -38,23 +38,19 @@ export const DEFAULTS = {
   fontSize: "medium",      // "small" / "medium" / "large"
   reduceMotion: false,     // アニメーションを減らす
   compactSidebar: false,   // サイドバーの文字を隠す（アイコンだけ）
-  // マウス（main/common/cursor.js）
-  cursorFill: "#ffffff",   // 本体の色
-  cursorLine: "#111111",   // ふちの色
-  cursorSize: 26,          // 大きさ（ピクセル。18〜64）
-  cursorShadow: true,      // 影を付ける
+  // マウス（core/effects/mouse-effects.js）
   clickEffect: false,      // クリックしたところに波紋
   cursorTrail: false,      // 動きの軌跡
   effectColor: "#2563eb",  // 波紋と軌跡の色
   // 操作
   confirmLogout: true,     // ログアウトの前に確認する
-  confirmClose: true,      // アプリを閉じる前に確認する（猫が「もう帰るの…？」と聞く）
+  confirmClose: true,      // アプリを閉じる前に「アプリを閉じますか？」と確認する
   // アチーブのページ
   achieveView: "list",     // "list"：1 行に 1 つ / "grid"：横に 3 つ（アチーブのページの一覧の右上で切り替える）
   // 起動
   startMaximized: true,    // 起動したときに最大化する
   // キーボード
-  shortcuts: DEFAULT_SHORTCUTS,   // { 操作の id: "Ctrl+1" など }（一覧は main/shortcuts.js）
+  shortcuts: DEFAULT_SHORTCUTS,   // { 操作の id: "Ctrl+1" など }（一覧は core/shortcuts.js）
 };
 
 /** 文字の大きさ → 画面の拡大率 */
@@ -187,7 +183,7 @@ export function applySettings(settings) {
   try { localStorage.setItem("boot-theme", root.dataset.theme); } catch { /* 覚えられなくてもよい */ }   // 次のロード画面の色（index.html）
   root.classList.toggle("reduce-motion", settings.reduceMotion);
   root.classList.toggle("compact-sidebar", settings.compactSidebar);
-  applyCursor(settings);   // マウスカーソル（main/common/cursor.js）
+  applyCursor(settings);   // マウスカーソル（core/effects/mouse-effects.js）
 
   const zoom = FONT_SIZES.find((f) => f.id === settings.fontSize)?.zoom ?? 1;
   if (inTauri) {
