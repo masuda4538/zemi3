@@ -22,3 +22,4 @@ export default [
   { id: "first-open", name: "はじめの一歩", desc: "はじめてプログラム学習を開いた", rarity: "bronze" },
   { id: "open-10",    name: "コツコツ学習", desc: "プログラム学習を 10 回開いた", goal: 10, rarity: "silver" },
 ];
+
