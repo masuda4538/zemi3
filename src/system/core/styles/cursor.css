@@ -1,0 +1,29 @@
+/* ═══════════════════════════════════════════════════════════════
+   マウスカーソル
+   見た目は、いつもの Windows（PC）のカーソルのままです。
+   押せるところは指の形（手）、押せないところは禁止のしるしにします。
+   ・:where( ) で書いているので、それぞれの CSS で cursor を書けば、そちらが使われます（強さ 0）
+   読んでいるところ：core/App.css（外の画面）と core/frame/frame.css（アプリ・サイドバーの窓の中）
+   いちばん下は、クリックの効果・動きの軌跡（外の画面のいちばん上に重ねる透明な板。core/effects/mouse-effects.js）
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 押せるところは指の形（手） */
+:where(
+  button, a[href], select, summary, label:has(> input[type="checkbox"], > input[type="radio"]), .switch,
+  [role="button"], [role="tab"], [role="radio"], [role="switch"], [role="link"], [role="option"],
+  input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"], input[type="file"],
+  input[type="button"], input[type="submit"], input[type="reset"]
+) { cursor: pointer; }
+
+/* 押せないところは禁止のしるし */
+:where(button, input, select, textarea):disabled { cursor: not-allowed; }
+
+/* ───────── クリックの効果・動きの軌跡（core/effects/mouse-effects.js の startEffects） ───────── */
+.cursor-fx { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
+.cursor-fx canvas { position: absolute; inset: 0; }
+.cursor-fx-ripple {
+  position: absolute; border-radius: 50%;
+  border: 2px solid var(--fx); background: color-mix(in srgb, var(--fx) 18%, transparent);
+  animation: cursor-ripple .5s ease-out forwards;
+}
+@keyframes cursor-ripple { from { transform: scale(.15); opacity: .9; } to { transform: scale(1); opacity: 0; } }

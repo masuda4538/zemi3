@@ -3,7 +3,7 @@
   ホーム：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
   ・このファイル（index.html）と rust/main.rs だけは、名前と場所を変えない（入口）
   ・CSS・JS は下の <link> <script> でつないでいる（ファイルを増やしたら、ここに足す）
-  ・中身（ログイン日数・アチーブ・使った時間）は js/main.js が入れる。ここは「枠」だけ
+  ・中身（名前・ログイン日数・アチーブ・使った時間）は js/main.js が入れる。ここは「枠」だけ
 
   フォルダーの中（いちばん外は index.html だけ。ほかは種類ごとのフォルダーに入れる）
     index.html                     画面の入口（このファイル）
@@ -16,13 +16,16 @@
     ※ アチーブは、このフォルダーの外の src/system/achieve_setting/home.js に書く
 
   ホームに出しているもの（上から）
-    1. 時計の帯 …… 左に今日の日付、まん中に今の時刻（時:分:秒）、右にログイン日数・連続日数（白黒）
-    2. アチーブ …… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れた 2 つ
+    1. いちばん上の帯 … 左にアイコンとログインしている人の名前、右はしにログイン日数・連続日数・累計勉強時間（下の枠と同じ見た目）
+    2. アチーブ …… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（2 つ分の高さ。残りはスクロール）
                    （「すべて見る」でアチーブのページへ）
     ※ グラフは小さめにして、画面に収まるように並べている（せまいときは、たてに並ぶ）
     3. 使った時間 … アプリごとの円グラフ ＋ 日：何時に／週：何曜日に／月：カレンダー／年：何月に 使ったかのグラフ
                    日・週・月・年で切りかえ、‹ › で前後へ
-                   （計っているのは main/common/usage.js。プログラム学習〜問題作成を右に出しているあいだ。ホームは計らない）
+                   （計っているのは core/storage/usage.js。プログラム学習〜問題作成を右に出しているあいだ。ホームは計らない）
+    4. アプリごとのカード … 学習時間の内訳（円グラフ）・アチーブの取得率（円グラフ）・大事な数と「開く」ボタン
+                   学習時間の内訳と大事な数は src/system/home_setting/<アプリの id>.js に書く（各アプリの担当者が決める。今は例）
+                   時間は各アプリの JS で app.startStudy("id") / app.stopStudy()、数は app.addStat("id") と入れる
 -->
 <html lang="ja">
 <head>
@@ -34,26 +37,35 @@
 <body>
   <div class="home">
 
-    <!-- 1. 時計の帯（白黒）：左に日付、まん中に時刻、右にログイン日数 -->
-    <section class="home-hero" aria-label="今の時刻">
-      <span class="home-clock-date" id="date">2026年1月1日（木）</span>   <!-- 左はし -->
-      <span class="home-clock-time" id="clock">00:00:00</span>          <!-- まん中 -->
+    <!-- 1. いちばん上の帯（下のアチーブ・使った時間と同じ枠）：左にアイコンと名前、右はしにログイン日数 -->
+    <section class="panel home-hero" aria-label="ログインしている人">
+      <!-- 左はし：アイコン（画像がなければ名前の 1 文字）と、ログイン ID（上）・名前（下） -->
+      <div class="home-user">
+        <span class="home-avatar" id="user-avatar" aria-hidden="true"></span>
+        <div class="home-user-text">
+          <span class="home-user-sub" id="user-sub">ログインしていません</span>   <!-- 上：ログイン ID -->
+          <strong class="home-user-name" id="user-name">ゲスト</strong>           <!-- 下：名前 -->
+        </div>
+      </div>
       <!-- 右はし：ログイン日数（ゲストのときは「ログインすると記録されます」） -->
       <div class="home-hero-login" id="login-stats">
         <span>ログイン <b id="login-total">0</b> 日</span>
         <span class="home-hero-sep" aria-hidden="true"></span>
         <span>連続 <b id="login-streak">0</b> 日</span>
+        <span class="home-hero-sep" aria-hidden="true"></span>
+        <!-- 累計勉強時間：アプリ（プログラム学習〜タイマー）を開いていた時間の合計（「使った時間」と同じ記録） -->
+        <span id="study-total-box">累計勉強時間 <span id="study-total"><b>0</b>分</span></span>
       </div>
-      <button type="button" class="home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
+      <button type="button" class="home-link home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
     </section>
 
-    <!-- 2. アチーブ（横いっぱい。左に円とレア度ごとの数、右に最近手に入れた 2 つ） -->
+    <!-- 2. アチーブ（横いっぱい。左に円とレア度ごとの数、右に最近手に入れたもの） -->
     <section class="panel home-card home-achieve">
       <div class="home-card-head">
         <h2>アチーブ</h2>
         <button type="button" class="home-link" id="open-achieve">すべて見る ›</button>
       </div>
-      <!-- 3 つに分ける：全体の円 ｜ レア度ごとの数 ｜ 最近手に入れた 2 つ -->
+      <!-- 3 つに分ける：全体の円 ｜ レア度ごとの数 ｜ 最近手に入れたもの（スクロールで全部見られる） -->
       <div class="home-achieve-body">
         <div class="home-achieve-all">
           <div class="home-ring" id="ring" role="img" aria-label="アチーブの進み具合"></div>
@@ -112,6 +124,11 @@
         <p>ログインすると、アプリを開いている時間が記録されます。</p>
         <button type="button" class="btn btn-primary" id="usage-login">ログインする</button>
       </div>
+    </section>
+
+    <!-- 4. アプリごとのカード（学習時間・アチーブの円グラフ・大事な数と「開く」ボタン。中身は js/main.js の drawApps） -->
+    <section class="home-apps" aria-label="アプリごとの学習時間とアチーブ">
+      <div class="home-apps-grid" id="app-cards"></div>
     </section>
   </div>
 </body>

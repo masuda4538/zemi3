@@ -2,19 +2,19 @@
 //  設定 → キーボード：ショートカットを登録する画面
 //    「変更」を押すと「キーを押してください…」になり、押した組み合わせがそのまま登録される
 //      Esc … やめる　／　Ctrl か Alt と組み合わせる（F1〜F12 は 1 つでも OK）
-//    すでに別の操作で使っているキーなら、猫が「付け替えますか？」と聞く
+//    すでに別の操作で使っているキーなら、「付け替えますか？」と確認する
 //    × で「なし」に、「すべて最初に戻す」で最初のキーに戻る
 //    できたことは右上のお知らせ（notify）、登録できないキーなどはこの画面の下に出す
-//  操作の一覧・キーの読み取りは main/shortcuts.js
+//  操作の一覧・キーの読み取りは core/shortcuts.js
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
-import { notify } from "../../main/common/notify.js";
-import { ACTIONS, DEFAULT_SHORTCUTS, comboFromEvent, formatCombo, checkCombo, actionOfCombo } from "../../main/shortcuts.js";
+import { notify } from "../../core/utils/notify.js";
+import { ACTIONS, DEFAULT_SHORTCUTS, comboFromEvent, formatCombo, checkCombo, actionOfCombo } from "../../core/shortcuts.js";
 
 /**
  * shortcuts : { 操作の id: "Ctrl+1" など }
  * onChange  : (新しい shortcuts) => void
- * confirm   : 猫つきの確認（App.jsx から）
+ * confirm   : 確認のダイアログ（App.jsx から）
  */
 export default function ShortcutEditor({ shortcuts, onChange, confirm }) {
   const [recording, setRecording] = useState(null);   // キーを待っている操作の id
@@ -54,7 +54,6 @@ export default function ShortcutEditor({ shortcuts, onChange, confirm }) {
         title: `「${formatCombo(combo)}」は「${other.name}」で使っています`,
         message: `「${nameOf(id)}」に付け替えますか？\n「${other.name}」のショートカットは「なし」になります。`,
         okLabel: "付け替える", cancelLabel: "やめる",
-        cat: { says: "かぶってるよ…？", bye: "付け替えたよ！" },
       });
       if (!ok) { setMessage({ text: "", type: "" }); return; }
       onChange({ ...shortcuts, [other.id]: "", [id]: combo });

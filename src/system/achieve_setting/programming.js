@@ -1,14 +1,14 @@
 // ═══════════════════════════════════════════════════════════════
 //  プログラム学習のアチーブ ★ プログラム学習の担当者だけが書きかえる（ほかのアプリのファイルは触らない → コンフリクトしない）
-//  ファイル名 ＝ アプリの id（main/apps.js）。このフォルダーの .js は自動で読み込まれます（どこにも登録しなくてよい）
+//  ファイル名 ＝ アプリの id（core/page-list.js）。このフォルダーの .js は自動で読み込まれます（どこにも登録しなくてよい）
 //
 //  1 行に 1 つ、{ } で書きます
 //    id    … 英語の名前（このファイルの中で同じものを使わない）。手に入れるときに使う
 //    name  … アチーブの名前（画面に出る）
 //    desc  … 説明（どうしたら手に入るか）
-//    icon  … 絵（main/components/Icon.jsx にある名前。書かなければトロフィー）
 //    goal  … 数をためるアチーブだけ書く（例：goal: 10 → 10 回で手に入る）
 //    rarity … レア度（カードの枠の色）。"bronze"（ブロンズ）/ "silver"（シルバー）/ "gold"（ゴールド）。書かなければ bronze
+//  ※ アチーブの絵は、そのアプリのアイコン（core/page-list.js の icon）が自動で使われます（書かなくてよい）
 //
 //  手に入れ方（application/programming の JS で）
 //    ふつうのアチーブ   … app.unlock("first-open");
@@ -19,6 +19,6 @@
 
 // ↓ 今は例が 2 つ入っています（index.html の下で手に入れている）。使わなければ消して、自分のアチーブを書いてください
 export default [
-  { id: "first-open", name: "はじめの一歩", desc: "はじめてプログラム学習を開いた", icon: "programming", rarity: "bronze" },
-  { id: "open-10",    name: "コツコツ学習", desc: "プログラム学習を 10 回開いた", icon: "programming", goal: 10, rarity: "silver" },
+  { id: "first-open", name: "はじめの一歩", desc: "はじめてプログラム学習を開いた", rarity: "bronze" },
+  { id: "open-10",    name: "コツコツ学習", desc: "プログラム学習を 10 回開いた", goal: 10, rarity: "silver" },
 ];

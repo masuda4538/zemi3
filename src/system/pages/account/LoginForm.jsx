@@ -4,17 +4,20 @@
 //    新規登録 … ステップごとに進む：① アカウント → ② プロフィール → ③ 言語・試験（任意）→ ④ 確認して登録
 //               （ステップの名前と項目は register.js の STEPS）
 //    いちばん下の「新規登録」「ログイン」で切りかえる（横にすべって入れかわり、枠の高さもなめらかに変わる）
-//    ログイン・登録できたら onLogin(ログインした人) を呼ぶ → main/App.jsx が覚える（ログアウトするまで）
-//  データの関数は main/common/api.js（login・register）、入力のチェックは main/common/validate.js
+//    ログイン・登録できたら onLogin(ログインした人) を呼ぶ → core/App.jsx が覚える（ログアウトするまで）
+//    使っているところ：起動したときのログインの画面（start-end/LoginGate.jsx）
+//      initialId … ログイン ID の欄に、はじめから入れておく文字（3 か月使わずにログインし直すとき）
+//      notice    … カードの上に出すお知らせ（3 か月たったので、もう一度ログインしてください など）
+//  データの関数は core/storage/account.js（login・register）、入力のチェックは core/utils/validate.js
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import Icon from "../../main/components/Icon";
-import LanguagePicker from "../../main/components/LanguagePicker";
-import { Field, PasswordInput, GenderPicker, BirthDateSelect, MessageSlot, Spinner } from "../../main/components/Form";
-import { getGenders, getLanguages, login, register } from "../../main/common/api.js";
+import Icon from "../../core/components/Icon";
+import LanguagePicker from "../../core/components/LanguagePicker";
+import { Field, PasswordInput, GenderPicker, BirthDateSelect, MessageSlot, Spinner } from "../../core/components/Form";
+import { getGenders, getLanguages, login, register } from "../../core/storage/account.js";
 import { emptyRegister, toRegisterInput, STEPS, stepErrors, firstInvalidStep } from "./register.js";
 
-export default function LoginForm({ onLogin }) {
+export default function LoginForm({ onLogin, initialId = "", notice = "" }) {
   const [mode, setMode] = useState("login");   // "login" か "register"
   const [height, setHeight] = useState(null);  // 中身の高さ（切りかえたときに、なめらかに変えるため）
   const loginRef = useRef(null);
@@ -43,13 +46,13 @@ export default function LoginForm({ onLogin }) {
       <div className="panel acc-login-card">
         <div className="acc-login-head">
           <span className="acc-login-icon"><Icon name="account" /></span>
-          <p>ログインすると、アチーブが記録されます。一度ログインしたら、ログアウトするまで覚えています。</p>
+          <p>{notice || "一度ログインしたら、ログアウトするまで覚えています（3 か月使わなかったときは、もう一度ログインします）。"}</p>
         </div>
 
         {/* 2 つとも置いておき、見えていないほうは隠す（inert：押せない・Tab で入れない）。入力した内容は残る */}
         <div className="acc-login-body" style={{ height: height ?? undefined }}>
           <div ref={loginRef} className={`acc-pane is-login${mode === "login" ? " on" : ""}`} inert={mode !== "login"}>
-            <LoginTab onLogin={onLogin} onRegister={() => setMode("register")} />
+            <LoginTab onLogin={onLogin} onRegister={() => setMode("register")} initialId={initialId} />
           </div>
           <div ref={registerRef} className={`acc-pane is-register${mode === "register" ? " on" : ""}`} inert={mode !== "register"}>
             <RegisterForm onLogin={onLogin} onSwitch={() => setMode("login")} />
@@ -61,8 +64,8 @@ export default function LoginForm({ onLogin }) {
 }
 
 // ───────── ログイン ─────────
-function LoginTab({ onLogin, onRegister }) {
-  const [userId, setUserId] = useState("");
+function LoginTab({ onLogin, onRegister, initialId = "" }) {
+  const [userId, setUserId] = useState(initialId);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);

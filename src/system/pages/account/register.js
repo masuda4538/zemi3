@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
 //  アカウント：新規登録の処理（ステップ・入力のチェック・送るデータを作る）
-//  画面は LoginForm.jsx の RegisterForm、データを扱う関数は main/common/api.js
+//  画面は LoginForm.jsx の RegisterForm、データを扱う関数は core/storage/account.js
 // ═══════════════════════════════════════════════════════════════
 import {
   checkUserId, checkPassword, checkConfirm, checkName, checkMail, checkGender, checkBirth, toDateString,
-} from "../../main/common/validate.js";
+} from "../../core/utils/validate.js";
 
 /** 新規登録フォームの最初の値 */
 export const emptyRegister = () => ({
@@ -53,7 +53,7 @@ export function firstInvalidStep(form, before = STEPS.length) {
   return -1;
 }
 
-/** api.js の register に送る形にする */
+/** core/storage/account.js の register に送る形にする */
 export const toRegisterInput = (f) => ({
   userId: f.userId.trim(),
   name: f.name.trim(),
