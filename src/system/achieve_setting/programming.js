@@ -23,3 +23,4 @@ export default [
   { id: "open-10",    name: "コツコツ学習", desc: "プログラム学習を 10 回開いた", goal: 10, rarity: "silver" },
 ];
 
+
