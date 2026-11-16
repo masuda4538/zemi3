@@ -3,6 +3,10 @@
    ・色は var(--primary) などを使うと、ダークモードにも自動で合う
    ・休憩中は --tm-color を水色にする（js/main.js が .tm に is-break を付ける）
    ═══════════════════════════════════════════════════════════════ */
+
+/* 画面のまわりの余白（上・左右・下） */
+body { padding: 4px 24px 28px; }
+
 .tm { --tm-color: var(--primary); max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .tm.is-break { --tm-color: #14b8a6; }
 .tm [hidden] { display: none !important; }
