@@ -14,7 +14,7 @@
 html { background: transparent; }
 body {
   margin: 0;
-  padding: 4px 24px 28px;
+  padding: 0;   /* 枠（窓）の内側の余白はなし。余白がほしいときは、各アプリの css/style.css で付ける */
   background: transparent;
   color: var(--text);
   font-family: var(--font); font-size: 14px; line-height: 1.5;
