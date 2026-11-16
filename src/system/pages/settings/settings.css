@@ -1,0 +1,71 @@
+/* ═════════ 設定画面（左に項目・右に中身。形は core/components/settings-layout.css） ═════════ */
+
+/* 左上：「設定」 */
+.set-head { display: flex; align-items: center; gap: 12px; }
+.set-head-icon {
+  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
+  background: linear-gradient(150deg, var(--sky), var(--primary) 70%); color: #fff;
+}
+.set-head-icon .icon { width: 24px; height: 24px; }
+.set-head-text strong { display: block; font-size: 16px; font-weight: 800; }
+.set-head-text span { font-size: 12px; color: var(--text-3); }
+
+/* 右：中身の枠 */
+.settings-card .set-row { padding: 14px 20px; }
+.settings-card .set-row:first-child { border-top: 0; }   /* 枠の上に線を出さない */
+.set-control { display: flex; align-items: center; gap: 10px; flex: none; }
+.settings-card .seg button { padding: 0 13px; }
+
+.btn-sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+
+/* 設定ファイルの場所 */
+.set-path {
+  display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 6px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font: 12px/1.6 Consolas, "Cascadia Mono", monospace; color: var(--text); word-break: break-all; user-select: text;
+}
+.set-error { color: #dc2626; font-weight: 700; }
+
+/* ───────── キーボード：ショートカットの登録（ShortcutEditor.jsx） ───────── */
+.sc { display: flex; flex-direction: column; gap: 14px; }
+.sc-group { padding: 6px 0; }
+.sc-group-title { padding: 10px 20px 6px; font-size: 12px; font-weight: 800; color: var(--text-3); letter-spacing: .04em; }
+.sc-row { display: grid; grid-template-columns: minmax(0, 1fr) 210px 118px; align-items: center; gap: 14px; padding: 8px 20px; }
+.sc-row + .sc-row { border-top: 1px solid var(--border); }
+.sc-name { font-size: 13.5px; font-weight: 700; }
+.sc-key {
+  justify-self: start; min-width: 120px; padding: 4px 12px; border-radius: 7px; text-align: center;
+  border: 1px solid var(--border-strong); border-bottom-width: 2px; background: var(--surface-2);
+  font: 700 12.5px/1.6 var(--font); color: var(--text); white-space: nowrap;
+}
+.sc-key.is-none { color: var(--text-3); font-weight: 600; border-style: dashed; border-bottom-width: 1px; }
+.sc-row.is-recording { background: var(--sky-soft); }
+.sc-row.is-recording .sc-key {
+  border-color: var(--primary); color: var(--primary); background: var(--surface);
+  animation: sc-blink 1s ease-in-out infinite;
+}
+@keyframes sc-blink { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent); } }
+.sc-actions { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.sc-actions .btn-sm { min-width: 64px; }
+.sc-clear {
+  width: 30px; height: 30px; border: 0; border-radius: 8px; cursor: pointer;
+  background: transparent; color: var(--text-3); font-size: 16px;
+}
+.sc-clear:hover:not(:disabled) { background: color-mix(in srgb, #ef4444 12%, transparent); color: #dc2626; }
+.sc-clear:disabled { opacity: .3; cursor: default; }
+.sc-foot { display: flex; align-items: center; gap: 12px; }
+.sc-msg { flex: 1; min-height: 20px; font-size: 12.5px; font-weight: 700; }
+.sc-msg.is-ok { color: var(--primary); }
+.sc-msg.is-error { color: #dc2626; }
+.sc-msg.is-info { color: var(--text-2); }
+.sc-fixed .sc-key { opacity: .8; }
+
+/* ───────── マウス ───────── */
+.seg.is-disabled { opacity: .45; }
+.seg button:disabled { cursor: not-allowed; }
+.settings-card + .settings-card { margin-top: 14px; }
+.set-color { width: 48px; height: 32px; padding: 2px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); cursor: pointer; }
+.set-color:disabled { opacity: .45; cursor: not-allowed; }
+
+.cursor-try { display: flex; align-items: center; gap: 10px; }
+.cursor-try .input { height: 34px; max-width: 220px; }

@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════════
+   ログイン・新規登録のフォーム（LoginForm.jsx）の見た目
+   （前は pages/account/account.css に入っていた部分）
+   ═══════════════════════════════════════════════════════════════ */
+.acc-login { min-height: calc(100vh - 80px); display: grid; place-items: center; padding: 16px 0; }
+.acc-login-card { width: min(460px, 100%); padding: 24px 28px 22px; display: flex; flex-direction: column; gap: 16px; }
+.acc-login-head { display: flex; align-items: center; gap: 14px; }
+.acc-login-icon {
+  display: grid; place-items: center; width: 46px; height: 46px; flex: none; border-radius: 14px;
+  background: linear-gradient(150deg, var(--sky), var(--primary)); color: #fff;
+}
+.acc-login-icon .icon { width: 24px; height: 24px; }
+.acc-login-head p { font-size: 12.5px; line-height: 1.6; color: var(--text-2); }
+
+/* ★ ログイン ⇄ 新規登録 の切りかえ
+   見えているほうだけが高さを持ち（.on）、もう一方は上に重ねて消えていく。
+   枠の高さは LoginForm.jsx が中身に合わせて決め、ここの transition でなめらかに変える */
+.acc-login-body { position: relative; overflow: hidden; margin: 0 -8px; padding: 0 8px; transition: height .38s var(--ease); }
+.acc-pane {
+  position: absolute; top: 0; left: 8px; right: 8px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .2s, transform .38s var(--ease), visibility 0s .38s;
+}
+.acc-pane.is-login { transform: translateX(-40px); }     /* ログインは左へ消える */
+.acc-pane.is-register { transform: translateX(40px); }   /* 新規登録は右へ消える */
+.acc-pane.on {
+  position: relative; left: 0; right: 0;
+  opacity: 1; visibility: visible; transform: none;
+  transition: opacity .3s .1s, transform .38s var(--ease);
+}
+
+.acc-form .input { height: 44px; }
+.acc-head h2 { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; }
+.acc-head p { margin-top: 4px; font-size: 13px; color: var(--text-2); }
+.acc-switch { margin-top: 2px; text-align: center; font-size: 13px; line-height: 20px; color: var(--text-2); }
+.acc-switch button { border: 0; background: none; padding: 0; color: var(--primary); font-weight: 800; cursor: pointer; }
+.acc-switch button:hover { text-decoration: underline; }
+
+/* ───────── 新規登録（ステップごとに進む） ───────── */
+.reg-form { gap: 14px; }
+
+/* 進み具合 ①─②─③─④ */
+.stepper { display: grid; grid-template-columns: repeat(4, 1fr); list-style: none; margin: 2px 0 0; padding: 0; }
+.step { position: relative; display: flex; justify-content: center; }
+.step:not(:last-child)::after {   /* 丸と丸をつなぐ線 */
+  content: ""; position: absolute; top: 14px; left: calc(50% + 20px); right: calc(-50% + 20px);
+  height: 2px; border-radius: 2px; background: var(--border-strong);
+  transition: background .2s;
+}
+.step.line-on::after { background: var(--primary); }
+.step button {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 0; background: none; padding: 0; font: inherit; cursor: pointer;
+}
+.step button:disabled { cursor: default; }
+.step-dot {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--border-strong); background: var(--surface);
+  color: var(--text-3); font-size: 13px; font-weight: 800; transition: background .2s, border-color .2s, color .2s;
+}
+.step-dot svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.step-label { font-size: 11.5px; font-weight: 800; color: var(--text-3); white-space: nowrap; transition: color .2s; }
+.step.is-current .step-dot { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--sky-soft); }
+.step.is-current .step-label { color: var(--primary); }
+.step.is-done .step-dot { border-color: var(--primary); background: var(--sky-soft); color: var(--primary); }
+.step.is-done .step-label, .step.is-visited .step-label { color: var(--text-2); }
+.step.is-visited .step-dot { border-color: var(--sky); color: var(--primary); }
+.step button:not(:disabled):hover .step-dot { box-shadow: 0 0 0 4px var(--hover); }
+.step button:not(:disabled):hover .step-label { color: var(--primary); }
+
+/* 各ステップ：同じ高さにして、ステップを進めても枠の大きさを変えない */
+.reg-viewport { overflow: hidden; margin: 0 -6px; padding: 0 6px; }
+.reg-step { display: flex; flex-direction: column; gap: 14px; min-height: 460px; }   /* いちばん高いステップ（プロフィール）に合わせる */
+.reg-fields { display: flex; flex-direction: column; gap: 10px; }
+.reg-step .lang-picker { flex: 1; min-height: 0; }
+.reg-step .lang-picker .chips { max-height: 232px; overflow-y: auto; padding: 2px; }
+.reg-step.slide-next { animation: reg-from-right .22s var(--ease) both; }
+.reg-step.slide-prev { animation: reg-from-left .22s var(--ease) both; }
+@keyframes reg-from-right { from { opacity: 0; transform: translateX(28px); } }
+@keyframes reg-from-left  { from { opacity: 0; transform: translateX(-28px); } }
+
+/* ④ 確認 */
+.reg-review { display: flex; flex-direction: column; gap: 10px; }
+.review-group { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.review-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 800; }
+.review-edit { border: 0; background: none; padding: 2px 4px; color: var(--primary); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.review-edit:hover { text-decoration: underline; }
+.review-group dl { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.review-group dl > div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px; font-size: 13px; }
+.review-group dt { color: var(--text-2); }
+.review-group dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.review-group .chips { gap: 6px; }
+.review-group .chip { cursor: default; height: 28px; }
+.review-none { font-size: 13px; color: var(--text-3); }
+
+/* 下のボタン（戻る／次へ） */
+.reg-form .msg-slot { min-height: 0; margin: -4px 0; }
+.reg-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.reg-actions .btn-ghost { min-width: 96px; }
+.reg-next { min-width: 160px; }

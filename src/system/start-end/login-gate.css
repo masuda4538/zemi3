@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════════════════════════
+   ログインの画面（LoginGate.jsx）の見た目
+   うしろはスタート画面（loading-screen.html）と同じ水色〜青のグラデーション。まん中に白いカード
+   カードの中身（入力欄・ボタン）は pages/account/account.css と同じ
+   ═══════════════════════════════════════════════════════════════ */
+.gate {
+  position: fixed; inset: 0; display: flex; flex-direction: column;
+  background: linear-gradient(120deg, #38bdf8, #2563eb 70%);
+  overflow: auto;
+}
+[data-theme="dark"] .gate { background: linear-gradient(120deg, #0c4a6e, #1e3a8a 70%); }
+
+/* 右上のボタン（白い文字にする） */
+.gate .titlebar { position: sticky; top: 0; z-index: 2; }
+.gate .win-btn { color: rgb(255 255 255 / .85); }
+.gate .win-btn:hover { background: rgb(255 255 255 / .18); color: #fff; }
+.gate .win-btn.close:hover { background: #e81123; }
+
+.gate-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 8px 16px 40px; }
+
+/* アプリ名（スタート画面と同じ文字） */
+.gate-brand { text-align: center; color: #fff; animation: gate-in .5s var(--ease, ease) both; }
+.gate-brand h1 { font-size: 30px; font-weight: 800; letter-spacing: .14em; text-shadow: 0 6px 24px rgb(15 40 110 / .35); }
+.gate-brand p { margin-top: 8px; font-size: 12px; font-weight: 700; letter-spacing: .45em; text-indent: .45em; text-transform: uppercase; opacity: .8; }
+
+/* カード（pages/account の .acc-login を、この画面用に少し直す） */
+.gate .acc-login { min-height: 0; padding: 0; width: 100%; animation: gate-in .5s .08s var(--ease, ease) both; }
+.gate .acc-login-card { box-shadow: 0 24px 60px rgb(15 40 110 / .28); border: 0; }
+
+@keyframes gate-in { from { opacity: 0; transform: translateY(12px); } }
+.reduce-motion .gate-brand, .reduce-motion .gate .acc-login { animation: none; }

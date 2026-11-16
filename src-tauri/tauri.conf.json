@@ -7,19 +7,23 @@
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "frontendDist": "../dist",
+    "additionalWatchFolders": [
+      "../src/system/application"
+    ]
   },
   "app": {
     "windows": [
       {
-        "title": "卒業研究アプリ",
+        "title": "学習支援アプリ",
         "width": 1100,
         "height": 720,
         "minWidth": 720,
         "minHeight": 480,
         "center": true,
         "maximized": true,
-        "decorations": false
+        "decorations": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {

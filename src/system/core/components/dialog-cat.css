@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════════════════════════
+   確認のダイアログの上に座る黒猫（DialogCat.jsx）
+   .dcat は .dialog の上のふちに置く（下の部分はふちのうしろに隠れる）
+   気持ちは .is-sad / .is-happy / .is-cry / .is-bye
+   ═══════════════════════════════════════════════════════════════ */
+.dcat {
+  position: absolute; left: 50%; bottom: calc(100% - 2px);
+  width: 154px; height: 130px; margin-left: -77px;
+  pointer-events: none;
+  /* 下（ダイアログのふちより下）は隠す。上と横は、手や吹き出しがはみ出してよい */
+  clip-path: inset(-200px -200px 0 -200px);
+}
+.dcat-svg {
+  width: 100%; height: 100%; display: block; overflow: visible;
+  fill: #111; stroke: none;
+  /* 暗い背景でも見えるように、うすく白いふち */
+  filter: drop-shadow(0 0 1.2px rgb(255 255 255 / .8));
+  transform: translateY(6%);
+  animation: dcat-in .45s .05s cubic-bezier(.25, 1.35, .45, 1) both;
+}
+.dcat-svg g { transform-box: view-box; }
+@keyframes dcat-in { from { transform: translateY(70%); } }
+
+/* しっぽ */
+.dcat-tail path { fill: none; stroke: #111; stroke-width: 7; stroke-linecap: round; }
+.dcat-tail { transform-origin: 24px 92px; animation: dcat-tail 2.6s ease-in-out infinite; }
+@keyframes dcat-tail { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-12deg); } }
+
+/* 耳（さみしいときは少し寝かせる） */
+.dcat-ear { transition: transform .25s ease-out; }
+.dcat-ear-l { transform-origin: 40px 40px; }
+.dcat-ear-r { transform-origin: 76px 40px; }
+.dcat.is-sad .dcat-ear-l, .dcat.is-cry .dcat-ear-l { transform: rotate(-16deg); }
+.dcat.is-sad .dcat-ear-r, .dcat.is-cry .dcat-ear-r { transform: rotate(16deg); }
+
+/* 顔の部品 */
+.dcat-eye { fill: #111; stroke: #fff; stroke-width: 2.6; }
+.dcat-line { fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.dcat-mouth { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dcat-tear { fill: #7dd3fc; }
+
+/* 気持ちごとに、どの顔を出すか */
+.dcat-face, .dcat-mouth { opacity: 0; transition: opacity .12s; }
+.dcat.is-sad .dcat-face-sad,     .dcat.is-sad .dcat-mouth-sad     { opacity: 1; }
+.dcat.is-happy .dcat-face-happy, .dcat.is-happy .dcat-mouth-happy { opacity: 1; }
+.dcat.is-cry .dcat-face-cry,     .dcat.is-cry .dcat-mouth-sad     { opacity: 1; }
+.dcat.is-bye .dcat-face-happy,   .dcat.is-bye .dcat-mouth-happy   { opacity: 1; }
+
+/* さみしい：目がゆっくり下を見る */
+.dcat.is-sad .dcat-face-sad .dcat-eye { animation: dcat-look-down 3s ease-in-out infinite; }
+@keyframes dcat-look-down { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1.5px); } }
+
+/* うれしい：ぴょこんと跳ねて、しっぽをふる */
+.dcat.is-happy .dcat-all { animation: dcat-hop .5s cubic-bezier(.3, 0, .6, 1); }
+.dcat.is-happy .dcat-tail { animation: dcat-wag .35s ease-in-out infinite alternate; }
+@keyframes dcat-hop { 40% { transform: translateY(-7px); } }
+@keyframes dcat-wag { from { transform: rotate(-18deg); } to { transform: rotate(10deg); } }
+
+/* なみだ：ぽろぽろ落ちる */
+.dcat-tear { transform-box: fill-box; transform-origin: center; }
+.dcat.is-cry .dcat-tear { animation: dcat-tear 1s ease-in infinite; }
+.dcat.is-cry .dcat-tear-r { animation-delay: .5s; }
+@keyframes dcat-tear { 0% { transform: translateY(-3px); opacity: 0; } 25% { opacity: 1; } 100% { transform: translateY(12px); opacity: 0; } }
+
+/* 手をふる：前足が出てきて、ふりふり */
+.dcat-wave { opacity: 0; transform-origin: 82px 98px; }
+.dcat-wave-arm { fill: none; stroke: #111; stroke-width: 13; stroke-linecap: round; }
+.dcat-paw { fill: #111; stroke: #fff; stroke-width: 2; }
+.dcat-toes { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; }
+.dcat.is-bye .dcat-wave { opacity: 1; animation: dcat-wave .32s ease-in-out infinite alternate; }
+@keyframes dcat-wave { from { transform: rotate(-10deg); } to { transform: rotate(12deg); } }
+
+/* 吹き出し（猫の右上） */
+.dialog .dcat-says {   /* .dialog p の書き方より強くする */
+  position: absolute; left: calc(100% - 16px); top: 6px;
+  padding: 7px 12px; border-radius: 14px 14px 14px 4px;
+  background: var(--surface); color: var(--text); border: 1.5px solid #111;
+  font-size: 13px; font-weight: 800; line-height: 1.4; white-space: nowrap;
+  box-shadow: 0 4px 12px rgb(10 20 40 / .18);
+  animation: dcat-says-in .3s .25s cubic-bezier(.25, 1.35, .45, 1) both;
+}
+:root[data-theme="dark"] .dialog .dcat-says { border-color: var(--border-strong); }
+@keyframes dcat-says-in { from { opacity: 0; transform: translateY(6px) scale(.9); } }
+
+/* 猫つきのダイアログ：猫が座るぶん、上をあけて、ふちを猫と同じ黒に */
+.dialog.has-cat {
+  position: relative; margin-top: 112px;
+  border: 2px solid #111; border-radius: 18px;
+  padding: 24px 26px 20px; text-align: center;
+}
+:root[data-theme="dark"] .dialog.has-cat { border-color: #0b0d10; box-shadow: 0 0 0 1px rgb(255 255 255 / .2), 0 20px 50px rgb(0 0 0 / .45); }
+.dialog.has-cat h2 { font-size: 19px; }
+.dialog.has-cat .dialog-actions { justify-content: center; gap: 10px; margin-top: 12px; }
+.dialog.has-cat .dialog-actions .btn { min-width: 128px; }

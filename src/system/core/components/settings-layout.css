@@ -1,0 +1,56 @@
+/* ═════════ 左に項目・右に中身（SettingsLayout.jsx。アカウント・設定で共通） ═════════ */
+/* 3 列：[左の項目][右の中身][左と同じ幅のあき]。右の中身が、いつも画面の左右まん中に来る */
+.sl {
+  padding-bottom: 12px;
+  display: grid; grid-template-columns: minmax(236px, 1fr) minmax(0, 820px) minmax(236px, 1fr); gap: 32px; align-items: start;
+}
+.sl-side { justify-self: end; width: 236px; }
+
+/* ── 左 ── */
+.sl-side { position: sticky; top: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sl-head { padding: 4px 4px 2px; }
+.sl-nav { display: flex; flex-direction: column; gap: 2px; }
+.sl-item {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  height: 38px; padding: 0 12px; border: 0; border-radius: 8px; cursor: pointer;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 13.5px; font-weight: 700; text-align: left;
+  transition: background .12s, color .12s;
+}
+.sl-item .icon { width: 17px; height: 17px; color: var(--text-3); }
+.sl-item:hover { background: var(--hover); color: var(--text); }
+.sl-item.active { background: var(--sky-soft); color: var(--text); font-weight: 800; }
+.sl-item.active .icon { color: var(--primary); }
+.sl-item.active::before {   /* 選んでいる項目の左の青い線（GitHub と同じ） */
+  content: ""; position: absolute; left: -8px; top: 7px; bottom: 7px; width: 4px; border-radius: 4px;
+  background: var(--primary);
+}
+.sl-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sl-badge {
+  flex: none; padding: 1px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 11px; font-weight: 800; color: var(--text-3);
+}
+.sl-item.active .sl-badge { background: var(--surface); color: var(--primary); }
+.sl-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 3px var(--sky-soft); }
+.sl-foot { padding-top: 12px; border-top: 1px solid var(--border); }
+
+/* ── 右 ── */
+.sl-main { min-width: 0; }
+.sl-title { padding-bottom: 12px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.sl-title h1 { font-size: 22px; font-weight: 800; }
+.sl-title p { margin-top: 4px; font-size: 13px; color: var(--text-2); }
+.sl-body { display: flex; flex-direction: column; gap: 16px; animation: sl-in .18s var(--ease); }
+@keyframes sl-in { from { opacity: 0; transform: translateY(4px); } }
+
+/* 少しせまいとき：まん中にそろえるのはやめて、左の項目と右の中身の 2 列にする */
+@media (max-width: 1300px) {
+  .sl { max-width: 1100px; margin: 0 auto; grid-template-columns: 236px minmax(0, 1fr); }
+  .sl-side { justify-self: stretch; }
+}
+/* とてもせまいとき：左の一覧を上に横並びにする */
+@media (max-width: 900px) {
+  .sl { grid-template-columns: 1fr; gap: 16px; }
+  .sl-side { position: static; width: auto; }
+  .sl-nav { flex-direction: row; overflow-x: auto; }
+  .sl-item { flex: none; }
+  .sl-item.active::before { left: 10px; right: 10px; top: auto; bottom: -2px; width: auto; height: 3px; }
+}

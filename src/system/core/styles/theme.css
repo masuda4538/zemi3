@@ -1,0 +1,65 @@
+/* ═══════════════════════════════════════════════════════════════
+   色・文字の決まり（アプリ全体と、各アプリのページ（窓の中）の両方で使う）
+     --primary  … 青（ボタン・選択中の色）
+     --sky      … 水色（アイコンのグラデーション・アクセント）
+     --sky-soft … うすい水色（選択中の背景など）
+     レア度    … いちばん下の .rarity-bronze / .rarity-silver / .rarity-gold（アチーブのカードの枠の色）
+   読んでいるところ：core/App.css と core/frame/frame.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────── 色・文字（ホワイト） ───────── */
+:root,
+:root[data-theme="light"] {
+  --bg: #f3f8fd;
+  --surface: #ffffff;
+  --surface-2: #f5f9fe;
+  --hover: #eaf3fd;
+  --border: #dce7f3;
+  --border-strong: #c6d6ea;
+  --text: #16233a;
+  --text-2: #475a75;
+  --text-3: #8496b0;
+  --primary: #2563eb;
+  --sky: #38bdf8;
+  --sky-soft: #e3f3fd;
+  --font: "Segoe UI", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP", system-ui, sans-serif;
+  --radius: 12px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --side-w: 100px;
+  color-scheme: light;
+}
+/* ───────── 色（ダーク） ───────── */
+:root[data-theme="dark"] {
+  --bg: #0b111b;
+  --surface: #121a27;
+  --surface-2: #162132;
+  --hover: #1b283c;
+  --border: #223047;
+  --border-strong: #2e4261;
+  --text: #e6edf7;
+  --text-2: #aebcd0;
+  --text-3: #7a8aa3;
+  --primary: #5b8cff;
+  --sky: #38bdf8;
+  --sky-soft: #10304a;
+  color-scheme: dark;
+}
+
+/* ───────── アチーブのレア度（3 段階：ブロンズ・シルバー・ゴールド。名前は pages/achievements/achievement-list.js の RARITIES） ─────────
+   要素に class="rarity-gold" などを付けると、その中で次の色が使える
+     var(--rarity-line) … カードの枠の色
+     var(--rarity-text) … 文字の色（レア度の名前のラベル）
+   レア度の名前のラベルは <span class="rarity-label">ゴールド</span> */
+.rarity-bronze { --rarity-line: #c98a5b; --rarity-text: #9a5424; }   /* ブロンズ：銅 */
+.rarity-silver { --rarity-line: #a3afbd; --rarity-text: #5f6d80; }   /* シルバー：銀 */
+.rarity-gold   { --rarity-line: #e2ac12; --rarity-text: #a86700; }   /* ゴールド：金 */
+:root[data-theme="dark"] .rarity-bronze { --rarity-line: #b9774a; --rarity-text: #e7a273; }
+:root[data-theme="dark"] .rarity-silver { --rarity-line: #94a3b8; --rarity-text: #cbd5e1; }
+:root[data-theme="dark"] .rarity-gold   { --rarity-line: #eab308; --rarity-text: #fcd34d; }
+
+/* レア度の名前のラベル（うすい色の枠） */
+.rarity-label {
+  display: inline-block; padding: 1px 8px; border-radius: 99px;
+  font-size: 11px; font-weight: 800; line-height: 1.6; white-space: nowrap;
+  color: var(--rarity-text); border: 1.5px solid var(--rarity-line); background: var(--surface);
+}

@@ -1,0 +1,125 @@
+/* ═════════ アチーブ（左に項目・右に一覧。形は core/components/settings-layout.css） ═════════ */
+
+/* 左上 */
+.ach-head { display: flex; align-items: center; gap: 12px; }
+.ach-head-icon {
+  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
+  background: linear-gradient(150deg, #fcd34d, #f59e0b 75%); color: #fff;
+}
+.ach-head-icon .icon { width: 24px; height: 24px; }
+.ach-head-text strong { display: block; font-size: 16px; font-weight: 800; }
+.ach-head-text span { font-size: 12px; color: var(--text-3); }
+
+/* 進み具合（円グラフ） */
+.ach-overview { display: flex; align-items: center; gap: 28px; padding: 20px 24px; flex-wrap: wrap; }
+.ach-main-ring { display: flex; align-items: center; gap: 20px; }
+.ach-main-text { display: flex; flex-direction: column; gap: 2px; }
+.ach-main-text strong { font-size: 16px; }
+.ach-main-text span { font-size: 13px; color: var(--text-2); }
+.ach-mini-rings {
+  flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 2px;   /* 入るだけ横に並べて、入らなければ次の段へ */
+  padding-left: 24px; border-left: 1px solid var(--border);
+}
+.ach-mini {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 0; padding: 8px 2px; border: 0; border-radius: 12px; cursor: pointer; background: transparent; color: var(--text); font: inherit;
+  transition: background .12s;
+}
+.ach-mini:hover, .ach-mini:focus-visible { background: var(--hover); }
+.ach-mini-name { max-width: 100%; font-size: 11.5px; font-weight: 800; line-height: 1.3; min-height: 2.6em; text-align: center; overflow-wrap: anywhere; }
+.ach-mini-count { font-size: 11px; color: var(--text-3); }
+
+/* 円グラフ（Ring.jsx）：1 つの色で、手に入れたぶんだけ太い線をのばす */
+.ring { position: relative; flex: none; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
+.ring-track { fill: none; stroke: var(--sky-soft); stroke-width: 9; }
+.ring-fill { fill: none; stroke: var(--primary); stroke-width: 9; stroke-linecap: round; }
+.ring.is-big .ring-fill { animation: ring-grow .6s var(--ease) both; }   /* のびるアニメーションは大きい円だけ（小さい円まで動かすと重い） */
+@keyframes ring-grow { from { stroke-dasharray: 0 var(--len); } }
+.ring.is-done .ring-fill { stroke: #d97706; }               /* コンプリート（文字でも出している） */
+:root[data-theme="dark"] .ring.is-done .ring-fill { stroke: #fbbf24; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.ring-center strong { font-size: 17px; font-weight: 800; line-height: 1; }
+.ring-center strong small { font-size: .6em; margin-left: 1px; color: var(--text-2); }
+.ring.is-big .ring-center strong { font-size: 34px; }
+.ring-center span { margin-top: 6px; font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+.ring.is-done .ring-center span { color: #d97706; }
+:root[data-theme="dark"] .ring.is-done .ring-center span { color: #fbbf24; }
+
+/* ───────── 絞り込み（さがす・レア度・未取得）と並べ方 ───────── */
+.ach-filter { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; }
+.ach-search {
+  display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px;
+  border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface);
+}
+.ach-search:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--sky-soft); }
+.ach-search .icon { width: 17px; height: 17px; color: var(--text-3); flex: none; }
+.ach-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-size: 13.5px; }
+.ach-filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.ach-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
+.ach-seg button {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 12.5px; font-weight: 800; white-space: nowrap;
+}
+.ach-seg button .icon { width: 15px; height: 15px; }
+.ach-seg button:hover { color: var(--primary); }
+.ach-seg button.is-on { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgb(15 30 60 / .14); }
+.ach-seg button.is-rarity { color: var(--rarity-text); }                                   /* レア度のボタンは、その色の文字 */
+.ach-seg button.is-rarity.is-on { box-shadow: inset 0 0 0 1.5px var(--rarity-line), 0 1px 3px rgb(15 30 60 / .14); }
+.ach-view { margin-left: auto; }
+.ach-result { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 800; color: var(--text-3); }
+.ach-clear { border: 0; background: none; padding: 2px 4px; cursor: pointer; color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800; }
+.ach-clear:hover { text-decoration: underline; }
+
+/* ───────── 一覧 ─────────
+   1 列（is-list）  … 左にバッジ、まん中に名前・説明・進み具合、右にアプリのアイコン・取った日
+   横に 3 つ（is-grid）… せまいときは 2 つ・1 つに減らす */
+.ach-grid { display: grid; gap: 8px; }
+.ach-grid.is-list { grid-template-columns: 1fr; }
+.ach-grid.is-grid { grid-template-columns: repeat(auto-fill, minmax(max(210px, calc((100% - 24px) / 3)), 1fr)); gap: 12px; }
+.ach-card {
+  display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+  content-visibility: auto; contain-intrinsic-size: auto 84px;   /* 画面の外のカードは描かない（スクロールが軽くなる） */
+}
+/* カードの枠を、レア度の色（ブロンズ・シルバー・ゴールド）にする（色は core/styles/theme.css）。まだのものは少しうすく */
+.ach-card.panel { border: 2px solid var(--rarity-line); }
+.ach-card:not(.is-got).panel { border-color: color-mix(in srgb, var(--rarity-line) 45%, var(--border)); }
+.ach-badge {
+  display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; flex: none;
+  background: var(--surface-2); border: 1.5px dashed var(--border-strong); color: var(--text-3);
+}
+.ach-badge .icon { width: 24px; height: 24px; }
+/* 手に入れたバッジ（色はどのレア度も同じ） */
+.ach-card.is-got .ach-badge { border: 0; color: #fff; background: linear-gradient(150deg, var(--sky), var(--primary) 80%); }
+.ach-text { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: center; }
+.ach-text > :not(small) { grid-column: 1; }
+.ach-title { display: flex; align-items: center; gap: 8px; min-width: 0; }   /* レア度 ＋ 名前 */
+.ach-title strong { min-width: 0; font-size: 14.5px; overflow-wrap: anywhere; }
+.ach-text p { margin-top: 2px; font-size: 12.5px; color: var(--text-2); }
+.ach-text small { grid-column: 2; grid-row: 1 / span 3; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); }
+.ach-card:not(.is-got) .ach-title strong { color: var(--text-2); }
+/* 横に 3 つのとき：上から 名前 → 説明 → 進み具合 → アプリ・日付 の順にたてに並べる */
+.ach-grid.is-grid .ach-card { align-items: flex-start; padding: 14px; }
+.ach-grid.is-grid .ach-text { display: flex; flex-direction: column; align-items: stretch; }
+.ach-grid.is-grid .ach-count { max-width: none; }
+.ach-grid.is-grid .ach-title { flex-wrap: wrap; gap: 4px 8px; }
+.ach-grid.is-grid .ach-text small { justify-content: flex-start; margin-top: 8px; }
+/* 数をためるアチーブの進み具合（2 / 10） */
+.ach-count { display: flex; align-items: center; gap: 10px; max-width: 320px; margin-top: 6px; }
+.ach-count-bar { flex: 1; height: 6px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.ach-count-fill { height: 100%; border-radius: 99px; background: var(--primary); transition: width .4s var(--ease); }
+
+.ach-count span { flex: none; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.ach-count b { font-size: 14px; color: var(--text); }
+/* どのアプリのアチーブか（アイコンだけ。名前はマウスをのせると出る） */
+.ach-app {
+  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; flex: none;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+}
+.ach-app .icon { width: 15px; height: 15px; }
+/* まだのアチーブ：「（アイコン）ホーム で取得できます」 */
+.ach-text small.ach-where { flex-wrap: nowrap; }   /* アイコンと文を同じ行に（せまいときは文だけ折り返す） */
+.ach-where > span:last-child { min-width: 0; }
+.ach-where b { font-weight: 700; color: var(--text-2); }
+.ach-empty, .ach-note { font-size: 12.5px; color: var(--text-3); }
+.ach-grid .ach-empty { grid-column: 1 / -1; padding: 18px 4px; }
