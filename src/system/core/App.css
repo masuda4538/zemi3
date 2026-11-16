@@ -112,7 +112,7 @@ h1, h2, p { margin: 0; }
 }
 
 /* 各アプリのページ（HTML・CSS・JS で作るページ）は、右側いっぱいの窓（iframe）に出す
-   （core/components/AppFrame.jsx。窓の中の余白は core/frame/frame.css の body） */
+   （core/components/AppFrame.jsx。窓の中の余白は 0。core/frame/frame.css の body） */
 .stage:has(> .page:not([hidden]) > .html-frame) { display: flex; padding: 0; overflow: hidden; }
 .stage:has(> .page:not([hidden]) > .html-frame) > .page { flex: 1; display: flex; min-height: 0; }
 .stage > .page[hidden] { display: none !important; }   /* 裏で動かしているページ（タイマー）は隠すだけ */
