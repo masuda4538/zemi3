@@ -1,0 +1,195 @@
+/* ═════════ 記録（左に項目・右に記録。形は core/components/settings-layout.css） ═════════
+   --app … アプリの色（main.jsx の APP_COLORS。ホームの「使った時間」と同じ色） */
+
+/* 左上 */
+.rec-head { display: flex; align-items: center; gap: 12px; }
+.rec-head-icon {
+  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
+  background: linear-gradient(150deg, var(--sky), var(--primary) 75%); color: #fff;
+}
+.rec-head-icon .icon { width: 24px; height: 24px; }
+.rec-head-text { min-width: 0; }
+.rec-head-text strong { display: block; font-size: 16px; font-weight: 800; }
+.rec-head-text span { font-size: 12px; color: var(--text-3); }
+
+/* ───────── 期間の切りかえ ───────── */
+.rec-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 14px; margin-bottom: 14px; }
+.rec-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
+.rec-seg button {
+  height: 28px; padding: 0 14px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 12.5px; font-weight: 800; white-space: nowrap;
+}
+.rec-seg button:hover { color: var(--primary); }
+.rec-seg button.is-on { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgb(15 30 60 / .14); }
+.rec-range { font-size: 13px; font-weight: 700; color: var(--text-2); }
+
+/* ───────── 合計の数字（カード） ───────── */
+.rec-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }   /* 3 つを横に 1 列 */
+.rec-card { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; min-width: 0; }
+.rec-card-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--text-2); }
+.rec-card-label .icon { width: 15px; height: 15px; color: var(--primary); flex: none; }
+.rec-card strong { font-size: 24px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+.rec-card strong.is-small { font-size: 17px; }
+.rec-card small { font-size: 11.5px; color: var(--text-3); }
+/* いちばん大事なカード（勉強した時間）は青くする。各アプリの記録では、そのアプリの色 */
+.rec-card.is-main { border-color: transparent; background: linear-gradient(150deg, var(--sky), var(--primary) 85%); color: #fff; }
+.rec-cards.is-app .rec-card.is-main { background: linear-gradient(150deg, color-mix(in srgb, var(--app) 72%, #fff), var(--app) 85%); }
+.rec-card.is-main .rec-card-label, .rec-card.is-main .rec-card-label .icon, .rec-card.is-main small { color: rgb(255 255 255 / .88); }
+
+/* ───────── 見出しつきのまとまり ───────── */
+.rec-section { padding: 14px 18px 16px; margin-bottom: 14px; min-width: 0; }
+.rec-section-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 12px; }
+.rec-section-head h2 { font-size: 15px; font-weight: 800; }
+.rec-section-head small { font-size: 11.5px; color: var(--text-3); }
+.rec-none { padding: 14px 0 6px; font-size: 13px; color: var(--text-3); text-align: center; }
+
+/* アプリのアイコン（丸い四角） */
+.rec-app-icon {
+  display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px;
+  background: color-mix(in srgb, var(--app, var(--primary)) 14%, transparent); color: var(--app, var(--primary));
+}
+.rec-app-icon .icon { width: 18px; height: 18px; }
+
+/* ───────── グラフ：円グラフ（charts.jsx の Donut） ───────── */
+.rec-donut { position: relative; flex: none; }
+.rec-donut > svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
+.rec-donut circle { fill: none; transition: stroke-dasharray .5s var(--ease), stroke-dashoffset .5s var(--ease); }
+.rec-donut-track { stroke: var(--sky-soft); }
+.rec-donut-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  text-align: center; line-height: 1.15; pointer-events: none;
+}
+.rec-donut-center small { font-size: 11.5px; font-weight: 800; color: var(--text-2); }
+.rec-donut-center strong { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.rec-donut-center strong small { margin-left: 1px; font-size: .62em; }
+.rec-donut-center .icon { width: 20px; height: 20px; color: var(--text-2); }
+
+/* 円グラフ ｜ 一覧（横に並べる。せまいときは、たてに並ぶ） */
+.rec-split { display: flex; align-items: center; gap: 24px; }
+.rec-split > ul { flex: 1; min-width: 0; }
+
+/* ───────── アプリごとの時間（一覧） ───────── */
+.rec-apps, .rec-breakdown, .rec-history, .rec-legend { margin: 0; padding: 0; list-style: none; }
+.rec-apps { display: flex; flex-direction: column; }
+.rec-apps li + li { border-top: 1px solid var(--border); }
+.rec-app {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 8px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: background .12s;
+}
+.rec-app:hover, .rec-app:focus-visible { background: var(--hover); }
+.rec-app.is-zero { opacity: .55; }
+.rec-dot { flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--app); }
+.rec-app .rec-app-icon { width: 30px; height: 30px; border-radius: 9px; }
+.rec-app .rec-app-icon .icon { width: 16px; height: 16px; }
+.rec-app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rec-app-main b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-app-main small { font-size: 11px; color: var(--text-3); }
+.rec-app-time { font-size: 14px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rec-app-time small, .rec-breakdown b small { display: inline-block; min-width: 34px; margin-left: 6px; font-size: 11px; font-weight: 700; color: var(--text-3); text-align: right; }
+
+/* ───────── グラフ：棒グラフ（charts.jsx の BarChart） ───────── */
+.rec-bars { display: flex; gap: 10px; height: 200px; }
+.rec-bars-axis {   /* 左のめもり（上・半分・0） */
+  flex: none; width: 52px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
+  padding-bottom: var(--label-h, 22px); font-size: 11px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums;
+}
+.rec-bars:has(.rec-col-sub) { --label-h: 38px; }
+.rec-bars-axis span { line-height: 1; transform: translateY(-50%); }
+.rec-bars-axis span:last-child { transform: translateY(50%); }
+.rec-bars-plot { flex: 1; min-width: 0; display: flex; gap: 3px; }
+.rec-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rec-col-area {   /* うすい横線（上・半分・下）の上に棒を立てる */
+  position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-radius: 6px 6px 0 0;
+  background: linear-gradient(var(--border), var(--border)) 0 0 / 100% 1px no-repeat,
+              linear-gradient(var(--border), var(--border)) 0 50% / 100% 1px no-repeat,
+              linear-gradient(var(--border-strong), var(--border-strong)) 0 100% / 100% 1px no-repeat;
+}
+.rec-col-stack {
+  width: min(72%, 30px); display: flex; flex-direction: column-reverse; border-radius: 5px 5px 0 0; overflow: hidden;
+  transition: height .5s var(--ease);
+}
+.rec-col-stack > span { display: block; flex-basis: 0; min-height: 1px; }
+.rec-col:hover .rec-col-area { background-color: var(--surface-2); }
+.rec-col.is-now .rec-col-area { background-color: var(--sky-soft); }   /* 今（今の時間・今日・今月） */
+.rec-col.is-future { opacity: .45; }
+.rec-col-label { height: 14px; font-size: 11.5px; font-weight: 800; color: var(--text-2); white-space: nowrap; line-height: 14px; }
+.rec-col-sub { margin-top: -4px; height: 12px; font-size: 10.5px; font-weight: 700; color: var(--text-3); white-space: nowrap; line-height: 12px; }
+.rec-col.is-now .rec-col-label { color: var(--primary); }
+/* 色の見本（棒グラフの下） */
+.rec-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+.rec-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.rec-legend i { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ───────── 学習の内訳・大事な数 ───────── */
+.rec-study-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.rec-study { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); min-width: 0; }
+.rec-study-head {
+  display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px; padding: 0; border: 0;
+  background: none; color: var(--text); font: inherit; font-size: 13.5px; text-align: left; cursor: pointer;
+}
+.rec-study-head:hover b { color: var(--primary); text-decoration: underline; }
+.rec-study-head .rec-app-icon { width: 30px; height: 30px; border-radius: 9px; }
+.rec-study-body { display: flex; flex-direction: column; gap: 12px; }
+.rec-split.is-study { gap: 18px; }
+.rec-split.is-small { gap: 14px; }
+.rec-split.is-small .rec-donut-center strong { font-size: 12.5px; }
+.rec-breakdown { display: flex; flex-direction: column; gap: 6px; }
+.rec-breakdown li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); }
+.rec-breakdown li i { width: 10px; height: 10px; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--app) 30%, transparent); }
+.rec-breakdown li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-breakdown b { color: var(--text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rec-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.rec-num { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); min-width: 0; }
+.rec-num strong { font-size: 22px; font-weight: 800; line-height: 1.1; color: var(--app, var(--primary)); }
+.rec-num strong small { margin-left: 3px; font-size: 12px; color: var(--text-2); }
+.rec-num span { font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+.rec-study-body.is-small .rec-nums { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.rec-study-body.is-small .rec-num strong { font-size: 18px; }
+
+/* 各アプリ：学習の内訳（円グラフと一覧）｜ 大事な数 を横いっぱいに並べる。せまいときは、たてに並ぶ */
+.rec-study-wide { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+.rec-study-wide > .rec-split { flex: 1 1 340px; }
+.rec-study-wide > .rec-nums { flex: 1 1 240px; }
+
+/* ───────── 日ごとの履歴 ───────── */
+.rec-history { list-style: none; display: flex; flex-direction: column; }
+.rec-history li {
+  display: grid; grid-template-columns: 150px minmax(0, 1fr) 84px; align-items: center; gap: 4px 14px;
+  padding: 9px 4px; border-top: 1px solid var(--border);
+}
+.rec-history li:first-child { border-top: 0; }
+.rec-h-date { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.rec-h-date em { padding: 1px 7px; border-radius: 99px; background: var(--sky-soft); color: var(--primary); font-size: 10.5px; font-style: normal; font-weight: 800; }
+.rec-h-bar { height: 10px; }
+.rec-h-stack { display: flex; height: 100%; min-width: 4px; border-radius: 99px; overflow: hidden; gap: 1px; background: var(--sky-soft); }
+.rec-h-stack > span { display: block; flex-basis: 0; min-width: 3px; }
+.rec-h-time { font-size: 13px; font-weight: 800; text-align: right; white-space: nowrap; }
+.rec-h-apps { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.rec-h-app { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+.rec-h-app .icon { width: 13px; height: 13px; color: var(--app); }
+.rec-more {
+  display: block; margin: 10px auto 0; padding: 7px 16px; border: 1px solid var(--border-strong); border-radius: 99px;
+  background: var(--surface); color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer;
+}
+.rec-more:hover { background: var(--hover); }
+
+/* そのアプリを開くボタン */
+.rec-open {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border: 0; border-radius: 10px; cursor: pointer;
+  background: var(--primary); color: #fff; font: inherit; font-size: 13.5px; font-weight: 800;
+  align-self: flex-start; width: fit-content;   /* 横いっぱいに広げない */
+}
+.rec-open .icon { width: 17px; height: 17px; }
+.rec-open:hover { filter: brightness(1.08); }
+
+/* ゲストのとき */
+.rec-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 20px; text-align: center; font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+.rec-empty .icon { width: 34px; height: 34px; color: var(--text-3); }
+
+/* 幅がせまいとき：円グラフと一覧をたてに、履歴の日付を上の段に */
+@media (max-width: 760px) {
+  .rec-split { flex-direction: column; }
+  .rec-history li { grid-template-columns: minmax(0, 1fr) auto; }
+  .rec-h-bar { grid-column: 1 / -1; grid-row: 2; }
+  .rec-h-apps { grid-column: 1 / -1; }
+}
