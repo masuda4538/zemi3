@@ -1,42 +1,1280 @@
 <!DOCTYPE html>
-<!--
-  情報収集：画面の入口 ★ このフォルダーの中は、全部自由に作ってよい
-  ・左のアイコン「情報収集」を押すと、このファイルが右側の窓の中に開きます
-  ・このファイル（index.html）の名前と場所だけは変えない（入口）
-  ・普通の Web ページと同じように作れます。ファイルを増やしたら、パスを書いてつなぐ（パスはこのファイルから見た場所）
-      CSS   … css/style.css を作って  <link rel="stylesheet" href="./css/style.css">
-      JS    … js/main.js を作って     <script type="module" src="./js/main.js"></script>
-      画像  … images/cat.png を置いて  <img src="./images/cat.png" alt="">
-  ・Rust を使うとき … rust/main.rs を作る（自動で読み込まれる。書き方はホームの rust/ が見本）
-  ・アチーブ … src/system/achieve_setting/research.js に書く（このフォルダーの外。research.js だけは自分で書きかえてよい）
-  ・何も書かなくても使えるもの
-      共通の見た目 … 色 var(--primary) など（ダークモードにも合う）、btn btn-primary btn-ghost（ボタン）、panel（枠）、input（入力欄）
-      app          … JS で app.notify(…)（お知らせ）、app.unlock(…)（アチーブ）、await app.invoke(…)（Rust）など
--->
-<html lang="ja">
+<html lang="ja" class="h-full select-none">
 <head>
-  <meta charset="UTF-8">
-  <title>情報収集</title>
-  <!-- 今は見た目をここに書いています。CSS のファイルを作ったら、この <style> は消して <link> にしてよい -->
-  <style>
-    .intro { min-height: 80vh; display: grid; place-content: center; gap: 10px; text-align: center; }
-    .intro h1 { font-size: 30px; font-weight: 800; letter-spacing: .04em; }
-    .intro p { font-size: 14px; color: var(--text-2); }
-  </style>
-</head>
-<body>
-  <main class="intro">
-    <h1>情報収集</h1>
-    <p>気になることを調べて集めるアプリです。ここに情報収集を作っていきます。</p>
-  </main>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFeed Pro Desktop - ITニュース & AIナレッジベース</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Scrollbars for Desktop Native feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.18);
+            border-radius: 9999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.35);
+            background-clip: padding-box;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+            background-clip: padding-box;
+        }
 
-  <!-- アチーブの例（achieve_setting/research.js に書いたもの）。使わなければ、この <script> と achieve_setting/research.js の例を消してよい -->
-  <script>
-    app.unlock("first-open");     // はじめて開いた
-    app.addProgress("open-10");   // 開いた回数を 1 つ増やす（10 回で手に入る）
-    // ホームのカードに出す学習時間（src/system/home_setting/research.js に書いたもの。今は例）。計りたいところで呼ぶ
-    // app.startStudy("browse");            // 学習をはじめた（app.stopStudy() でやめる。ページを閉じても止まる）
-    // app.addStat("saved");                   // ページを保存したとき（ホームのカードの下の数。home_setting/research.js の stats）
-  </script>
+        /* Glassmorphism & Micro-Interactions */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .dark .glass-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        
+        .card-hover-effect {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        }
+        .dark .card-hover-effect:hover {
+            box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.6);
+        }
+
+        .user-select-text {
+            user-select: text !important;
+        }
+
+        kbd {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.68rem;
+            padding: 0.125rem 0.35rem;
+            border-radius: 0.25rem;
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-brand-500 selection:text-white transition-colors duration-150">
+
+    <!-- App Main Shell -->
+    <div id="app" class="flex flex-col h-full w-full overflow-hidden">
+        
+        <!-- TOP HEADER / DESKTOP TITLEBAR BAR -->
+        <header class="glass-header sticky top-0 border-b border-slate-200/80 dark:border-slate-800/80 shrink-0 z-20 shadow-sm flex flex-col">
+            <div class="px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3">
+                
+                <!-- Left: Sidebar Toggle & Brand Header -->
+                <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                    <button onclick="toggleSidebar()" aria-label="サイドバーの切り替え" class="p-2 rounded-lg bg-slate-200/60 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors border border-slate-300/50 dark:border-slate-700/50 flex items-center gap-1.5 text-xs font-semibold" title="サイドバーの切り替え (Ctrl+B)">
+                        <i data-lucide="panel-left" class="w-4 h-4"></i>
+                        <span class="hidden xl:inline text-[11px] text-slate-500 dark:text-slate-400"><kbd class="bg-slate-100 dark:bg-slate-800 border dark:border-slate-700">Ctrl+B</kbd></span>
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 ring-1 ring-white/30 dark:ring-slate-900 shrink-0">
+                            <i data-lucide="cpu" class="w-4 h-4"></i>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="font-extrabold text-sm leading-none text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                                TechFeed Pro
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-brand-100 dark:bg-brand-900/80 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">v2.1</span>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center: Global Quick Search Input -->
+                <div class="relative flex-1 max-w-xl mx-1 sm:mx-2 flex items-center bg-slate-200/70 dark:bg-slate-800/70 rounded-xl p-1 border border-slate-300/60 dark:border-slate-700/60 shadow-inner focus-within:ring-2 focus-within:ring-brand-500/50 transition-all">
+                    
+                    <!-- Category Dropdown -->
+                    <div class="relative flex items-center border-r border-slate-300 dark:border-slate-700 pr-1 shrink-0">
+                        <i data-lucide="filter" class="w-3.5 h-3.5 absolute left-2 text-brand-600 dark:text-brand-400 pointer-events-none"></i>
+                        <select id="categoryDropdown" onchange="setCategory(this.value)" aria-label="カテゴリフィルター" class="appearance-none bg-transparent pl-7 pr-5 sm:pr-6 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 rounded-lg cursor-pointer hover:text-brand-600 focus:outline-none transition-colors max-w-[100px] sm:max-w-none truncate">
+                            <!-- Dynamic options -->
+                        </select>
+                        <i data-lucide="chevron-down" class="w-3 h-3 absolute right-1.5 text-slate-400 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Search Input (Uses '/' or 'Ctrl+K' to avoid hijacking browser Ctrl+F) -->
+                    <div class="relative flex-1 flex items-center min-w-0">
+                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 text-slate-400 shrink-0"></i>
+                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="記事検索 (/ または Ctrl+K)" aria-label="記事を検索" class="w-full pl-8 pr-14 py-1 bg-transparent text-slate-900 dark:text-slate-100 text-xs font-medium focus:outline-none placeholder-slate-400">
+                        <div class="absolute right-2 flex items-center space-x-1">
+                            <kbd class="hidden md:inline bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600">/</kbd>
+                            <button id="clearSearchBtn" onclick="clearSearch()" aria-label="検索内容をクリア" class="hidden p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Quick Filters & Actions -->
+                <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+                    
+                    <!-- Date Filter Quick Switch -->
+                    <div class="hidden xl:flex items-center space-x-0.5 bg-slate-200/60 dark:bg-slate-800/80 p-0.5 rounded-lg text-xs font-semibold border border-slate-300/40 dark:border-slate-700/50" role="group" aria-label="期間フィルター">
+                        <button onclick="setDateFilter('all')" id="date-all" class="px-2 py-1 rounded transition-all bg-white dark:bg-slate-700 shadow-xs text-slate-900 dark:text-white text-[11px] font-bold">全期間</button>
+                        <button onclick="setDateFilter('24h')" id="date-24h" class="px-2 py-1 rounded transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[11px]">24h</button>
+                        <button onclick="setDateFilter('7d')" id="date-7d" class="px-2 py-1 rounded transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[11px]">7d</button>
+                    </div>
+
+                    <!-- Region Selector -->
+                    <div class="bg-slate-200/60 dark:bg-slate-800/80 p-0.5 rounded-lg flex text-xs font-bold border border-slate-300/40 dark:border-slate-700/50" role="group" aria-label="リージョン選択">
+                        <button id="regionJpBtn" onclick="setRegion('jp')" aria-label="日本リージョン" class="px-2 py-1 rounded flex items-center space-x-1 transition-all bg-white dark:bg-slate-700 shadow-xs text-slate-900 dark:text-white text-[11px]">
+                            <span>🇯🇵</span><span class="hidden sm:inline">JP</span>
+                        </button>
+                        <button id="regionGlobalBtn" onclick="setRegion('global')" aria-label="グローバルリージョン" class="px-2 py-1 rounded flex items-center space-x-1 transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[11px]">
+                            <span>🌐</span><span class="hidden sm:inline">Global</span>
+                        </button>
+                    </div>
+
+                    <!-- Sync/Refresh Button -->
+                    <button onclick="refreshArticlesFromAPI()" id="syncBtn" aria-label="フィード更新" class="p-2 sm:px-2.5 sm:py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-xs flex items-center space-x-1.5" title="フィード更新 (Alt+R)">
+                        <i data-lucide="refresh-cw" id="syncIcon" class="w-3.5 h-3.5"></i>
+                        <span class="hidden md:inline text-[11px]">更新</span>
+                    </button>
+
+                    <!-- Theme Toggle -->
+                    <button id="themeToggleBtn" onclick="toggleDarkMode()" aria-label="テーマ切り替え" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 dark:text-slate-400 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-slate-700" title="テーマ切り替え">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-600"></i>
+                    </button>
+
+                    <!-- Account Button -->
+                    <button onclick="openAuthModal()" aria-label="アカウント設定" class="flex items-center space-x-1 p-1 bg-slate-200/60 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg transition-colors border border-slate-300/50 dark:border-slate-700/50" title="アカウント設定">
+                        <div id="userAvatar" class="w-6 h-6 rounded bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-black text-[10px]">U</div>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA (Responsive Layout) -->
+        <div class="flex-1 flex overflow-hidden relative">
+            
+            <!-- MOBILE SIDEBAR BACKDROP -->
+            <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-20 md:hidden opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
+            <!-- LEFT DESKTOP SIDEBAR (Responsive Drawer on Mobile, Collapsible on Desktop) -->
+            <aside id="desktopSidebar" class="fixed md:static inset-y-0 left-0 z-30 w-60 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shrink-0 flex flex-col transition-all duration-200 -translate-x-full md:translate-x-0">
+                <div class="p-3 space-y-5 overflow-y-auto flex-1">
+                    
+                    <!-- Mobile Close Header -->
+                    <div class="flex md:hidden items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                        <span class="font-bold text-xs text-slate-700 dark:text-slate-300">ナビゲーション</span>
+                        <button onclick="toggleSidebar()" aria-label="メニューを閉じる" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Navigation Views -->
+                    <div>
+                        <p class="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">ビュー</p>
+                        <nav class="space-y-0.5" aria-label="メインナビゲーション">
+                            <button onclick="setViewFilter('all')" id="nav-all" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-all">
+                                <span class="flex items-center space-x-2"><i data-lucide="newspaper" class="w-4 h-4"></i><span>すべての記事</span></span>
+                                <span id="badge-all-count" class="text-[10px] px-1.5 py-0.5 rounded-md font-bold">0</span>
+                            </button>
+                            <button onclick="setViewFilter('recommended')" id="nav-recommended" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-all">
+                                <span class="flex items-center space-x-2"><i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i><span>おすすめ記事</span></span>
+                                <span id="badge-recommended-count" class="text-[10px] px-1.5 py-0.5 rounded-md font-bold">0</span>
+                            </button>
+                            <button onclick="setViewFilter('trending')" id="nav-trending" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-all">
+                                <span class="flex items-center space-x-2"><i data-lucide="flame" class="w-4 h-4 text-rose-500"></i><span>トレンド</span></span>
+                                <span id="badge-trending-count" class="text-[10px] px-1.5 py-0.5 rounded-md font-bold">HOT</span>
+                            </button>
+                            <button onclick="setViewFilter('bookmarks')" id="nav-bookmarks" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-all">
+                                <span class="flex items-center space-x-2"><i data-lucide="bookmark" class="w-4 h-4 text-brand-500"></i><span>ブックマーク</span></span>
+                                <span id="badge-bookmark-count" class="text-[10px] px-1.5 py-0.5 rounded-md font-bold">0</span>
+                            </button>
+                            <button onclick="setViewFilter('unread')" id="nav-unread" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-all">
+                                <span class="flex items-center space-x-2"><i data-lucide="circle" class="w-3.5 h-3.5 text-emerald-500 fill-emerald-500"></i><span>未読のみ</span></span>
+                                <span id="badge-unread-count" class="text-[10px] px-1.5 py-0.5 rounded-md font-bold">0</span>
+                            </button>
+                            <button onclick="setViewFilter('analytics')" id="nav-analytics" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-all">
+                                <span class="flex items-center space-x-2"><i data-lucide="trending-up" class="w-4 h-4 text-indigo-500"></i><span>ITトレンド分析</span></span>
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Frequently Visited Categories -->
+                    <div>
+                        <p class="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5 flex items-center">
+                            <i data-lucide="zap" class="w-3 h-3 text-amber-500 mr-1"></i>よく見るカテゴリ
+                        </p>
+                        <div id="frequentCategoriesContainer" class="space-y-1"></div>
+                    </div>
+
+                    <!-- Safe Keyboard Shortcuts Quick Hint Box -->
+                    <div class="p-2.5 bg-slate-200/50 dark:bg-slate-800/40 rounded-xl border border-slate-300/40 dark:border-slate-800 text-[11px] space-y-1.5">
+                        <div class="font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1">
+                            <i data-lucide="keyboard" class="w-3.5 h-3.5 text-brand-500"></i>
+                            <span>ショートカット (安全設計)</span>
+                        </div>
+                        <div class="space-y-1 text-slate-500 dark:text-slate-400 text-[10px]">
+                            <div class="flex justify-between"><span>アプリ内検索</span> <kbd class="bg-white dark:bg-slate-800">/ または Ctrl+K</kbd></div>
+                            <div class="flex justify-between"><span>フィード更新</span> <kbd class="bg-white dark:bg-slate-800">Alt+R</kbd></div>
+                            <div class="flex justify-between"><span>パネルを閉じる</span> <kbd class="bg-white dark:bg-slate-800">Esc</kbd></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer User Bar -->
+                <div class="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/80 flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <div id="userAvatarSidebar" class="w-7 h-7 rounded bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">U</div>
+                        <div class="min-w-0">
+                            <p id="userName" class="text-xs font-bold truncate text-slate-800 dark:text-slate-200 leading-none">ゲストユーザー</p>
+                            <p id="userRole" class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">ローカルモード</p>
+                        </div>
+                    </div>
+                    <button onclick="openAuthModal()" aria-label="アカウント設定を開く" class="p-2 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- CENTER MAIN FEED AREA -->
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/60 dark:bg-slate-950/60 relative min-w-0" id="mainScrollArea">
+                
+                <!-- Active Title Header -->
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
+                    <div id="viewTitle" class="text-base sm:text-lg font-bold flex items-center space-x-2 text-slate-900 dark:text-white"></div>
+                    <div id="resultCountBadge" class="text-xs font-semibold px-2.5 py-1 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md shrink-0"></div>
+                </div>
+
+                <!-- Hero Popular Article Banner Container -->
+                <div id="heroFeaturedContainer" class="mb-6 hidden max-w-5xl mx-auto"></div>
+
+                <!-- Feed View Grid Container -->
+                <div id="feedView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+                <!-- Analytics View Dashboard -->
+                <div id="analyticsView" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <h3 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-indigo-500"></i>
+                                <span>主要技術スタックの言及数トレンド (過去7日間)</span>
+                            </h3>
+                            <span class="text-xs text-slate-400">最終同期: リアルタイム</span>
+                        </div>
+                        <div class="h-72 sm:h-80 w-full relative">
+                            <canvas id="trendChartCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State View -->
+                <div id="emptyState" class="hidden py-20 text-center space-y-3">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                        <i data-lucide="inbox" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-700 dark:text-slate-300">該当する記事が見つかりませんでした</h3>
+                    <p class="text-xs text-slate-500 max-w-sm mx-auto">検索ワードを変更するか、フィルター条件を解除してください。</p>
+                    <button onclick="resetFilters()" class="mt-2 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700 transition-colors">
+                        フィルターをリセット
+                    </button>
+                </div>
+            </main>
+
+            <!-- RIGHT DETAIL & AI SLIDE-IN OVERLAY PANEL -->
+            <div id="detailBackdrop" onclick="closeDetailPanel()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
+            <aside id="detailPanel" aria-label="記事詳細とAI分析パネル" class="fixed top-0 right-0 bottom-0 w-full sm:w-[420px] lg:w-[460px] max-w-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-40 translate-x-full transition-transform duration-200 ease-in-out flex flex-col shadow-2xl">
+                
+                <!-- Panel Header -->
+                <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-slate-900/80">
+                    <div class="flex items-center space-x-2">
+                        <span id="detailCategoryBadge" class="text-xs font-bold px-2 py-0.5 bg-brand-100 dark:bg-brand-900/80 text-brand-700 dark:text-brand-300 rounded">Category</span>
+                        <span id="detailRegionBadge" class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">JP</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button id="detailBookmarkBtn" onclick="toggleBookmarkFromDetail()" aria-label="ブックマーク切替" class="p-2 text-slate-400 hover:text-amber-400 rounded-lg transition-colors">
+                            <i data-lucide="star" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="closeDetailPanel()" aria-label="詳細パネルを閉じる" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-colors" title="閉じる (Esc)">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel Body -->
+                <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 user-select-text">
+                    
+                    <!-- Tauri Local AI Summary Module with Realistic Async State -->
+                    <div class="bg-gradient-to-br from-indigo-50/90 to-purple-50/90 dark:from-indigo-950/40 dark:to-purple-950/40 p-4 rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 space-y-3 shadow-xs">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-xs">ローカルAI要約 & 翻訳推論</h3>
+                            </div>
+                            <span class="text-[9px] bg-indigo-200 dark:bg-indigo-900/80 text-indigo-800 dark:text-indigo-200 px-1.5 py-0.5 rounded font-mono font-bold">On-Device LLM</span>
+                        </div>
+
+                        <!-- AI Buttons -->
+                        <div class="flex items-center space-x-2">
+                            <button onclick="generateAiSummary()" id="aiSummaryBtn" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 transition-all shadow-xs">
+                                <i data-lucide="wand-2" id="aiSummaryIcon" class="w-3.5 h-3.5"></i>
+                                <span id="aiSummaryLabel">AI要約を生成</span>
+                            </button>
+                            <button onclick="toggleAiTranslation()" id="aiTranslateBtn" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-60 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg flex items-center space-x-1.5 transition-all">
+                                <i data-lucide="languages" id="aiTranslateIcon" class="w-3.5 h-3.5"></i>
+                                <span id="transLangLabel">翻訳</span>
+                            </button>
+                        </div>
+
+                        <!-- AI Output Result -->
+                        <div id="aiResultBox" class="hidden bg-white/95 dark:bg-slate-900/95 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/60 text-xs space-y-1.5 transition-all">
+                            <div class="flex items-center justify-between text-indigo-600 dark:text-indigo-400 font-bold text-[11px]">
+                                <span>要点ピックアップ</span>
+                                <span id="aiInferenceTime" class="text-[9px] text-slate-400 font-mono font-normal">推論完了 (0.42s)</span>
+                            </div>
+                            <ul id="aiSummaryPoints" class="list-disc list-inside space-y-1.5 text-slate-700 dark:text-slate-300 leading-relaxed text-[11px]"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Article Title & Meta -->
+                    <div>
+                        <h2 id="detailTitle" class="text-base font-extrabold text-slate-900 dark:text-white leading-snug">記事タイトル</h2>
+                        <div class="mt-2 flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span id="detailSource" class="font-bold text-slate-700 dark:text-slate-300">情報源</span>
+                            <span>•</span>
+                            <span id="detailDate">日時</span>
+                        </div>
+                    </div>
+
+                    <!-- Raw Description with Controlled Glossary Links -->
+                    <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">概要</p>
+                            <span class="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium">※点線用語タップで辞書表示</span>
+                        </div>
+                        <p id="detailDescription">記事概要テキスト...</p>
+                    </div>
+
+                    <!-- Personal Notes -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="myMemoArea" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-brand-600"></i>
+                                <span>マイメモ (自動保存)</span>
+                            </label>
+                            <span id="memoSavedBadge" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold opacity-0 transition-opacity">✓ 保存完了</span>
+                        </div>
+                        <textarea id="myMemoArea" oninput="handleMemoInput()" placeholder="技術的メモや気になる技術スタックを入力..." class="w-full h-24 p-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500 resize-none transition-colors"></textarea>
+                    </div>
+
+                    <!-- External Source Link Button -->
+                    <div class="pt-2">
+                        <a id="detailExternalUrl" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 text-white text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 transition-colors shadow-xs">
+                            <span>元記事を読む (外部サイト)</span>
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- CUSTOM DESKTOP CONTEXT MENU -->
+        <div id="contextMenu" role="menu" class="fixed z-50 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 text-xs text-slate-700 dark:text-slate-200 hidden">
+            <button role="menuitem" onclick="contextAction('detail')" class="w-full px-3 py-2 text-left hover:bg-brand-50 dark:hover:bg-slate-700 flex items-center space-x-2">
+                <i data-lucide="book-open" class="w-3.5 h-3.5 text-brand-500"></i><span>詳細・AI要約を開く</span>
+            </button>
+            <button role="menuitem" onclick="contextAction('bookmark')" class="w-full px-3 py-2 text-left hover:bg-brand-50 dark:hover:bg-slate-700 flex items-center space-x-2">
+                <i data-lucide="star" class="w-3.5 h-3.5 text-amber-500"></i><span>ブックマーク切り替え</span>
+            </button>
+            <button role="menuitem" onclick="contextAction('openExternal')" class="w-full px-3 py-2 text-left hover:bg-brand-50 dark:hover:bg-slate-700 flex items-center space-x-2">
+                <i data-lucide="external-link" class="w-3.5 h-3.5 text-indigo-500"></i><span>ブラウザで元記事を開く</span>
+            </button>
+            <div class="my-1 border-t border-slate-100 dark:border-slate-700"></div>
+            <button role="menuitem" onclick="contextAction('copyLink')" class="w-full px-3 py-2 text-left hover:bg-brand-50 dark:hover:bg-slate-700 flex items-center space-x-2">
+                <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-400"></i><span>リンクをコピー</span>
+            </button>
+        </div>
+
+        <!-- INLINE DICTIONARY MODAL -->
+        <div id="glossaryModal" role="dialog" aria-modal="true" aria-labelledby="glossaryTerm" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-150" onclick="closeGlossaryModal()">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm p-5 shadow-2xl space-y-3 relative user-select-text" onclick="event.stopPropagation()">
+                <button onclick="closeGlossaryModal()" aria-label="辞書モーダルを閉じる" class="absolute top-3.5 right-3.5 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <span id="glossaryCategory" class="text-[10px] font-bold px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 rounded">Category</span>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center">
+                        <i data-lucide="book-open" class="w-3 h-3 mr-1 text-indigo-500"></i> ナレッジ辞書
+                    </span>
+                </div>
+                <div>
+                    <h4 id="glossaryTerm" class="text-lg font-black text-slate-900 dark:text-white">用語名</h4>
+                    <p id="glossarySummary" class="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1 leading-relaxed"></p>
+                </div>
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl text-xs text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 leading-relaxed">
+                    <p id="glossaryDetail"></p>
+                </div>
+                <div class="pt-1 flex items-center justify-between">
+                    <span class="text-[10px] text-slate-400">Escキーで閉じる</span>
+                    <button onclick="closeGlossaryModal()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-all shadow-xs">了解</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTH & SETTINGS MODAL -->
+        <div id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-150" onclick="closeAuthModal()">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm p-5 shadow-2xl relative space-y-4" onclick="event.stopPropagation()">
+                <button onclick="closeAuthModal()" aria-label="設定モーダルを閉じる" class="absolute top-3.5 right-3.5 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                <div class="text-center">
+                    <div class="w-10 h-10 bg-brand-100 dark:bg-brand-900/60 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                    </div>
+                    <h3 id="authModalTitle" class="text-base font-bold text-slate-900 dark:text-white">アカウント同期設定</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ブックマークとメモをローカル/サーバーへ同期</p>
+                </div>
+                <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1" for="authUserId">ユーザーID</label>
+                        <input type="text" id="authUserId" required placeholder="例: dev_user01" class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:border-brand-500 rounded-lg text-xs outline-none text-slate-900 dark:text-slate-100">
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all">ログインして適用</button>
+                </form>
+                <div id="logoutSection" class="hidden border-t border-slate-200 dark:border-slate-800 pt-3 text-center">
+                    <button onclick="handleLogout()" class="text-xs font-bold text-rose-500 hover:text-rose-600">ログアウト (ゲストに戻る)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- IT GLOSSARY DATABASE ---
+        const IT_DICTIONARY = {
+            "ローカルLLM": { category: "AI / ML", summary: "端末やローカル環境で直接実行する軽量な大規模言語モデル。", detail: "プライバシー保護やAPI通信コストゼロ化に優れ、OllamaやTauri環境のネイティブアプリで急普及中。" },
+            "Tauri": { category: "Desktop / Rust", summary: "Web技術(HTML/JS)とRustを用いて超軽量デスクトップアプリを構築するフレームワーク。", detail: "Electronに比べてメモリ消費が極めて少なく、高速なシステムAPIアクセスを提供。" },
+            "Rust": { category: "Language", summary: "メモリ安全性とC/C++並みの超高速な実行速度を両立したシステムプログラミング言語。", detail: "ガベージコレクションなしでコンパイル時にメモリ安全性を保証。" },
+            "Kubernetes": { category: "Cloud / DevOps", summary: "コンテナ化されたアプリケーションの自動デプロイ・スケール管理ツール。", detail: "通称k8s。クラウドネイティブインフラの業界標準。" },
+            "SBOM": { category: "Security", summary: "Software Bill of Materials (ソフトウェア部品表)。", detail: "使用ライブラリや依存関係を明細化した構成リスト。サプライチェーンセキュリティに必須。" },
+            "VLAN": { category: "Network", summary: "Virtual Local Area Network (仮想LAN)。", detail: "スイッチ内でネットワークを論理的に分割し、セキュリティと帯域効率を高める技術。" },
+            "Subnet": { category: "Network", summary: "サブネット (ネットワーク分割単位)。", detail: "IPアドレス空間を細分化し、ブロードキャストドメインを最適化する手法。" },
+            "React": { category: "Frontend", summary: "UIコンポーネント指向のJavaScriptライブラリ。", detail: "仮想DOM（Virtual DOM）と宣言的UI記述により効率的な開発を可能に。" }
+        };
+
+        // --- SAMPLE ARTICLES ---
+        const SAMPLE_ARTICLES = [
+            { id: "art-jp-001", region: "jp", category: "AI/LLM", title: "ローカルLLM開発フレームワークの新バージョン公開、軽量化と高速化を実現", description: "TauriおよびRustベースのネイティブクライアントで動作可能なローカルLLMの最適化ライブラリがリリースされました。VLAN等の外部通信なしで完全動作。", source: "TechNews Japan", url: "https://example.com/news/art-jp-001", date: "2026-11-13T08:30:00Z", isTrending: true, viewsCount: 1420 },
+            { id: "art-jp-002", region: "jp", category: "Frontend", title: "React 19の新機能とパフォーマンス最適化手法の解説まとめ", description: "React 19で正式導入されたServer Actionsおよび自動メモ化コンパイラの仕組みについて解説します。", source: "WebDev Weekly JP", url: "https://example.com/news/art-jp-002", date: "2026-11-12T14:15:00Z", isTrending: true, viewsCount: 980 },
+            { id: "art-jp-003", region: "jp", category: "Cloud/DevOps", title: "Kubernetes 1.32リリース：マルチクラウド運用の省力化と自動スケール強化", description: "最新リリースでは、エッジノードの自動リカバリ機能およびSubnet単位での通信最適化が大幅更新されました。", source: "Cloud Native Watch", url: "https://example.com/news/art-jp-003", date: "2026-11-11T18:00:00Z", isTrending: false, viewsCount: 650 },
+            { id: "art-jp-004", region: "jp", category: "Security", title: "サプライチェーン攻撃を防ぐSBOM運用の自動化ベストプラクティス", description: "オープンソース依存関係の脆弱性を自動検出し、CISA規約に適合したSBOM出力を実現する手順。", source: "CyberSec Times", url: "https://example.com/news/art-jp-004", date: "2026-11-10T11:40:00Z", isTrending: false, viewsCount: 420 },
+            { id: "art-global-001", region: "global", category: "AI/LLM", title: "Next-Gen AI Models Achieve Breakthrough in Local Context Reasoning", description: "New lightweight ローカルLLM solutions enable multi-modal processing directly on end-user machines with Tauri wrappers.", source: "Global Tech Insider", url: "https://example.com/news/art-global-001", date: "2026-11-13T07:00:00Z", isTrending: true, viewsCount: 2310 },
+            { id: "art-global-002", region: "global", category: "Backend", title: "Rust Ecosystem Gains Momentum in High-Throughput Systems", description: "Financial systems report a 40% latency drop after migrating core microservices to Rust and managing Kubernetes clusters seamlessly.", source: "Systems Architecture Today", url: "https://example.com/news/art-global-002", date: "2026-11-12T16:20:00Z", isTrending: true, viewsCount: 1890 }
+        ];
+
+        const CATEGORIES = ["すべて", "AI/LLM", "Frontend", "Backend", "Cloud/DevOps", "Security", "Mobile"];
+
+        // --- APPLICATION STATE ---
+        let state = {
+            currentRegion: 'jp',
+            currentView: 'all',
+            selectedCategory: 'すべて',
+            dateFilter: 'all',
+            searchQuery: '',
+            user: { isLoggedIn: false, userId: 'ゲストユーザー' },
+            bookmarks: new Set(),
+            readArticles: new Set(),
+            memos: {},
+            categoryVisits: {},
+            activeArticleId: null,
+            contextTargetArticleId: null,
+            aiSummaryActive: false,
+            aiTranslated: false,
+            sidebarOpenMobile: false,
+            sidebarCollapsedDesktop: false
+        };
+
+        let memoSaveTimeout = null;
+        let trendChartInstance = null;
+
+        // --- SAFE KEYBOARD SHORTCUTS (Respects Browser Defaults) ---
+        window.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement?.tagName.toLowerCase();
+            const isTyping = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+
+            // Esc closes modals/panels cleanly
+            if (e.key === 'Escape') {
+                closeDetailPanel();
+                closeGlossaryModal();
+                closeAuthModal();
+                hideContextMenu();
+                if (state.sidebarOpenMobile) toggleSidebar();
+            }
+
+            // '/' or 'Ctrl+K' focuses app search without breaking browser Ctrl+F
+            if ((!isTyping && e.key === '/') || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+                e.preventDefault();
+                const input = document.getElementById('searchInput');
+                if (input) input.focus();
+            }
+
+            // 'Alt+R' refreshes feed without breaking browser Ctrl+R page reload
+            if (e.altKey && e.key.toLowerCase() === 'r') {
+                e.preventDefault();
+                refreshArticlesFromAPI();
+            }
+
+            // 'Ctrl+B' toggles sidebar
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+                toggleSidebar();
+            }
+        });
+
+        window.addEventListener('click', () => { hideContextMenu(); });
+
+        // --- CONTROLLED INLINE GLOSSARY INJECTION ---
+        // Only replaces the FIRST occurrence of each dictionary term to keep text clean & readable
+        function injectInlineGlossary(text, enableLinks = true) {
+            if (!text || !enableLinks) return text || "";
+            let processedText = text;
+            
+            Object.keys(IT_DICTIONARY).forEach(term => {
+                // Match first occurrence outside of HTML tags
+                const regex = new RegExp(`(?<!<[^>]*)(${term})(?![^<]*>)`);
+                const encodedTerm = encodeURIComponent(term);
+                processedText = processedText.replace(regex, 
+                    `<span onclick="openGlossaryModal(decodeURIComponent('${encodedTerm}'), event)" role="button" tabindex="0" class="cursor-pointer underline decoration-indigo-500 decoration-dotted underline-offset-4 text-indigo-600 dark:text-indigo-400 font-semibold hover:bg-indigo-100/60 dark:hover:bg-indigo-900/40 px-1 rounded transition-colors" title="用語辞書を表示: ${term}">$1</span>`
+                );
+            });
+            return processedText;
+        }
+
+        // --- FILTERING LOGIC ---
+        function getFilteredArticles() {
+            let list = SAMPLE_ARTICLES.filter(art => art.region === state.currentRegion);
+
+            if (state.currentView === 'recommended') {
+                const topCategories = Object.keys(state.categoryVisits).sort((a, b) => state.categoryVisits[b] - state.categoryVisits[a]);
+                list = list.filter(art => {
+                    const isTopCategory = topCategories.slice(0, 2).includes(art.category);
+                    return isTopCategory || art.isTrending || state.bookmarks.has(art.id);
+                });
+            } else if (state.currentView === 'trending') {
+                list = list.filter(art => art.isTrending || art.viewsCount > 1000);
+            } else if (state.currentView === 'bookmarks') {
+                list = list.filter(art => state.bookmarks.has(art.id));
+            } else if (state.currentView === 'unread') {
+                list = list.filter(art => !state.readArticles.has(art.id));
+            }
+
+            if (state.selectedCategory !== 'すべて') {
+                list = list.filter(art => art.category === state.selectedCategory);
+            }
+
+            if (state.dateFilter !== 'all') {
+                const now = Date.now();
+                list = list.filter(art => {
+                    const artDate = new Date(art.date).getTime();
+                    const hoursDiff = (now - artDate) / (1000 * 60 * 60);
+                    if (state.dateFilter === '24h') return hoursDiff <= 24;
+                    if (state.dateFilter === '7d') return hoursDiff <= 24 * 7;
+                    return true;
+                });
+            }
+
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                list = list.filter(art => art.title.toLowerCase().includes(q) || art.description.toLowerCase().includes(q) || art.source.toLowerCase().includes(q) || art.category.toLowerCase().includes(q));
+            }
+
+            return list;
+        }
+
+        function renderCategoryNav() {
+            const dropdown = document.getElementById('categoryDropdown');
+            if (!dropdown) return;
+            const regionArticles = SAMPLE_ARTICLES.filter(a => a.region === state.currentRegion);
+            dropdown.innerHTML = CATEGORIES.map(cat => {
+                const count = cat === 'すべて' ? regionArticles.length : regionArticles.filter(a => a.category === cat).length;
+                const isSelected = state.selectedCategory === cat ? 'selected' : '';
+                return `<option value="${cat}" ${isSelected}>${cat} (${count})</option>`;
+            }).join('');
+        }
+
+        // --- RESPONSIVE SIDEBAR TOGGLE ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('desktopSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (!sidebar) return;
+
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                state.sidebarOpenMobile = !state.sidebarOpenMobile;
+                if (state.sidebarOpenMobile) {
+                    sidebar.classList.remove('-translate-x-full');
+                    if (backdrop) backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    if (backdrop) backdrop.classList.add('opacity-0', 'pointer-events-none');
+                }
+            } else {
+                state.sidebarCollapsedDesktop = !state.sidebarCollapsedDesktop;
+                if (state.sidebarCollapsedDesktop) {
+                    sidebar.classList.add('md:-ml-60');
+                } else {
+                    sidebar.classList.remove('md:-ml-60');
+                }
+            }
+        }
+
+        function renderFrequentCategories() {
+            const container = document.getElementById('frequentCategoriesContainer');
+            if (!container) return;
+            const sortedCategories = Object.keys(state.categoryVisits).filter(cat => state.categoryVisits[cat] > 0).sort((a, b) => state.categoryVisits[b] - state.categoryVisits[a]).slice(0, 5);
+
+            if (sortedCategories.length === 0) {
+                container.innerHTML = '<p class="text-[11px] text-slate-400 px-2 py-1">閲覧履歴がありません</p>';
+                return;
+            }
+
+            container.innerHTML = sortedCategories.map(cat => {
+                const visits = state.categoryVisits[cat];
+                const isActive = state.selectedCategory === cat;
+                return `
+                    <button onclick="setCategory('${cat}')" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between ${isActive ? 'bg-amber-500 text-white shadow-xs' : 'bg-amber-50/60 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50'}">
+                        <span>${cat}</span>
+                        <span class="text-[9px] bg-amber-200/80 dark:bg-amber-800/80 text-amber-950 dark:text-amber-100 px-1.5 py-0.5 rounded font-black">${visits}回</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function saveLocalState() {
+            try {
+                const payload = {
+                    bookmarks: Array.from(state.bookmarks),
+                    readArticles: Array.from(state.readArticles),
+                    memos: state.memos,
+                    categoryVisits: state.categoryVisits,
+                    user: state.user
+                };
+                localStorage.setItem('techfeed_desktop_v2_1', JSON.stringify(payload));
+            } catch (e) {
+                console.warn('LocalStorage save error:', e);
+            }
+        }
+
+        function loadLocalState() {
+            try {
+                const data = localStorage.getItem('techfeed_desktop_v2_1');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (parsed.bookmarks) state.bookmarks = new Set(parsed.bookmarks);
+                    if (parsed.readArticles) state.readArticles = new Set(parsed.readArticles);
+                    if (parsed.memos) state.memos = parsed.memos;
+                    if (parsed.categoryVisits) state.categoryVisits = parsed.categoryVisits;
+                    if (parsed.user) state.user = parsed.user;
+                }
+            } catch (e) {
+                console.warn('LocalStorage load error:', e);
+            }
+        }
+
+        window.onload = function() {
+            loadLocalState();
+            setViewFilter('all');
+            initChart();
+            fetchLiveNewsAPI();
+        };
+
+        async function fetchLiveNewsAPI() {
+            const syncIcon = document.getElementById('syncIcon');
+            if (syncIcon) syncIcon.classList.add('animate-spin');
+            try {
+                const res = await fetch('https://dev.to/api/articles?per_page=8&top=7');
+                if (!res.ok) throw new Error('API fetch failed');
+                const rawData = await res.json();
+                const apiArticles = rawData.map((item, idx) => {
+                    const catMap = ['AI/LLM', 'Frontend', 'Backend', 'Cloud/DevOps', 'Security', 'Mobile'];
+                    return {
+                        id: `api-${item.id}`,
+                        region: idx % 2 === 0 ? 'global' : 'jp',
+                        category: catMap[idx % catMap.length],
+                        title: item.title,
+                        description: item.description || (item.title + " - Tauri, React, Subnet および Cloudインフラストラクチャの最新情報。"),
+                        source: item.organization?.name || item.user?.name || "Dev.to Feed",
+                        url: item.url,
+                        image: item.cover_image || item.social_image || null,
+                        date: new Date(item.published_at || Date.now()).toISOString(),
+                        isTrending: idx % 2 === 0,
+                        viewsCount: Math.floor(Math.random() * 1500) + 500
+                    };
+                });
+                apiArticles.forEach(fa => {
+                    if (!SAMPLE_ARTICLES.some(a => a.id === fa.id)) SAMPLE_ARTICLES.unshift(fa);
+                });
+                showToast('フィードを最新に更新しました');
+            } catch (err) {
+                console.warn("API取得代替モード:", err);
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('animate-spin');
+                updateUI();
+            }
+        }
+
+        function refreshArticlesFromAPI() { fetchLiveNewsAPI(); }
+
+        function getSVGPlaceholder(category) {
+            const encodedCat = encodeURIComponent(category || 'Tech');
+            return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300"><rect width="100%" height="100%" fill="%231e293b"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="%236366f1">${encodedCat}</text></svg>`;
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 right-5 z-50 bg-slate-900 text-white dark:bg-brand-600 text-xs px-3.5 py-2.5 rounded-xl shadow-lg border border-slate-700/50 flex items-center space-x-2 transition-all transform translate-y-2 opacity-0';
+            toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            if (window.lucide) lucide.createIcons();
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function updateUI() {
+            const userNameEl = document.getElementById('userName');
+            if (userNameEl) userNameEl.innerText = state.user.userId;
+            const userRoleEl = document.getElementById('userRole');
+            if (userRoleEl) userRoleEl.innerText = state.user.isLoggedIn ? '同期アクティブ' : 'ローカルモード';
+            const userAvatarEl = document.getElementById('userAvatar');
+            if (userAvatarEl) userAvatarEl.innerText = state.user.userId.charAt(0).toUpperCase();
+            const userAvatarSidebar = document.getElementById('userAvatarSidebar');
+            if (userAvatarSidebar) userAvatarSidebar.innerText = state.user.userId.charAt(0).toUpperCase();
+
+            const regionArticles = SAMPLE_ARTICLES.filter(a => a.region === state.currentRegion);
+            
+            const badgeAllCount = document.getElementById('badge-all-count');
+            if (badgeAllCount) badgeAllCount.innerText = regionArticles.length;
+            
+            const recommendedCount = regionArticles.filter(a => {
+                const topCat = Object.keys(state.categoryVisits).sort((x, y) => state.categoryVisits[y] - state.categoryVisits[x])[0];
+                return a.category === topCat || a.isTrending;
+            }).length;
+            const badgeRecommendedCount = document.getElementById('badge-recommended-count');
+            if (badgeRecommendedCount) badgeRecommendedCount.innerText = recommendedCount;
+
+            const bookmarkCount = regionArticles.filter(a => state.bookmarks.has(a.id)).length;
+            const badgeBookmarkCount = document.getElementById('badge-bookmark-count');
+            if (badgeBookmarkCount) badgeBookmarkCount.innerText = bookmarkCount;
+
+            const unreadCount = regionArticles.filter(a => !state.readArticles.has(a.id)).length;
+            const badgeUnreadCount = document.getElementById('badge-unread-count');
+            if (badgeUnreadCount) badgeUnreadCount.innerText = unreadCount;
+
+            const isJp = state.currentRegion === 'jp';
+            const regionJpBtn = document.getElementById('regionJpBtn');
+            if (regionJpBtn) regionJpBtn.className = `px-2 py-1 rounded flex items-center space-x-1 transition-all ${isJp ? 'bg-white dark:bg-slate-700 shadow-xs text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400'}`;
+            const regionGlobalBtn = document.getElementById('regionGlobalBtn');
+            if (regionGlobalBtn) regionGlobalBtn.className = `px-2 py-1 rounded flex items-center space-x-1 transition-all ${!isJp ? 'bg-white dark:bg-slate-700 shadow-xs text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400'}`;
+
+            const titles = { 'all': 'すべての記事', 'recommended': '🔥 おススメ記事', 'trending': '📈 急上昇トレンド', 'bookmarks': 'ブックマーク一覧', 'unread': '未読記事一覧', 'analytics': 'ITトレンド分析' };
+            const viewTitleEl = document.getElementById('viewTitle');
+            if (viewTitleEl) viewTitleEl.innerHTML = `<span>${titles[state.currentView] || '記事一覧'}</span>`;
+
+            const feedView = document.getElementById('feedView');
+            const heroContainer = document.getElementById('heroFeaturedContainer');
+            const analyticsView = document.getElementById('analyticsView');
+            const emptyState = document.getElementById('emptyState');
+            const resultCountBadge = document.getElementById('resultCountBadge');
+
+            if (state.currentView === 'analytics') {
+                if (feedView) feedView.classList.add('hidden');
+                if (heroContainer) heroContainer.classList.add('hidden');
+                if (analyticsView) analyticsView.classList.remove('hidden');
+                if (emptyState) emptyState.classList.add('hidden');
+                if (resultCountBadge) resultCountBadge.innerText = 'チャート表示';
+            } else {
+                if (analyticsView) analyticsView.classList.add('hidden');
+                const articles = getFilteredArticles();
+                if (resultCountBadge) resultCountBadge.innerText = `${articles.length} 件`;
+
+                if (articles.length === 0) {
+                    if (feedView) feedView.classList.add('hidden');
+                    if (heroContainer) heroContainer.classList.add('hidden');
+                    if (emptyState) emptyState.classList.remove('hidden');
+                } else {
+                    if (emptyState) emptyState.classList.add('hidden');
+                    if (feedView) feedView.classList.remove('hidden');
+                    renderFeedContent(articles);
+                }
+            }
+
+            renderCategoryNav();
+            renderFrequentCategories();
+            saveLocalState();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function renderFeedContent(articles) {
+            const heroContainer = document.getElementById('heroFeaturedContainer');
+            const topArticle = [...articles].sort((a, b) => b.viewsCount - a.viewsCount)[0];
+            
+            if (topArticle && !state.searchQuery && ['all', 'recommended', 'trending'].includes(state.currentView)) {
+                renderHeroArticle(topArticle, heroContainer);
+                heroContainer.classList.remove('hidden');
+                renderArticleCards(articles.filter(a => a.id !== topArticle.id));
+            } else {
+                heroContainer.classList.add('hidden');
+                renderArticleCards(articles);
+            }
+        }
+
+        function renderHeroArticle(art, container) {
+            const isBookmarked = state.bookmarks.has(art.id);
+            const hasMemo = !!state.memos[art.id];
+            const formattedDate = new Date(art.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const fallbackImg = getSVGPlaceholder(art.category);
+            const displayImg = art.image || fallbackImg;
+            // Keep cards clean: glossary links enabled in Hero and Detail view, disabled in small grid snippets
+            const glossaryDescription = injectInlineGlossary(art.description, true);
+
+            container.innerHTML = `
+                <div oncontextmenu="handleContextMenu(event, '${art.id}')" class="relative bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl overflow-hidden shadow-xl border border-indigo-500/30 group card-hover-effect">
+                    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="flex flex-col md:flex-row items-stretch min-h-[210px]">
+                        <div onclick="openDetailPanel('${art.id}')" class="w-full md:w-5/12 relative cursor-pointer overflow-hidden min-h-[170px]">
+                            <img src="${displayImg}" onerror="this.onerror=null; this.src='${fallbackImg}';" alt="${art.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out">
+                            <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-950/90 via-slate-950/40 to-transparent"></div>
+                            <div class="absolute top-3 left-3 flex items-center space-x-2 z-10">
+                                <span class="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black text-[10px] rounded-lg shadow-md flex items-center gap-1 uppercase tracking-wider">
+                                    <i data-lucide="flame" class="w-3.5 h-3.5 fill-white"></i> トレンド
+                                </span>
+                                <span class="px-2 py-0.5 bg-slate-900/80 backdrop-blur-md text-brand-300 font-extrabold text-[10px] rounded border border-brand-500/30">${art.category}</span>
+                            </div>
+                            <div class="absolute bottom-3 left-3 text-slate-300 text-[10px] font-mono flex items-center space-x-2">
+                                <span><i data-lucide="eye" class="w-3 h-3 inline mr-1 text-brand-400"></i>${art.viewsCount.toLocaleString()} views</span>
+                                <span>•</span><span>${formattedDate}</span>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-7/12 p-4 sm:p-5 flex flex-col justify-between space-y-3 relative z-10">
+                            <div>
+                                <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                                    <span class="font-bold text-brand-400 flex items-center space-x-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>${art.source}</span></span>
+                                    ${hasMemo ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold border border-amber-500/30">📝 メモ保存済み</span>' : ''}
+                                </div>
+                                <h2 onclick="openDetailPanel('${art.id}')" class="text-base sm:text-lg font-black text-white hover:text-brand-300 cursor-pointer transition-colors leading-snug line-clamp-2">${art.title}</h2>
+                                <div class="mt-2 text-xs text-slate-300 leading-relaxed line-clamp-2 font-normal user-select-text">${glossaryDescription}</div>
+                            </div>
+                            <div class="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+                                <span class="text-[10px] text-slate-400 flex items-center gap-1 font-mono"><i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i> AI要約利用可能</span>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="toggleBookmark('${art.id}', event)" aria-label="ブックマーク切替" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition-colors border border-slate-700">
+                                        <i data-lucide="star" class="w-4 h-4 ${isBookmarked ? 'text-amber-400 fill-amber-400' : ''}"></i>
+                                    </button>
+                                    <button onclick="openDetailPanel('${art.id}')" class="px-3.5 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-lg text-xs font-bold transition-all shadow-md flex items-center space-x-1">
+                                        <span>詳細・AI分析</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderArticleCards(articles) {
+            const container = document.getElementById('feedView');
+            container.innerHTML = articles.map(art => {
+                const isBookmarked = state.bookmarks.has(art.id);
+                const isRead = state.readArticles.has(art.id);
+                const hasMemo = !!state.memos[art.id];
+                const formattedDate = new Date(art.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const fallbackImg = getSVGPlaceholder(art.category);
+                const displayImg = art.image || fallbackImg;
+                // Plain text in card snippets to prevent accidental clicks when opening article
+                const plainSnippet = art.description;
+
+                return `
+                    <div oncontextmenu="handleContextMenu(event, '${art.id}')" class="card-hover-effect bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-xs flex flex-col justify-between group relative ${isRead ? 'opacity-75' : ''}">
+                        <div onclick="openDetailPanel('${art.id}')" class="w-full h-36 overflow-hidden bg-slate-100 dark:bg-slate-800 cursor-pointer relative">
+                            <img src="${displayImg}" onerror="this.onerror=null; this.src='${fallbackImg}';" loading="lazy" alt="${art.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+                            <div class="absolute top-2.5 left-2.5 flex items-center space-x-1 z-10 flex-wrap gap-y-1">
+                                <span class="text-[9px] font-extrabold px-2 py-0.5 bg-slate-900/85 backdrop-blur-md text-white rounded shadow-xs border border-white/10">${art.category}</span>
+                                ${art.isTrending ? '<span class="text-[9px] font-extrabold px-2 py-0.5 bg-rose-600/90 text-white rounded flex items-center shadow-xs"><i data-lucide="flame" class="w-2.5 h-2.5 mr-0.5"></i> HOT</span>' : ''}
+                                ${!isRead ? '<span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white/20" title="未読"></span>' : ''}
+                            </div>
+                        </div>
+                        <div class="p-3.5 flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <div class="flex items-center space-x-1">
+                                        ${hasMemo ? '<span class="text-[9px] bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-bold">📝 メモ</span>' : ''}
+                                    </div>
+                                    <span class="text-[10px] text-slate-400 font-mono">${formattedDate}</span>
+                                </div>
+                                <h3 onclick="openDetailPanel('${art.id}')" class="font-bold text-slate-900 dark:text-white text-xs hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer line-clamp-2 transition-colors leading-snug mb-2">${art.title}</h3>
+                                <p onclick="openDetailPanel('${art.id}')" class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed mb-3 line-clamp-2 font-normal cursor-pointer">${plainSnippet}</p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+                                <span class="font-bold text-slate-600 dark:text-slate-400 truncate max-w-[100px] text-[10px]">${art.source}</span>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="toggleBookmark('${art.id}', event)" aria-label="ブックマーク切替" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-amber-400 transition-colors">
+                                        <i data-lucide="star" class="w-3.5 h-3.5 ${isBookmarked ? 'text-amber-400 fill-amber-400' : ''}"></i>
+                                    </button>
+                                    <button onclick="openDetailPanel('${art.id}')" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-brand-500 hover:text-white dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 rounded text-[11px] font-bold transition-all flex items-center space-x-0.5">
+                                        <span>詳細</span><i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleContextMenu(e, id) {
+            e.preventDefault();
+            state.contextTargetArticleId = id;
+            const menu = document.getElementById('contextMenu');
+            const x = Math.min(e.clientX, window.innerWidth - 200);
+            const y = Math.min(e.clientY, window.innerHeight - 160);
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.classList.remove('hidden');
+        }
+
+        function hideContextMenu() {
+            const menu = document.getElementById('contextMenu');
+            if (menu) menu.classList.add('hidden');
+        }
+
+        function contextAction(action) {
+            const id = state.contextTargetArticleId;
+            if (!id) return;
+            const art = SAMPLE_ARTICLES.find(a => a.id === id);
+            if (action === 'detail') openDetailPanel(id);
+            else if (action === 'bookmark') toggleBookmark(id);
+            else if (action === 'openExternal' && art) window.open(art.url, '_blank');
+            else if (action === 'copyLink' && art) {
+                const tempInput = document.createElement('input');
+                tempInput.value = art.url;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showToast('URLをクリップボードにコピーしました');
+            }
+            hideContextMenu();
+        }
+
+        function setRegion(r) { state.currentRegion = r; updateUI(); }
+        function setCategory(cat) {
+            state.selectedCategory = cat;
+            const dropdown = document.getElementById('categoryDropdown');
+            if (dropdown && dropdown.value !== cat) dropdown.value = cat;
+            if (state.sidebarOpenMobile) toggleSidebar();
+            updateUI();
+        }
+        function setViewFilter(view) {
+            state.currentView = view;
+            ['all', 'recommended', 'trending', 'bookmarks', 'unread', 'analytics'].forEach(v => {
+                const btn = document.getElementById(`nav-${v}`);
+                if (btn) {
+                    btn.className = v === view 
+                        ? 'w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-extrabold bg-brand-500 text-white shadow-xs transition-all'
+                        : 'w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all';
+                }
+            });
+            if (state.sidebarOpenMobile) toggleSidebar();
+            updateUI();
+        }
+        function setDateFilter(d) {
+            state.dateFilter = d;
+            ['all', '24h', '7d'].forEach(k => {
+                const btn = document.getElementById(`date-${k}`);
+                if (btn) {
+                    btn.className = k === d 
+                        ? 'px-2 py-1 rounded transition-all bg-white dark:bg-slate-700 shadow-xs text-slate-900 dark:text-white font-bold text-[11px]'
+                        : 'px-2 py-1 rounded transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[11px]';
+                }
+            });
+            updateUI();
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('searchInput');
+            state.searchQuery = input.value.trim();
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', !state.searchQuery);
+            updateUI();
+        }
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            state.searchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            updateUI();
+        }
+        function resetFilters() {
+            state.selectedCategory = 'すべて';
+            state.dateFilter = 'all';
+            clearSearch();
+            setViewFilter('all');
+        }
+
+        function toggleBookmark(id, event) {
+            if (event) event.stopPropagation();
+            if (state.bookmarks.has(id)) state.bookmarks.delete(id);
+            else state.bookmarks.add(id);
+            updateUI();
+            if (state.activeArticleId === id) updateDetailBookmarkIcon();
+        }
+
+        function openGlossaryModal(term, event) {
+            if (event) event.stopPropagation();
+            const dictKey = Object.keys(IT_DICTIONARY).find(k => k.toLowerCase() === term.toLowerCase());
+            const info = IT_DICTIONARY[dictKey] || { category: "IT Term", summary: `${term} に関するナレッジ情報`, detail: "この用語の詳細はローカルデータベースに登録可能です。" };
+            document.getElementById('glossaryTerm').innerText = term;
+            document.getElementById('glossaryCategory').innerText = info.category;
+            document.getElementById('glossarySummary').innerText = info.summary;
+            document.getElementById('glossaryDetail').innerText = info.detail;
+            document.getElementById('glossaryModal').classList.remove('opacity-0', 'pointer-events-none');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeGlossaryModal() { document.getElementById('glossaryModal').classList.add('opacity-0', 'pointer-events-none'); }
+
+        function openDetailPanel(id) {
+            const art = SAMPLE_ARTICLES.find(a => a.id === id);
+            if (!art) return;
+            state.activeArticleId = id;
+            state.readArticles.add(id);
+            if (art.category) state.categoryVisits[art.category] = (state.categoryVisits[art.category] || 0) + 1;
+
+            document.getElementById('detailTitle').innerText = art.title;
+            document.getElementById('detailSource').innerText = art.source;
+            document.getElementById('detailDate').innerText = new Date(art.date).toLocaleString('ja-JP');
+            document.getElementById('detailDescription').innerHTML = injectInlineGlossary(art.description, true);
+            document.getElementById('detailCategoryBadge').innerText = art.category;
+            document.getElementById('detailRegionBadge').innerText = art.region.toUpperCase();
+            document.getElementById('detailExternalUrl').href = art.url;
+
+            const memoArea = document.getElementById('myMemoArea');
+            if (memoArea) memoArea.value = state.memos[id] || '';
+            document.getElementById('memoSavedBadge').classList.add('opacity-0');
+            document.getElementById('aiResultBox').classList.add('hidden');
+
+            state.aiSummaryActive = false;
+            state.aiTranslated = false;
+            document.getElementById('transLangLabel').innerText = art.region === 'jp' ? '英語翻訳' : '日本語翻訳';
+            updateDetailBookmarkIcon();
+
+            document.getElementById('detailBackdrop').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('detailPanel').classList.remove('translate-x-full');
+            updateUI();
+        }
+
+        function closeDetailPanel() {
+            document.getElementById('detailBackdrop').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('detailPanel').classList.add('translate-x-full');
+            state.activeArticleId = null;
+        }
+
+        function updateDetailBookmarkIcon() {
+            const btn = document.getElementById('detailBookmarkBtn');
+            if (!btn) return;
+            const isBookmarked = state.bookmarks.has(state.activeArticleId);
+            btn.innerHTML = `<i data-lucide="star" class="w-4 h-4 ${isBookmarked ? 'text-amber-400 fill-amber-400' : ''}"></i>`;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleBookmarkFromDetail() {
+            if (state.activeArticleId) toggleBookmark(state.activeArticleId);
+        }
+
+        // --- REALISTIC ASYNC AI SUMMARY WITH SPINNER ---
+        function generateAiSummary() {
+            const art = SAMPLE_ARTICLES.find(a => a.id === state.activeArticleId);
+            if (!art) return;
+
+            const btn = document.getElementById('aiSummaryBtn');
+            const label = document.getElementById('aiSummaryLabel');
+            const icon = document.getElementById('aiSummaryIcon');
+            const box = document.getElementById('aiResultBox');
+            const pointsList = document.getElementById('aiSummaryPoints');
+            const timeBadge = document.getElementById('aiInferenceTime');
+
+            const startTime = performance.now();
+            btn.disabled = true;
+            label.innerText = 'ローカルAI推論中...';
+            if (icon) {
+                icon.setAttribute('data-lucide', 'loader-2');
+                icon.classList.add('animate-spin');
+                if (window.lucide) lucide.createIcons();
+            }
+
+            setTimeout(() => {
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+                if (timeBadge) timeBadge.innerText = `推論完了 (${elapsed}s)`;
+
+                pointsList.innerHTML = `
+                    <li><strong>要点1:</strong> ${art.category} 分野における最新の機能更新とアーキテクチャの改善。</li>
+                    <li><strong>要点2:</strong> ローカル環境での高速処理および効率的なリソース最適化。</li>
+                    <li><strong>要点3:</strong> 次期開発プロセスやインフラ設計への導入推奨。</li>
+                `;
+                box.classList.remove('hidden');
+                btn.disabled = false;
+                label.innerText = 'AI要約を再生成';
+                
+                const currentIcon = document.getElementById('aiSummaryIcon');
+                if (currentIcon) {
+                    currentIcon.setAttribute('data-lucide', 'wand-2');
+                    currentIcon.classList.remove('animate-spin');
+                    if (window.lucide) lucide.createIcons();
+                }
+            }, 650);
+        }
+
+        // --- REALISTIC ASYNC AI TRANSLATION ---
+        function toggleAiTranslation() {
+            const art = SAMPLE_ARTICLES.find(a => a.id === state.activeArticleId);
+            if (!art) return;
+            
+            const btn = document.getElementById('aiTranslateBtn');
+            const desc = document.getElementById('detailDescription');
+            const label = document.getElementById('transLangLabel');
+
+            if (!state.aiTranslated) {
+                btn.disabled = true;
+                label.innerText = '翻訳中...';
+                setTimeout(() => {
+                    state.aiTranslated = true;
+                    btn.disabled = false;
+                    label.innerText = '原文に戻す';
+                    const transText = art.region === 'jp'
+                        ? `[AI Translation / EN]: ${art.description}`
+                        : `[AIローカル翻訳 / JP]: ${art.description}`;
+                    desc.innerHTML = injectInlineGlossary(transText, true);
+                }, 450);
+            } else {
+                state.aiTranslated = false;
+                label.innerText = art.region === 'jp' ? '英語翻訳' : '日本語翻訳';
+                desc.innerHTML = injectInlineGlossary(art.description, true);
+            }
+        }
+
+        function handleMemoInput() {
+            if (!state.activeArticleId) return;
+            const val = document.getElementById('myMemoArea').value;
+            state.memos[state.activeArticleId] = val;
+            const badge = document.getElementById('memoSavedBadge');
+            badge.classList.remove('opacity-0');
+            clearTimeout(memoSaveTimeout);
+            memoSaveTimeout = setTimeout(() => { badge.classList.add('opacity-0'); }, 1200);
+            saveLocalState();
+        }
+
+        function openAuthModal() {
+            document.getElementById('authModal').classList.remove('opacity-0', 'pointer-events-none');
+            if (state.user.isLoggedIn) document.getElementById('logoutSection').classList.remove('hidden');
+            else document.getElementById('logoutSection').classList.add('hidden');
+        }
+
+        function closeAuthModal() { document.getElementById('authModal').classList.add('opacity-0', 'pointer-events-none'); }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('authUserId').value.trim();
+            if (!id) return;
+            state.user.isLoggedIn = true;
+            state.user.userId = id;
+            updateUI();
+            closeAuthModal();
+            showToast(`${id} としてログインしました`);
+        }
+
+        function handleLogout() {
+            state.user.isLoggedIn = false;
+            state.user.userId = 'ゲストユーザー';
+            updateUI();
+            closeAuthModal();
+            showToast('ログアウトしました');
+        }
+
+        function toggleDarkMode() { document.documentElement.classList.toggle('dark'); }
+
+        function initChart() {
+            const canvas = document.getElementById('trendChartCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['11/07', '11/08', '11/09', '11/10', '11/11', '11/12', '11/13'],
+                    datasets: [
+                        { label: 'AI / LLM', data: [65, 72, 80, 85, 92, 110, 128], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderWidth: 2.5, tension: 0.3, fill: true },
+                        { label: 'React', data: [40, 42, 45, 50, 48, 55, 62], borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 },
+                        { label: 'Rust', data: [20, 25, 28, 35, 42, 50, 58], borderColor: '#f59e0b', borderWidth: 2, tension: 0.3 },
+                        { label: 'Kubernetes', data: [30, 32, 31, 38, 40, 42, 45], borderColor: '#a855f7', borderWidth: 2, tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(150, 150, 150, 0.1)' }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
