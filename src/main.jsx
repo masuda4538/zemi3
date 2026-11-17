@@ -29,3 +29,4 @@ Promise.allSettled([initSettings(), initAchievements(), initSession(), initLogin
   );
   hideLoadingScreen();
 });
+
