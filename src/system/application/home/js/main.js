@@ -17,7 +17,7 @@
 //    drawUsage … 使った時間の円グラフ（日・週・月・年。APP_COLORS がアプリごとの色）
 //    drawChart … 円グラフの下のグラフ（日：時間ごと／週：曜日ごと／月：カレンダー／年：月ごと）
 //    drawAchieve … アチーブ（円・レア度ごとの数・最近手に入れたもの。2 つ分の高さで、残りはスクロール）
-//    drawApps … いちばん下のアプリごとのカード（app.stats()。学習時間の内訳・大事な数は src/system/home_setting/<アプリの id>.js）
+//    drawApps … 名前の帯のすぐ下の、アプリごとのカード（app.stats()。学習時間の内訳・大事な数は src/system/home_setting/<アプリの id>.js）
 //               カードの上に 2 つの円グラフ：学習時間の内訳（home_setting の time）・アチーブの取得率
 // ═══════════════════════════════════════════════════════════════
 
@@ -104,7 +104,7 @@ const drawLogin = () => {
   app.setProgress("days-10", info.total);     // 合計 10 日
 };
 
-// ───────── 3. 使った時間（アプリごとの円グラフ。日・週・月・年で切りかえ、‹ › で前後へ） ─────────
+// ───────── 4. 使った時間（アプリごとの円グラフ。日・週・月・年で切りかえ、‹ › で前後へ） ─────────
 /** アプリごとの色（id は core/page-list.js と同じ。ここにないアプリは灰色） */
 const APP_COLORS = {
   programming: "#2563eb",  // 青
@@ -321,7 +321,7 @@ function drawChart(data, from, to) {
   }
 }
 
-// ───────── 4. アチーブ（円・ゴールド／シルバー／ブロンズの数・最近手に入れたもの） ─────────
+// ───────── 3. アチーブ（円・ゴールド／シルバー／ブロンズの数・最近手に入れたもの） ─────────
 const drawAchieve = () => {
   const ALL = app.achievements();   // [{ key, name, appName, icon, goal, gotAt（手に入れた日時）, now（今の数） }, …]
   const got = ALL.filter((a) => a.gotAt).length;
@@ -354,7 +354,7 @@ const drawAchieve = () => {
     bars.append(li);
   });
 
-  // 最近手に入れた（手に入れたものを全部、新しい順に。2 つ分の高さだけ見せて、残りはスクロールで見る → fitRecent）
+  // 最近手に入れた（手に入れたものを全部、新しい順に。アチーブの枠の残りの高さに見えるだけ出して、残りはスクロールで見る → fitRecent）
   const recent = ALL.filter((a) => a.gotAt).sort((a, b) => (b.gotAt > a.gotAt ? 1 : -1));
   const ul = $("recent");
   ul.replaceChildren();
@@ -375,22 +375,22 @@ const drawAchieve = () => {
   fitRecent();
 };
 
-/** 「最近手に入れた」の高さを、ちょうど 2 つ分にする（3 つ目からはスクロール。画面の大きさが変わったら直す） */
+/** 「最近手に入れた」の高さ：アチーブの枠の残りいっぱい（css/style.css）。いちばん低くても 2 つ分は見えるようにする
+ *  入りきらないときはスクロール（is-scroll で右に少しすき間をあける）。画面の大きさが変わったら直す */
 const RECENT_ROWS = 2;
 function fitRecent() {
   const ul = $("recent");
   const items = ul.querySelectorAll(".home-ach");
-  ul.classList.toggle("is-scroll", items.length > RECENT_ROWS);
-  if (items.length <= RECENT_ROWS) { ul.style.maxHeight = ""; return; }
-  const first = items[0], last = items[RECENT_ROWS - 1];
-  ul.style.maxHeight = `${last.offsetTop + last.offsetHeight - first.offsetTop}px`;
+  const last = items[Math.min(items.length, RECENT_ROWS) - 1];
+  ul.style.minHeight = last ? `${last.offsetTop + last.offsetHeight - items[0].offsetTop}px` : "";
+  ul.classList.toggle("is-scroll", ul.scrollHeight > ul.clientHeight + 1);
 }
 window.addEventListener("resize", fitRecent);
 document.fonts?.ready.then(fitRecent);   // 文字の読み込みが終わって高さが変わったときも直す
 $("open-achieve").addEventListener("click", () => app.open("achieve"));
 $("go-login").addEventListener("click", () => app.open("account"));
 
-// ───────── 4. アプリごとのカード（学習時間・アチーブの円グラフと「開く」ボタン） ─────────
+// ───────── 2. アプリごとのカード（学習時間・アチーブの円グラフと「開く」ボタン） ─────────
 //  app.stats() → [{ app: { id, name, icon }, time: [{ id, name, sec }], stats: [{ id, name, unit, value }], openSec, achieve: { got, total } }]
 //  円グラフ 2 つ（学習時間の内訳・アチーブの取得率）、学習時間の内訳の一覧、いちばん下に大事な数を出す。色は APP_COLORS（使った時間のグラフと同じ）
 /** 学習時間の内訳の色（アプリの色を、だんだんうすくする。上から順に使う） */
