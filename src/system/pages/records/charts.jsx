@@ -2,8 +2,10 @@
 //  記録のページのグラフ（main.jsx で使う）。見た目は records.css の「グラフ」
 //    <Donut parts={[{ value, color, label }]} total={合計} size={180}>まん中に出すもの</Donut>
 //        … 円グラフ（ドーナツ）。12 時の位置から時計回りに、parts の順で色をつなぐ
+//          size="fluid" にすると、大きさは CSS で決める（records.css の .rec-donut.is-fluid。枠の高さに合わせる）
 //    <BarChart cols={columnsOf(span, usage, period)} apps={[{ id, name, color }]} />
 //        … 使った時間の棒グラフ（アプリの色で下から積む）。マウスを乗せると、くわしい時間が出る
+//          アプリが 2 つ以上のときは、下に色の見本を出す（legend={false} で出さない）
 //    columnsOf(span, usage, period) … 期間に合わせて棒を作る
 //        今日 → 時間ごと（0〜23 時）／今週 → 曜日ごと／今月 → 日ごと／すべて → 月ごと（最後の 12 か月）
 // ═══════════════════════════════════════════════════════════════
@@ -31,7 +33,7 @@ export function Donut({ parts, total, size = 160, thick = 13, children, label })
     return arc;
   }) : [];
   return (
-    <div className="rec-donut" style={{ width: size, height: size }} role="img" aria-label={label}>
+    <div className={`rec-donut${size === "fluid" ? " is-fluid" : ""}`} style={size === "fluid" ? undefined : { width: size, height: size }} role="img" aria-label={label}>
       <svg viewBox="0 0 100 100">
         <circle className="rec-donut-track" cx="50" cy="50" r={R} strokeWidth={thick} />
         {arcs.map((a, i) => (
@@ -113,32 +115,39 @@ export function columnsOf(span, usage, period) {
 }
 
 /** 使った時間の棒グラフ（apps の順に下から積む） */
-export function BarChart({ cols, apps }) {
+export function BarChart({ cols, apps, legend = true }) {
   const values = cols.map((c) => apps.reduce((n, a) => n + (c.apps[a.id] ?? 0), 0));
   const max = niceMax(Math.max(60, ...values));
   return (
-    <div className="rec-bars">
-      <div className="rec-bars-axis" aria-hidden="true">
-        <span>{axisText(max)}</span><span>{axisText(max / 2)}</span><span>0</span>
-      </div>
-      <div className="rec-bars-plot">
-        {cols.map((c, i) => {
-          const total = values[i];
-          const used = apps.filter((a) => (c.apps[a.id] ?? 0) > 0);
-          const tip = `${c.title}：${timeText(total)}${used.length > 1 ? "\n" + used.map((a) => `${a.name} ${timeText(c.apps[a.id])}`).join("\n") : ""}`;
-          return (
-            <div key={c.key} className={`rec-col${c.now ? " is-now" : ""}${c.future ? " is-future" : ""}`} title={tip}>
-              <div className="rec-col-area">
-                <div className="rec-col-stack" style={{ height: `${(total / max) * 100}%` }}>
-                  {used.map((a) => <span key={a.id} style={{ flexGrow: c.apps[a.id], background: a.color }} />)}
+    <div className="rec-chart">
+      <div className="rec-bars">
+        <div className="rec-bars-axis" aria-hidden="true">
+          <span>{axisText(max)}</span><span>{axisText(max / 2)}</span><span>0</span>
+        </div>
+        <div className="rec-bars-plot">
+          {cols.map((c, i) => {
+            const total = values[i];
+            const used = apps.filter((a) => (c.apps[a.id] ?? 0) > 0);
+            const tip = `${c.title}：${timeText(total)}${used.length > 1 ? "\n" + used.map((a) => `${a.name} ${timeText(c.apps[a.id])}`).join("\n") : ""}`;
+            return (
+              <div key={c.key} className={`rec-col${c.now ? " is-now" : ""}${c.future ? " is-future" : ""}`} title={tip}>
+                <div className="rec-col-area">
+                  <div className="rec-col-stack" style={{ height: `${(total / max) * 100}%` }}>
+                    {used.map((a) => <span key={a.id} style={{ flexGrow: c.apps[a.id], background: a.color }} />)}
+                  </div>
                 </div>
+                <span className="rec-col-label">{c.show ? c.label : ""}</span>
+                {cols.some((x) => x.sub) && <span className="rec-col-sub">{c.sub}</span>}
               </div>
-              <span className="rec-col-label">{c.show ? c.label : ""}</span>
-              {cols.some((x) => x.sub) && <span className="rec-col-sub">{c.sub}</span>}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+      {legend && apps.length > 1 && (
+        <ul className="rec-legend">
+          {apps.map((a) => <li key={a.id}><i style={{ background: a.color }} />{a.name}</li>)}
+        </ul>
+      )}
     </div>
   );
 }
