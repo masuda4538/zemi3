@@ -1,0 +1,273 @@
+/* ═════════ 記録（上にタブ、その下に記録をダッシュボードのように並べる。main.jsx） ═════════
+   --app … アプリの色（main.jsx の APP_COLORS。ホームと同じ色）
+   広い画面では、ページ全体を画面の高さに収める（いちばん下の「画面に収める」）。
+   低い・せまい画面では、たてに並べて、ページ全体をスクロールする */
+
+.rec { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+/* ───────── いちばん上の段：「記録」と期間 ｜ 〇〇を開く・期間の切りかえ ───────── */
+.rec-top { display: flex; align-items: center; gap: 12px; flex: none; }
+.rec-head-icon {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; flex: none;
+  background: linear-gradient(150deg, var(--sky), var(--primary) 75%); color: #fff;
+}
+.rec-head-icon .icon { width: 22px; height: 22px; }
+.rec-head-text { min-width: 0; margin-right: auto; display: flex; flex-direction: column; }
+.rec-head-text h1 { font-size: 20px; font-weight: 800; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-head-text span { font-size: 12.5px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
+/* 期間の切りかえ（今日／今週／今月／すべて） */
+.rec-seg { flex: none; display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); }
+.rec-seg button {
+  height: 30px; padding: 0 14px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 12.5px; font-weight: 800; white-space: nowrap;
+}
+.rec-seg button:hover { color: var(--primary); }
+.rec-seg button.is-on { background: var(--sky-soft); color: var(--primary); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent); }
+/* そのアプリを開くボタン（各アプリのタブのとき） */
+.rec-open {
+  flex: none; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border: 0; border-radius: 10px; cursor: pointer;
+  background: var(--app, var(--primary)); color: #fff; font: inherit; font-size: 13px; font-weight: 800; white-space: nowrap;
+  transition: filter .15s;
+}
+.rec-open .icon { width: 16px; height: 16px; }
+.rec-open:hover { filter: brightness(1.08); }
+
+/* ───────── タブ（丸いボタン。選んだタブはアプリの色でぬる） ───────── */
+.rec-tabs { flex: none; display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; margin-bottom: -6px; }   /* 下のすき間 … 入りきらないときに出る細いバーが、ボタンに重ならないように */
+.rec-tab {
+  flex: none; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 8px 0 14px;
+  border: 1px solid var(--border); border-radius: 99px; background: var(--surface); cursor: pointer;
+  color: var(--text-2); font: inherit; font-size: 13px; font-weight: 800; white-space: nowrap;
+  transition: background .18s, color .18s, border-color .18s, box-shadow .18s, transform .18s;
+}
+.rec-tab .icon { width: 17px; height: 17px; color: var(--app); transition: color .18s; }
+.rec-tab-time {
+  padding: 2px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 800; font-variant-numeric: tabular-nums;
+  background: var(--surface-2); color: var(--text-3); transition: background .18s, color .18s;
+}
+.rec-tab:hover { border-color: color-mix(in srgb, var(--app) 50%, var(--border)); color: var(--text); transform: translateY(-1px); }
+.rec-tab:focus-visible { outline: 2px solid var(--app); outline-offset: 2px; }
+.rec-tab.is-on {
+  background: var(--app); border-color: transparent; color: #fff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--app) 35%, transparent);
+}
+.rec-tab.is-on .icon { color: #fff; }
+.rec-tab.is-on .rec-tab-time { background: rgb(255 255 255 / .22); color: #fff; }
+
+/* ───────── 中身（タブを切りかえると、ふわっと出す） ───────── */
+.rec-body { display: flex; flex-direction: column; gap: 12px; animation: rec-in .2s var(--ease); }
+@keyframes rec-in { from { opacity: 0; transform: translateY(4px); } }
+/* 横に 2 つ並べる段（すべて：上の段 5：7、下の段 7：5） */
+.rec-row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 12px; }
+.rec-row + .rec-row { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.rec-row.is-one { grid-template-columns: minmax(0, 1fr); }
+
+/* ───────── 数字（カード 3 つ） ───────── */
+.rec-cards { flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.rec-card { display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-width: 0; }
+.rec-card-icon {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+  background: var(--sky-soft); color: var(--primary);
+}
+.rec-card-icon .icon { width: 20px; height: 20px; }
+.rec-card-text { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rec-card-label { font-size: 12px; font-weight: 800; color: var(--text-2); }
+.rec-card strong { font-size: 21px; font-weight: 800; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-card small { font-size: 11.5px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* いちばん大事なカード（勉強した時間）は青くする。各アプリでは、そのアプリの色 */
+.rec-card.is-main { border-color: transparent; background: linear-gradient(150deg, var(--sky), var(--primary) 85%); color: #fff; }
+.rec-cards.is-app .rec-card.is-main { background: linear-gradient(150deg, color-mix(in srgb, var(--app) 72%, #fff), var(--app) 85%); }
+.rec-card.is-main .rec-card-icon { background: rgb(255 255 255 / .22); color: #fff; }
+.rec-card.is-main .rec-card-label, .rec-card.is-main small { color: rgb(255 255 255 / .88); }
+
+/* ───────── 見出しつきのまとまり ───────── */
+.rec-section { padding: 12px 16px 14px; min-width: 0; display: flex; flex-direction: column; }
+.rec-section-head { flex: none; display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; margin-bottom: 10px; }
+.rec-section-head h2 { font-size: 14.5px; font-weight: 800; }
+.rec-section-head small { font-size: 11.5px; color: var(--text-3); }
+.rec-section-body { min-width: 0; }
+.rec-none { padding: 14px 0 6px; font-size: 13px; color: var(--text-3); text-align: center; }
+
+/* アプリのアイコン（丸い四角） */
+.rec-app-icon {
+  display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 9px;
+  background: color-mix(in srgb, var(--app, var(--primary)) 14%, transparent); color: var(--app, var(--primary));
+}
+.rec-app-icon .icon { width: 16px; height: 16px; }
+
+/* ───────── グラフ：円グラフ（charts.jsx の Donut） ───────── */
+.rec-donut { position: relative; flex: none; }
+.rec-donut > svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
+.rec-donut circle { fill: none; transition: stroke-dasharray .5s var(--ease), stroke-dashoffset .5s var(--ease); }
+.rec-donut-track { stroke: var(--sky-soft); }
+.rec-donut-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  text-align: center; line-height: 1.15; pointer-events: none;
+}
+.rec-donut-center small { font-size: 11.5px; font-weight: 800; color: var(--text-2); }
+.rec-donut-center strong { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
+/* size="fluid"：画面に収めるときは、枠の高さに合わせる（いちばん大きくて 240px） */
+.rec-donut.is-fluid { width: 170px; height: 170px; }
+
+/* 円グラフ ｜ 一覧（横に並べる） */
+.rec-split { display: flex; align-items: center; gap: 20px; }
+.rec-split > ul { flex: 1; min-width: 0; }
+
+/* ───────── アプリごとの時間（一覧） ───────── */
+.rec-apps, .rec-breakdown, .rec-history, .rec-legend { margin: 0; padding: 0; list-style: none; }
+.rec-apps { display: flex; flex-direction: column; }
+.rec-apps li + li { border-top: 1px solid var(--border); }
+.rec-app {
+  display: flex; align-items: center; gap: 9px; width: 100%; padding: 5px 6px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: background .12s;
+}
+.rec-app:hover, .rec-app:focus-visible { background: var(--hover); }
+.rec-app.is-zero { opacity: .55; }
+.rec-dot { flex: none; width: 9px; height: 9px; border-radius: 3px; background: var(--app); }
+.rec-app .rec-app-icon { width: 26px; height: 26px; border-radius: 8px; }
+.rec-app .rec-app-icon .icon { width: 15px; height: 15px; }
+.rec-app-name { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-app-time { font-size: 13px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rec-app-time small, .rec-breakdown b small { display: inline-block; min-width: 32px; margin-left: 4px; font-size: 11px; font-weight: 700; color: var(--text-3); text-align: right; }
+
+/* ───────── グラフ：棒グラフ（charts.jsx の BarChart） ───────── */
+.rec-chart { display: flex; flex-direction: column; gap: 8px; }
+.rec-bars { display: flex; gap: 8px; height: 200px; }
+.rec-bars-axis {   /* 左のめもり（上・半分・0） */
+  flex: none; width: 50px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
+  padding-bottom: var(--label-h, 22px); font-size: 11px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums;
+}
+.rec-bars:has(.rec-col-sub) { --label-h: 38px; }
+.rec-bars-axis span { line-height: 1; transform: translateY(-50%); }
+.rec-bars-axis span:last-child { transform: translateY(50%); }
+.rec-bars-plot { flex: 1; min-width: 0; display: flex; gap: 3px; }
+.rec-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rec-col-area {   /* うすい横線（上・半分・下）の上に棒を立てる */
+  position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-radius: 6px 6px 0 0;
+  background: linear-gradient(var(--border), var(--border)) 0 0 / 100% 1px no-repeat,
+              linear-gradient(var(--border), var(--border)) 0 50% / 100% 1px no-repeat,
+              linear-gradient(var(--border-strong), var(--border-strong)) 0 100% / 100% 1px no-repeat;
+}
+.rec-col-stack {
+  width: min(72%, 30px); display: flex; flex-direction: column-reverse; border-radius: 5px 5px 0 0; overflow: hidden;
+  transition: height .5s var(--ease);
+}
+.rec-col-stack > span { display: block; flex-basis: 0; min-height: 1px; }
+.rec-col:hover .rec-col-area { background-color: var(--surface-2); }
+.rec-col.is-now .rec-col-area { background-color: var(--sky-soft); }   /* 今（今の時間・今日・今月） */
+.rec-col.is-future { opacity: .45; }
+.rec-col-label { height: 14px; font-size: 11.5px; font-weight: 800; color: var(--text-2); white-space: nowrap; line-height: 14px; }
+.rec-col-sub { margin-top: -4px; height: 12px; font-size: 10.5px; font-weight: 700; color: var(--text-3); white-space: nowrap; line-height: 12px; }
+.rec-col.is-now .rec-col-label { color: var(--primary); }
+/* 色の見本（棒グラフの下） */
+.rec-legend { flex: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 14px; font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+.rec-legend li { display: inline-flex; align-items: center; gap: 5px; }
+.rec-legend i { width: 9px; height: 9px; border-radius: 3px; }
+
+/* ───────── 学習の内訳・大事な数 ───────── */
+.rec-study-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.rec-study { padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); min-width: 0; }
+.rec-study-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 8px; padding: 0; border: 0;
+  background: none; color: var(--text); font: inherit; font-size: 13px; text-align: left; cursor: pointer;
+}
+.rec-study-head:hover b { color: var(--primary); text-decoration: underline; }
+.rec-study-head .rec-app-icon { width: 26px; height: 26px; border-radius: 8px; }
+.rec-study-body { display: flex; flex-direction: column; gap: 10px; }
+.rec-split.is-study { gap: 16px; }
+.rec-split.is-small { gap: 12px; }
+.rec-split.is-small .rec-donut-center strong { font-size: 11.5px; }
+.rec-breakdown { display: flex; flex-direction: column; gap: 5px; }
+.rec-breakdown li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-2); }
+.rec-breakdown li i { width: 10px; height: 10px; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--app) 30%, transparent); }
+.rec-breakdown li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-breakdown b { color: var(--text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rec-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.rec-num { display: flex; flex-direction: column; gap: 1px; padding: 8px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); min-width: 0; }
+.rec-num strong { font-size: 20px; font-weight: 800; line-height: 1.1; color: var(--app, var(--primary)); }
+.rec-num strong small { margin-left: 3px; font-size: 12px; color: var(--text-2); }
+.rec-num span { font-size: 11.5px; font-weight: 700; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-study-grid .rec-nums { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+.rec-study-grid .rec-num { padding: 6px 10px; }
+.rec-study-grid .rec-num strong { font-size: 17px; }
+/* 各アプリ：左に内訳の円グラフ、右に一覧と大事な数（.rec-split の中身を、そのままこの表に並べる） */
+.is-study-one .rec-study-body { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px 20px; }
+.is-study-one .rec-study-body > .rec-split { display: contents; }
+.is-study-one .rec-donut { grid-row: span 2; }
+.is-study-one .rec-study-body > :only-child { grid-column: 1 / -1; }
+
+/* ───────── 日ごとの履歴 ───────── */
+.rec-history { display: flex; flex-direction: column; }
+.rec-history li {
+  display: grid; grid-template-columns: 124px minmax(0, 1fr) 74px; align-items: center; gap: 3px 12px;
+  padding: 7px 4px; border-top: 1px solid var(--border);
+}
+.rec-history li:first-child { border-top: 0; }
+.rec-h-date { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.rec-h-date em { padding: 1px 7px; border-radius: 99px; background: var(--sky-soft); color: var(--primary); font-size: 10.5px; font-style: normal; font-weight: 800; }
+.rec-h-bar { height: 9px; }
+.rec-h-stack { display: flex; height: 100%; min-width: 4px; border-radius: 99px; overflow: hidden; gap: 1px; background: var(--sky-soft); }
+.rec-h-stack > span { display: block; flex-basis: 0; min-width: 3px; }
+.rec-h-time { font-size: 12.5px; font-weight: 800; text-align: right; white-space: nowrap; }
+.rec-h-apps { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.rec-h-app { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: var(--text-2); }
+.rec-h-app .icon { width: 12px; height: 12px; color: var(--app); }
+.rec-more {
+  display: block; margin: 8px auto 2px; padding: 6px 16px; border: 1px solid var(--border-strong); border-radius: 99px;
+  background: var(--surface); color: var(--primary); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer;
+}
+.rec-more:hover { background: var(--hover); }
+
+/* ゲストのとき */
+.rec-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 20px; text-align: center; font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+.rec-empty .icon { width: 34px; height: 34px; color: var(--text-3); }
+
+/* ═════════ 画面に収める（広くて、ある程度高い画面のとき） ═════════
+   右側の広い部分（.stage）のスクロールを止めて、記録のページを高さいっぱいにする。
+   のこりの高さを 2 つの段で分け、グラフは段の高さに合わせてのび縮みする。
+   入りきらない一覧（学習の内訳・日ごとの履歴・アプリの一覧）だけ、枠の中でスクロールする */
+@media (min-width: 1001px) and (min-height: 600px) {
+  .stage:has(> .page:not([hidden]) > .rec.is-fit) { display: flex; flex-direction: column; overflow: hidden; }
+  .stage:has(> .page:not([hidden]) > .rec.is-fit) > .page:not([hidden]) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .rec.is-fit { flex: 1; min-height: 0; width: 100%; }
+  .rec.is-fit .rec-body { flex: 1; min-height: 0; }
+  .rec.is-fit .rec-row { flex: 1 1 0; min-height: 0; }
+  .rec.is-fit .rec-section { min-height: 0; }
+  .rec.is-fit .rec-section-body { flex: 1; min-height: 0; }
+  .rec.is-fit .rec-section.is-scroll .rec-section-body { overflow-y: auto; padding-right: 4px; }
+  /* グラフは段の高さいっぱい */
+  .rec.is-fit .is-chart .rec-section-body { display: flex; flex-direction: column; }
+  .rec.is-fit .rec-chart { flex: 1; min-height: 0; }
+  .rec.is-fit .rec-bars { flex: 1; min-height: 0; height: auto; }
+  /* アプリごとの時間：円グラフは段の高さに合わせる。一覧は入りきらなければスクロール */
+  .rec.is-fit .is-apps .rec-section-body { display: flex; overflow: hidden; }   /* 一覧が入りきらないときは、一覧の中だけスクロール */
+  .rec.is-fit .rec-split.is-fluid { flex: 1; min-width: 0; min-height: 0; align-items: stretch; }
+  .rec.is-fit .rec-donut.is-fluid { width: auto; height: auto; max-height: 240px; max-width: 45%; aspect-ratio: 1; align-self: center; flex: 0 1 auto; height: 100%; }
+  .rec.is-fit .rec-split.is-fluid > ul { overflow-y: auto; align-self: center; max-height: 100%; }
+}
+/* 少し低い画面のとき：数字・タブを少し小さく */
+@media (min-width: 1001px) and (min-height: 600px) and (max-height: 760px) {
+  .rec { gap: 10px; }
+  .rec-body, .rec-row, .rec-cards { gap: 10px; }
+  .rec-head-icon { width: 36px; height: 36px; border-radius: 11px; }
+  .rec-head-text h1 { font-size: 18px; }
+  .rec-tab { height: 34px; }
+  .rec-card { padding: 9px 14px; }
+  .rec-card-icon { width: 34px; height: 34px; }
+  .rec-card strong { font-size: 19px; }
+  .rec-section { padding: 10px 14px 12px; }
+  .rec-section-head { margin-bottom: 6px; }
+}
+
+/* せまい画面のとき：たてに並べる */
+@media (max-width: 1000px) {
+  .rec-row, .rec-row + .rec-row { grid-template-columns: minmax(0, 1fr); }
+  .rec-top { flex-wrap: wrap; }
+}
+@media (max-width: 640px) {
+  .rec-cards { grid-template-columns: minmax(0, 1fr); }
+  .rec-split { flex-direction: column; }
+  .rec-history li { grid-template-columns: minmax(0, 1fr) auto; }
+  .rec-h-bar { grid-column: 1 / -1; grid-row: 2; }
+  .rec-h-apps { grid-column: 1 / -1; }
+}

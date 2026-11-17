@@ -6,7 +6,7 @@
 //  load の行は「押されたときに、その画面を読み込む」という意味です。
 //    HTML_FOLDER … HTML・CSS・JS で作るページ。id と同じ名前のフォルダーの index.html を、
 //                  右側の窓の中に普通の Web ページとして開く（core/components/AppFrame.jsx）
-//    それ以外   … React で作るページ（アチーブ・設定・アカウント）。src/system/pages/<id>/main.jsx を読む
+//    それ以外   … React で作るページ（記録・アチーブ・設定・アカウント）。src/system/pages/<id>/main.jsx を読む
 //  keepAlive: true を付けたページは、ほかのページを見ている間も裏で動き続けます（core/App.jsx）
 //
 //  ★ HTML・CSS・JS のページを増やすとき
@@ -32,11 +32,12 @@ export const PAGES = [
   { id: "timer",       name: "タイマー",       icon: "timer",       color: "var(--primary)", load: HTML_FOLDER, keepAlive: true },
 ];
 
-/** 左の下に並ぶページ（上から アチーブ → 設定 → アカウント。その下にホワイト／ダークの切り替え） */
+/** 左の下に並ぶページ（上から 記録 → アチーブ → 設定 → アカウント。その下にホワイト／ダークの切り替え） */
+export const RECORDS  = { id: "records",  name: "記録",       icon: "records",  color: "var(--primary)", load: () => import("../pages/records/main.jsx") };
 export const ACHIEVE  = { id: "achieve",  name: "アチーブ",   icon: "trophy",   color: "var(--primary)", load: () => import("../pages/achievements/main.jsx") };
 export const SETTINGS = { id: "settings", name: "設定",       icon: "settings", color: "var(--primary)", load: () => import("../pages/settings/main.jsx") };
 export const ACCOUNT  = { id: "account",  name: "アカウント", icon: "account",  color: "var(--primary)", load: () => import("../pages/account/main.jsx") };
-export const BOTTOM_PAGES = [ACHIEVE, SETTINGS, ACCOUNT];
+export const BOTTOM_PAGES = [RECORDS, ACHIEVE, SETTINGS, ACCOUNT];
 
 /** 起動したときに開くページ */
 export const START_PAGE = "home";
