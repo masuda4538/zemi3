@@ -45,61 +45,45 @@
         }
     </script>
     <style>
-        /* GitHub Pages: keep the application shell at the full viewport width. */
-        html, body {
-            width: 100%;
-            min-width: 0;
-            margin: 0;
-        }
-        body#app-body {
-            width: 100%;
-            min-height: 100vh;
-            align-items: stretch;
-        }
-        body#app-body > header {
-            width: 100%;
-            flex: 0 0 auto;
-            box-sizing: border-box;
-        }
-        body#app-body > .flex.flex-1 {
-            width: 100%;
-            min-width: 0;
-            flex: 1 1 auto;
-        }
-        body#app-body main {
-            min-width: 0;
-        }
-
-        /* Responsive heatmap columns (Tailwind has no default grid-cols-15 utility). */
-        #heatmap-grid {
-            display: grid;
-            grid-template-columns: repeat(10, minmax(0, 1fr));
-        }
-        @media (min-width: 640px) {
-            #heatmap-grid {
-                grid-template-columns: repeat(15, minmax(0, 1fr));
-            }
-        }
-
-        /* Scrollbars */
+        /* Scrollbars (Dark & Light) */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0d14; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        html.dark ::-webkit-scrollbar-track { background: #0a0d14; }
+        html.dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        html.dark ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+        html:not(.dark) ::-webkit-scrollbar-track { background: #f1f5f9; }
+        html:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Glassmorphism */
-        .glass-panel {
+        /* Glassmorphism (Dark Mode) */
+        html.dark .glass-panel {
             background: rgba(24, 32, 48, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .glass-panel-glow {
+        html.dark .glass-panel-glow {
             background: rgba(24, 32, 48, 0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(6, 182, 212, 0.35);
             box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+        }
+
+        /* Glassmorphism (Light / White Mode) */
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(203, 213, 225, 0.85);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        html:not(.dark) .glass-panel-glow {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(6, 182, 212, 0.45);
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.12);
         }
 
         /* Neon gradient text */
@@ -108,9 +92,53 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        html:not(.dark) .neon-text {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Light Mode Overrides for Dark-hardcoded Utility Classes */
+        html:not(.dark) .bg-cyber-bg { background-color: #f8fafc !important; }
+        html:not(.dark) .bg-cyber-bg\/50 { background-color: rgba(241, 245, 249, 0.8) !important; }
+        html:not(.dark) .bg-cyber-bg\/80 { background-color: rgba(241, 245, 249, 0.95) !important; }
+        html:not(.dark) .bg-cyber-surface { background-color: #ffffff !important; }
+        html:not(.dark) .bg-cyber-surface\/95 { background-color: rgba(255, 255, 255, 0.96) !important; }
+        html:not(.dark) .bg-cyber-surface\/90 { background-color: rgba(241, 245, 249, 0.95) !important; }
+        html:not(.dark) .bg-cyber-surface\/50 { background-color: rgba(241, 245, 249, 0.6) !important; }
+        html:not(.dark) .bg-cyber-card { background-color: #f1f5f9 !important; }
+        html:not(.dark) .hover\:bg-cyber-card:hover { background-color: #e2e8f0 !important; }
+        html:not(.dark) .hover\:bg-cyber-border:hover { background-color: #e2e8f0 !important; }
+        html:not(.dark) .border-cyber-border { border-color: #cbd5e1 !important; }
+        html:not(.dark) .border-cyber-border\/50 { border-color: rgba(203, 213, 225, 0.6) !important; }
+        html:not(.dark) .border-cyber-border\/40 { border-color: rgba(203, 213, 225, 0.5) !important; }
+        html:not(.dark) .divide-cyber-border\/40 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(203, 213, 225, 0.6) !important; }
+
+        html:not(.dark) .text-white { color: #0f172a !important; }
+        html:not(.dark) .text-slate-200 { color: #1e293b !important; }
+        html:not(.dark) .text-slate-300 { color: #334155 !important; }
+        html:not(.dark) .text-slate-400 { color: #475569 !important; }
+        html:not(.dark) .text-slate-500 { color: #64748b !important; }
+        html:not(.dark) .hover\:text-white:hover { color: #0f172a !important; }
+        html:not(.dark) .text-cyber-neon { color: #0284c7 !important; }
+        html:not(.dark) .text-cyber-cyan { color: #0891b2 !important; }
+        html:not(.dark) .text-purple-300 { color: #7e22ce !important; }
+        html:not(.dark) .text-amber-300 { color: #b45309 !important; }
+        html:not(.dark) .text-amber-300\/80 { color: #d97706 !important; }
+
+        /* Preserve white text on colored gradient/solid buttons & overlay */
+        html:not(.dark) .bg-gradient-to-r.from-cyan-500 .text-white,
+        html:not(.dark) .bg-gradient-to-r.from-cyan-500,
+        html:not(.dark) .bg-gradient-to-tr .text-white,
+        html:not(.dark) .bg-cyber-primary,
+        html:not(.dark) .bg-purple-600,
+        html:not(.dark) #dopagaki-overlay,
+        html:not(.dark) #dopagaki-overlay .text-white {
+            color: #ffffff !important;
+        }
 
         /* ==========================================================
-           10-STAGE "SUSURU" PACHISLOT OVERLOAD ANIMATIONS (赤外線サーモグラフィー・金文字爆発演出)
+           10-STAGE "SUSURU" PACHISLOT OVERLOAD ANIMATIONS
            ========================================================== */
         @keyframes susuru-thermal-pulse {
             0%, 100% { filter: invert(100%) sepia(100%) saturate(7500%) hue-rotate(0deg) brightness(120%) contrast(200%); transform: scale(1); }
@@ -219,18 +247,23 @@
             border-left: 3px solid #00f0ff;
             color: #00f0ff;
         }
+        html:not(.dark) .nav-tab.active {
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.04) 100%);
+            border-left: 3px solid #0891b2;
+            color: #0891b2;
+        }
     </style>
 </head>
-<body id="app-body" class="bg-cyber-bg text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-cyber-cyan selection:text-black">
+<body id="app-body" class="bg-cyber-bg text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-cyber-cyan selection:text-black transition-colors duration-200">
 
     <!-- ==========================================================
-       10-STAGE "SUSURU" PACHISLOT FULLSCREEN OVERLAY (YouTube実機演出参考)
+       10-STAGE "SUSURU" PACHISLOT FULLSCREEN OVERLAY
        ========================================================== -->
     <div id="dopagaki-overlay" class="fixed inset-0 z-50 pointer-events-none hidden flex items-center justify-center overflow-hidden transition-all">
         <!-- Background Tint & Flash Layer -->
         <div id="dopagaki-bg-layer" class="absolute inset-0 transition-all duration-100"></div>
 
-        <!-- Marquee / Group Notification Banner ("HEAT HEAT" & 連続群予告) -->
+        <!-- Marquee / Group Notification Banner -->
         <div id="dopagaki-marquee-container" class="absolute top-12 left-0 w-full bg-red-600/95 border-y-4 border-yellow-300 py-3 overflow-hidden hidden z-20 shadow-2xl">
             <div id="dopagaki-marquee-text" class="whitespace-nowrap font-black italic text-2xl sm:text-3xl text-yellow-200 tracking-widest animate-[marquee-slide_3.5s_linear_infinite]">
                 🔥 【HEAT HEAT !! 激アツ赤外線サーモグラフィー群通過中！】 すするパチンコ演出発動！！ 🔥
@@ -262,40 +295,47 @@
     </div>
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-40 glass-panel border-b border-cyber-border px-4 lg:px-8 py-3 flex items-center justify-between">
+    <header class="sticky top-0 z-40 glass-panel border-b border-cyber-border px-4 lg:px-8 py-3 flex items-center justify-between transition-colors duration-200">
         <div class="flex items-center space-x-3">
             <button id="mobile-menu-btn" class="lg:hidden text-slate-400 hover:text-white p-1">
                 <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
             <div class="flex items-center space-x-2 cursor-pointer" onclick="switchTab('dashboard')">
                 <div class="p-2 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-lg text-white shadow-lg shadow-cyan-500/30">
-                    <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                    <i data-lucide="brain-circuit" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
                     <span class="text-[10px] font-mono text-cyber-cyan tracking-wider uppercase block leading-none">Mockup Engine v0.5</span>
                     <h1 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
                         問題作成・学習アプリ
-                        <span class="text-[10px] bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-mono px-2 py-0.5 rounded-full">10段階すするパチスロ版</span>
+                        <span class="hidden md:inline text-[10px] bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-mono px-2 py-0.5 rounded-full">10段階すするパチスロ版</span>
                     </h1>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Top Stats & Actions -->
-        <div class="flex items-center space-x-3 sm:space-x-5">
+        <!-- Quick Top Stats & Actions (Right Top Controls) -->
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Theme Toggle Button (Dark / White Mode) -->
+            <button onclick="toggleTheme()" id="theme-toggle-btn" title="ダーク / ホワイト モード切替" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-cyber-border bg-cyber-surface hover:bg-cyber-card text-slate-300 text-xs font-mono font-bold transition-all shadow-sm">
+                <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+                <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 text-indigo-500 hidden"></i>
+                <span class="hidden sm:inline" id="theme-btn-text">WHITE</span>
+            </button>
+
             <!-- Audio Sound Toggle Button -->
             <button onclick="toggleAudioSound()" id="sound-toggle-btn" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan text-xs font-mono font-bold hover:bg-cyber-cyan/20 transition-all">
                 <i data-lucide="volume-2" class="w-4 h-4"></i>
                 <span class="hidden sm:inline" id="sound-btn-text">SOUND: ON</span>
             </button>
 
-            <!-- Test Dopagaki Button (Menu to test 10 stages) -->
+            <!-- Test Dopagaki Button -->
             <button onclick="runDopagakiSequence(1)" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-amber-400 bg-amber-500/20 text-amber-300 text-xs font-mono font-bold hover:bg-amber-500/30 shadow-lg shadow-amber-500/20 transition-all animate-pulse">
                 <i data-lucide="zap" class="w-4 h-4"></i>
-                <span>🔥 10段階演出テスト</span>
+                <span class="hidden md:inline">🔥 10段階演出テスト</span>
             </button>
 
-            <div class="hidden sm:flex items-center space-x-4 text-xs font-mono bg-cyber-surface/90 px-3 py-1.5 rounded-lg border border-cyber-border">
+            <div class="hidden xl:flex items-center space-x-4 text-xs font-mono bg-cyber-surface/90 px-3 py-1.5 rounded-lg border border-cyber-border">
                 <div class="flex items-center gap-1.5">
                     <i data-lucide="flame" class="w-4 h-4 text-amber-400"></i>
                     <span id="header-streak" class="text-white font-bold">0</span>日連続
@@ -308,8 +348,8 @@
             </div>
 
             <button onclick="openQuestionModal()" class="flex items-center space-x-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">問題を作成</span>
+                <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
+                <span class="hidden sm:inline text-white">問題を作成</span>
             </button>
         </div>
     </header>
@@ -376,7 +416,7 @@
                                 <i data-lucide="folder-plus" class="w-4 h-4 text-cyber-cyan"></i> 新規デッキ
                             </button>
                             <button onclick="startQuickReview()" class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-cyan-500/25 flex items-center gap-2 transition-all active:scale-95">
-                                <i data-lucide="play" class="w-4 h-4 fill-white"></i> 全デッキ学習スタート
+                                <i data-lucide="play" class="w-4 h-4 fill-white text-white"></i> <span class="text-white">全デッキ学習スタート</span>
                             </button>
                         </div>
                     </div>
@@ -390,7 +430,7 @@
                             <i data-lucide="check-square" class="w-4 h-4 text-cyber-cyan"></i>
                         </div>
                         <div class="text-2xl font-bold text-white font-mono" id="stat-today-cards">0</div>
-                        <div class="text-[10px] text-emerald-400 flex items-center gap-1">
+                        <div class="text-[10px] text-emerald-500 flex items-center gap-1">
                             <i data-lucide="trending-up" class="w-3 h-3"></i> 順調に消化中
                         </div>
                     </div>
@@ -533,7 +573,7 @@
                 <!-- MAIN CARD STUDY AREA CONTAINER -->
                 <div id="study-main-wrapper" class="max-w-3xl mx-auto space-y-6 transition-transform">
 
-                    <!-- FLASHCARD DISPLAY PANEL (For CARD format) -->
+                    <!-- FLASHCARD DISPLAY PANEL -->
                     <div id="card-study-container" class="space-y-6">
                         <!-- Flashcard Flip Box -->
                         <div id="flashcard" onclick="flipCard()" class="perspective-1000 cursor-pointer min-h-[260px] sm:min-h-[320px] rounded-2xl relative transition-all duration-300 transform">
@@ -541,7 +581,7 @@
                                 <!-- FRONT SIDE -->
                                 <div class="glass-panel-glow w-full h-full min-h-[260px] sm:min-h-[320px] rounded-2xl p-6 sm:p-8 flex flex-col justify-between absolute inset-0 backface-hidden border-2 border-cyber-cyan/40">
                                     <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
-                                        <span class="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-blue-400">🎴 カード形式 [表面]</span>
+                                        <span class="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-blue-500">🎴 カード形式 [表面]</span>
                                         <span>クリックして開く <i data-lucide="rotate-cw" class="w-3.5 h-3.5 inline"></i></span>
                                     </div>
                                     <div class="my-auto text-center">
@@ -557,7 +597,7 @@
                                 <!-- BACK SIDE -->
                                 <div class="glass-panel w-full h-full min-h-[260px] sm:min-h-[320px] rounded-2xl p-6 sm:p-8 flex flex-col justify-between absolute inset-0 backface-hidden rotate-y-180 border-2 border-purple-500/40 bg-cyber-surface/95">
                                     <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
-                                        <span class="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-400">🎴 カード形式 [裏面/正解]</span>
+                                        <span class="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-500">🎴 カード形式 [裏面/正解]</span>
                                         <span class="text-cyber-cyan font-semibold">解答開示済み</span>
                                     </div>
                                     <div class="my-auto text-center space-y-3">
@@ -575,7 +615,7 @@
                             </div>
                         </div>
 
-                        <!-- 2-STAGE SELF EVALUATION BUTTONS (Card Format) -->
+                        <!-- 2-STAGE SELF EVALUATION BUTTONS -->
                         <div id="card-action-buttons" class="hidden grid grid-cols-2 gap-4">
                             <button onclick="handleCardAnswer(false)" class="p-4 rounded-xl bg-cyber-card border border-cyber-warning/50 hover:border-cyber-warning text-white flex flex-col items-center justify-center space-y-1 transition-all active:scale-95 group">
                                 <div class="flex items-center gap-1.5 text-cyber-warning font-bold text-sm">
@@ -593,10 +633,10 @@
                         </div>
                     </div>
 
-                    <!-- QUESTION PRACTICE DISPLAY PANEL (For QUIZ format) -->
+                    <!-- QUESTION PRACTICE DISPLAY PANEL -->
                     <div id="quiz-study-container" class="glass-panel rounded-2xl p-6 sm:p-8 space-y-6 hidden border-2 border-purple-500/30">
                         <div class="flex items-center justify-between text-xs font-mono">
-                            <span class="px-2.5 py-1 rounded bg-purple-500/10 border border-purple-500/30 text-purple-400">📝 問題形式 演習</span>
+                            <span class="px-2.5 py-1 rounded bg-purple-500/10 border border-purple-500/30 text-purple-500">📝 問題形式 演習</span>
                             <span id="quiz-type-badge" class="text-slate-400">一問一答</span>
                         </div>
 
@@ -604,7 +644,7 @@
                             Question Prompt
                         </div>
 
-                        <!-- Quiz Options Container (Single/Multiple choice) -->
+                        <!-- Quiz Options Container -->
                         <div id="quiz-options-container" class="space-y-2.5">
                             <!-- Populated dynamically -->
                         </div>
@@ -613,11 +653,11 @@
                         <div id="quiz-text-input-container" class="space-y-3 hidden">
                             <input type="text" id="quiz-user-input" placeholder="解答を入力してください..." class="w-full bg-cyber-bg border border-cyber-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyber-cyan">
                             <button onclick="submitQuizTextInput()" class="w-full py-2.5 bg-cyber-primary hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-all">
-                                解答を送信して答え合わせ
+                                <span class="text-white">解答を送信して答え合わせ</span>
                             </button>
                         </div>
 
-                        <!-- Quiz Answer Feedback Result (Revealed after answering) -->
+                        <!-- Quiz Answer Feedback Result -->
                         <div id="quiz-feedback-box" class="p-4 rounded-xl bg-cyber-bg border border-cyber-border space-y-3 hidden">
                             <div id="quiz-result-badge" class="font-bold text-sm flex items-center gap-2">
                                 <!-- Correct / Incorrect badge -->
@@ -626,7 +666,6 @@
                                 正解: <span id="quiz-correct-answer-text" class="text-cyber-cyan font-bold font-mono">--</span>
                             </div>
 
-                            <!-- "Close Enough" Self-Rating Override -->
                             <div class="pt-2 border-t border-cyber-border/50 flex items-center justify-between">
                                 <span class="text-xs text-slate-400">大体あっていた（ニュアンス合致）として正解にする:</span>
                                 <button onclick="overrideQuizCorrect()" class="px-3 py-1 bg-cyber-surface hover:bg-cyber-card border border-cyber-cyan/40 text-cyber-cyan rounded text-xs font-mono">
@@ -635,7 +674,7 @@
                             </div>
 
                             <button onclick="nextStudyCard()" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs rounded-xl transition-all">
-                                次の問題へ進む
+                                <span class="text-white">次の問題へ進む</span>
                             </button>
                         </div>
                     </div>
@@ -654,19 +693,15 @@
                             </div>
                         </div>
 
-                        <!-- Canvas / Text Area Container -->
                         <div class="p-4 space-y-3">
-                            <!-- Text Note Input -->
                             <div id="note-text-wrapper">
                                 <textarea id="study-text-note" rows="2" placeholder="思考過程や覚え方のメモを入力（自動保存）..." class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyber-cyan"></textarea>
                             </div>
 
-                            <!-- Canvas Drawing Input (Fixed Coordinates offset) -->
                             <div id="note-draw-wrapper" class="hidden">
                                 <canvas id="scratch-canvas" width="600" height="180" class="w-full bg-cyber-bg rounded-lg border border-cyber-border cursor-crosshair touch-none"></canvas>
                             </div>
 
-                            <!-- Saved Note History (Past 3 sessions) -->
                             <div class="pt-2 border-t border-cyber-border/40">
                                 <span class="text-[10px] text-slate-500 font-mono block mb-1">過去3回分のメモ履歴:</span>
                                 <div id="note-history-list" class="space-y-1 text-xs text-slate-400 font-mono">
@@ -732,12 +767,12 @@
                     </div>
                 </div>
 
-                <!-- Simulated Heatmap Grid (Grass activity) -->
+                <!-- Simulated Heatmap Grid -->
                 <div class="glass-panel p-5 rounded-xl space-y-3">
                     <h3 class="text-xs font-bold text-white font-mono flex items-center gap-2">
                         <i data-lucide="grid" class="w-4 h-4 text-emerald-400"></i> 学習コミット・ヒートマップ (過去30日間)
                     </h3>
-                    <div id="heatmap-grid" class="heatmap-grid grid gap-1.5 pt-2">
+                    <div id="heatmap-grid" class="grid grid-cols-10 sm:grid-cols-15 gap-1.5 pt-2">
                         <!-- Populated via JS -->
                     </div>
                 </div>
@@ -782,13 +817,13 @@
 
                     <!-- Reset & Danger Zone -->
                     <div class="glass-panel p-6 rounded-xl space-y-4 border-red-500/30">
-                        <h3 class="text-sm font-bold text-red-400 font-mono flex items-center gap-2">
-                            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400"></i> データリセット
+                        <h3 class="text-sm font-bold text-red-500 font-mono flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i> データリセット
                         </h3>
                         <p class="text-xs text-slate-400 leading-relaxed">
                             ローカルストレージ内の全データを削除し、初期状態にリセットします。この操作は取り消せません。
                         </p>
-                        <button onclick="resetAllData()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-400 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all">
+                        <button onclick="resetAllData()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-500 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all">
                             <i data-lucide="trash-2" class="w-4 h-4"></i> 全学習データを初期化する
                         </button>
                     </div>
@@ -800,7 +835,7 @@
                         <h3 class="text-xs font-bold text-slate-400 font-mono uppercase">LocalStorage Raw Inspector</h3>
                         <span class="text-[10px] text-cyber-cyan font-mono" id="storage-size-label">0 KB</span>
                     </div>
-                    <pre id="storage-json-preview" class="p-3 bg-cyber-bg border border-cyber-border rounded-lg text-[11px] font-mono text-emerald-400 max-h-48 overflow-y-auto">
+                    <pre id="storage-json-preview" class="p-3 bg-cyber-bg border border-cyber-border rounded-lg text-[11px] font-mono text-emerald-500 max-h-48 overflow-y-auto">
 // Data JSON preview
                     </pre>
                 </div>
@@ -827,7 +862,7 @@
                 </div>
                 <div>
                     <label class="block text-slate-400 font-mono mb-1">説明 / 概要</label>
-                    <textarea id="deck-desc-input" rows="2" placeholder="例: TOIEC 800点レベルの重要語句" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan"></textarea>
+                    <textarea id="deck-desc-input" rows="2" placeholder="例: TOEIC 800点レベルの重要語句" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan"></textarea>
                 </div>
             </div>
             <div class="flex items-center justify-end gap-2 pt-2">
@@ -921,12 +956,14 @@
 
             <div class="flex items-center justify-end gap-2 pt-2">
                 <button onclick="closeModal('modal-question')" class="px-4 py-2 bg-cyber-surface hover:bg-cyber-border text-slate-300 rounded-lg text-xs font-medium">キャンセル</button>
-                <button onclick="saveQuestion()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-purple-500/20">保存する</button>
+                <button onclick="saveQuestion()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-purple-500/20">
+                    <span class="text-white">保存する</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- APP APPLICATION LOGIC (10-Stage "Susuru" Pachislot Engine) -->
+    <!-- APP APPLICATION LOGIC -->
     <script>
         // Default seed data
         const INITIAL_STATE = {
@@ -1003,7 +1040,7 @@
         let cardFlipped = false;
         let sessionTimerInterval = null;
         let sessionSeconds = 0;
-        let currentNoteMode = 'text'; // 'text' | 'draw'
+        let currentNoteMode = 'text';
         let modalQuestionMode = 'CARD';
 
         // SUSURU 10-STAGE COMBO & SOUND SYSTEMS
@@ -1011,8 +1048,43 @@
         let audioSoundEnabled = true;
         let audioCtx = null;
 
+        // ==========================================================
+        // THEME TOGGLE (DARK MODE <-> WHITE / LIGHT MODE)
+        // ==========================================================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('app_quiz_theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const nextTheme = isDark ? 'light' : 'dark';
+            localStorage.setItem('app_quiz_theme', nextTheme);
+            applyTheme(nextTheme);
+        }
+
+        function applyTheme(theme) {
+            const htmlEl = document.documentElement;
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+            const btnText = document.getElementById('theme-btn-text');
+
+            if (theme === 'dark') {
+                htmlEl.classList.add('dark');
+                if (sunIcon) sunIcon.classList.remove('hidden');
+                if (moonIcon) moonIcon.classList.add('hidden');
+                if (btnText) btnText.innerText = 'WHITE';
+            } else {
+                htmlEl.classList.remove('dark');
+                if (sunIcon) sunIcon.classList.add('hidden');
+                if (moonIcon) moonIcon.classList.remove('hidden');
+                if (btnText) btnText.innerText = 'DARK';
+            }
+        }
+
         // Load & Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
             lucide.createIcons();
             loadState();
             renderDashboard();
@@ -1021,7 +1093,7 @@
         });
 
         // ==========================================================
-        // WEB AUDIO API SYNTHESIZER (パチンコ・スロット重厚サウンド)
+        // WEB AUDIO API SYNTHESIZER
         // ==========================================================
         function initAudioContext() {
             if (!audioCtx) {
@@ -1050,7 +1122,6 @@
             }
         }
 
-        // 1. キュイン音
         function playKyuinSound() {
             if (!audioSoundEnabled) return;
             try {
@@ -1071,7 +1142,6 @@
             } catch(e) {}
         }
 
-        // 2. 昇圧アルペジオ
         function playRisingSynth(duration = 0.8) {
             if (!audioSoundEnabled) return;
             try {
@@ -1095,31 +1165,6 @@
             } catch(e) {}
         }
 
-        // 3. 重低音心音
-        function playHeartbeat(delayOffset = 0) {
-            if (!audioSoundEnabled) return;
-            try {
-                initAudioContext();
-                if (!audioCtx) return;
-                const now = audioCtx.currentTime + delayOffset;
-                [0, 0.18].forEach((t, i) => {
-                    const time = now + t;
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(i === 0 ? 110 : 75, time);
-                    osc.frequency.exponentialRampToValueAtTime(20, time + 0.14);
-                    gain.gain.setValueAtTime(0.45, time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(time);
-                    osc.stop(time + 0.14);
-                });
-            } catch(e) {}
-        }
-
-        // 4. 重低音インパクト＆爆発ノイズ
         function playExplosionImpact() {
             if (!audioSoundEnabled) return;
             try {
@@ -1140,7 +1185,6 @@
             } catch(e) {}
         }
 
-        // 5. 神域オルガン和音
         function playGodFreezeChord() {
             if (!audioSoundEnabled) return;
             try {
@@ -1162,9 +1206,8 @@
             } catch(e) {}
         }
 
-
         // ==========================================================
-        // 10-STAGE "SUSURU" PACHISLOT OVERLOAD ENGINE (YouTube実機ベース演出)
+        // 10-STAGE "SUSURU" PACHISLOT OVERLOAD ENGINE
         // ==========================================================
         function runDopagakiSequence(forcedStage = null, callback = null) {
             if (forcedStage === null || typeof forcedStage !== 'number') {
@@ -1173,7 +1216,6 @@
                 currentCombo = forcedStage;
             }
 
-            // Stage clamps between 1 and 10
             const stage = Math.min(Math.max(currentCombo, 1), 10);
 
             const overlay = document.getElementById('dopagaki-overlay');
@@ -1194,10 +1236,8 @@
                 mainWrapper.classList.remove('animate-dopagaki-earthquake');
             }
 
-            // Switch presentation based on 10 Susuru Pachislot Stages
             switch (stage) {
                 case 1:
-                    // STAGE 1: 赤外線サーモグラフィー風・青保留
                     bgLayer.className = "absolute inset-0 bg-blue-950/90 animate-susuru-thermal";
                     stageBadge.innerText = "🔥 STAGE 1 : サーモグラフィー青保留";
                     titleEl.className = "text-4xl sm:text-6xl font-black italic tracking-tighter text-blue-300 animate-susuru-gold";
@@ -1205,9 +1245,7 @@
                     subTitleEl.innerText = "連続正解ですする演出が加速する…！";
                     playKyuinSound();
                     break;
-
                 case 2:
-                    // STAGE 2: サーモグラフィー緑保留 ＋ 予告音
                     bgLayer.className = "absolute inset-0 bg-emerald-950/90 animate-susuru-thermal";
                     stageBadge.innerText = "⚡ STAGE 2 : サーモグラフィー緑保留";
                     titleEl.className = "text-4xl sm:text-6xl font-black italic tracking-tighter text-emerald-300 animate-susuru-gold";
@@ -1215,9 +1253,7 @@
                     subTitleEl.innerText = "気流が赤く熱を帯び始める…！";
                     playRisingSynth(0.5);
                     break;
-
                 case 3:
-                    // STAGE 3: 赤外線サーモグラフィー赤保留 ＋ 画面シェイク
                     bgLayer.className = "absolute inset-0 bg-red-950/95 animate-susuru-thermal";
                     stageBadge.innerText = "🔥 STAGE 3 : サーモグラフィー赤保留";
                     titleEl.className = "text-4xl sm:text-7xl font-black italic tracking-tighter text-red-500 animate-susuru-gold";
@@ -1226,9 +1262,7 @@
                     playKyuinSound();
                     if (mainWrapper) mainWrapper.classList.add('animate-dopagaki-shake');
                     break;
-
                 case 4:
-                    // STAGE 4: YouTube参考「すするパチンコ演出」群予告（HEAT HEATテロップ通過）
                     bgLayer.className = "absolute inset-0 bg-purple-950/95 animate-susuru-thermal";
                     stageBadge.innerText = "🌟 STAGE 4 : すするパチンコ演出・群予告";
                     titleEl.className = "text-4xl sm:text-7xl font-black italic tracking-tighter text-yellow-300 animate-susuru-gold";
@@ -1239,9 +1273,7 @@
                     playRisingSynth(0.7);
                     if (mainWrapper) mainWrapper.classList.add('animate-dopagaki-shake');
                     break;
-
                 case 5:
-                    // STAGE 5: ゴールド「すする」文字爆発
                     bgLayer.className = "absolute inset-0 bg-amber-600/90 animate-flash-gold";
                     stageBadge.innerText = "👑 STAGE 5 : ゴールド「すする」文字爆発";
                     titleEl.className = "text-5xl sm:text-8xl font-black italic tracking-tighter text-amber-200 animate-susuru-gold";
@@ -1250,9 +1282,7 @@
                     playExplosionImpact();
                     if (mainWrapper) mainWrapper.classList.add('animate-dopagaki-shake');
                     break;
-
                 case 6:
-                    // STAGE 6: パトランプ回転 ＋ キュイン連打
                     bgLayer.className = "absolute inset-0 bg-red-900/95 animate-flash-red";
                     stageBadge.innerText = "🚨 STAGE 6 : パトランプ一撃告知";
                     titleEl.className = "text-5xl sm:text-8xl font-black italic tracking-tighter text-yellow-300 animate-susuru-gold";
@@ -1263,9 +1293,7 @@
                     setTimeout(playKyuinSound, 300);
                     setTimeout(playKyuinSound, 600);
                     break;
-
                 case 7:
-                    // STAGE 7: ミラクルGODフリーズ（完全ブラックアウト ＋ オルガン和音）
                     bgLayer.className = "absolute inset-0 bg-black";
                     stageBadge.innerText = "🌌 STAGE 7 : 神域ミラクルGODフリーズ";
                     titleEl.className = "text-4xl sm:text-7xl font-black italic tracking-tighter text-slate-100 animate-pulse";
@@ -1273,9 +1301,7 @@
                     subTitleEl.innerText = "神の領域へ突入する…";
                     playGodFreezeChord();
                     break;
-
                 case 8:
-                    // STAGE 8: 全回転すするラッシュ（レインボー背景 ＋ ファンファーレ）
                     bgLayer.className = "absolute inset-0 animate-rainbow-bg";
                     stageBadge.innerText = "🌈 STAGE 8 : 全回転すするラッシュ";
                     titleEl.className = "text-5xl sm:text-8xl font-black italic tracking-tighter text-white animate-susuru-gold";
@@ -1284,9 +1310,7 @@
                     playRisingSynth(1.0);
                     confetti({ particleCount: 150, spread: 110, origin: { y: 0.5 } });
                     break;
-
                 case 9:
-                    // STAGE 9: 超確変すするバースト（大地震シェイク ＋ 虹色フラッシュ）
                     bgLayer.className = "absolute inset-0 animate-rainbow-bg";
                     stageBadge.innerText = "💎 STAGE 9 : 超確変すするバースト";
                     titleEl.className = "text-5xl sm:text-9xl font-black italic tracking-tighter text-yellow-200 animate-susuru-gold";
@@ -1296,10 +1320,8 @@
                     if (mainWrapper) mainWrapper.classList.add('animate-dopagaki-earthquake');
                     confetti({ particleCount: 250, spread: 150, origin: { y: 0.5 } });
                     break;
-
                 case 10:
                 default:
-                    // STAGE 10: 【究極神域 すする GOD RUSH / 10億爆裂JACKPOT】
                     bgLayer.className = "absolute inset-0 bg-gradient-to-tr from-yellow-500 via-red-600 to-purple-900 animate-rainbow-bg";
                     stageBadge.innerText = "👑🔥 STAGE 10 : 【究極神域 すする GOD RUSH】";
                     titleEl.className = "text-6xl sm:text-9xl font-black italic tracking-tighter text-yellow-300 animate-susuru-gold";
@@ -1324,7 +1346,6 @@
                     break;
             }
 
-            // Update combo / stage badge text in UI
             const comboBadge = document.getElementById('combo-badge-container');
             const comboText = document.getElementById('combo-count-text');
             if (comboBadge && comboText) {
@@ -1332,7 +1353,6 @@
                 comboText.innerText = `STAGE ${stage} SUSURU x${currentCombo}`;
             }
 
-            // Cleanup overlay timer
             const displayTime = stage >= 7 ? 3500 : 2500;
             setTimeout(() => {
                 overlay.classList.add('hidden');
@@ -1446,7 +1466,7 @@
                 card.innerHTML = `
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30">DECK</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/30">DECK</span>
                             <span class="text-xs text-slate-400 font-mono">${deckQuestions.length} 問登録</span>
                         </div>
                         <h4 class="text-base font-bold text-white">${deck.name}</h4>
@@ -1496,9 +1516,9 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-cyber-surface/50";
 
-                let formatBadge = `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px]">🎴 カード</span>`;
-                if (q.format === 'QUIZ_SINGLE') formatBadge = `<span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30 text-[10px]">📝 4択演習</span>`;
-                if (q.format === 'QUIZ_TEXT') formatBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px]">📝 文字入力</span>`;
+                let formatBadge = `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/30 text-[10px]">🎴 カード</span>`;
+                if (q.format === 'QUIZ_SINGLE') formatBadge = `<span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 border border-purple-500/30 text-[10px]">📝 4択演習</span>`;
+                if (q.format === 'QUIZ_TEXT') formatBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px]">📝 文字入力</span>`;
 
                 const frontText = q.front || q.prompt || '';
                 const backText = q.back || (q.options ? q.options[q.correctIndex] : q.textCorrect) || '';
@@ -1510,7 +1530,7 @@
                     <td class="p-3 text-cyber-cyan max-w-xs truncate">${backText}</td>
                     <td class="p-3 font-mono text-[11px]">Stage ${q.stage || 0}</td>
                     <td class="p-3 text-right">
-                        <button onclick="deleteQuestion('${q.id}')" class="text-slate-500 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteQuestion('${q.id}')" class="text-slate-500 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1666,11 +1686,11 @@
             feedbackBox.classList.remove('hidden');
 
             if (isCorrect) {
-                resultBadge.className = 'font-bold text-sm text-emerald-400 flex items-center gap-2';
+                resultBadge.className = 'font-bold text-sm text-emerald-500 flex items-center gap-2';
                 resultBadge.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> 正解です！`;
                 runDopagakiSequence(null);
             } else {
-                resultBadge.className = 'font-bold text-sm text-red-400 flex items-center gap-2';
+                resultBadge.className = 'font-bold text-sm text-red-500 flex items-center gap-2';
                 resultBadge.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 不正解`;
                 resetCombo();
                 playExplosionImpact();
@@ -1738,7 +1758,7 @@
             saveState();
         }
 
-        // Canvas Drawing Setup with Exact Offset Rect Correction
+        // Canvas Drawing Setup
         let canvas, ctx, drawing = false;
 
         function initCanvas() {
@@ -1775,7 +1795,8 @@
             function draw(e) {
                 if (!drawing) return;
                 const pos = getExactCanvasPos(e);
-                ctx.strokeStyle = '#00f0ff';
+                const isDark = document.documentElement.classList.contains('dark');
+                ctx.strokeStyle = isDark ? '#00f0ff' : '#0284c7';
                 ctx.lineWidth = 3;
                 ctx.lineCap = 'round';
                 ctx.lineTo(pos.x, pos.y);
@@ -1807,9 +1828,9 @@
             for (let i = 0; i < 30; i++) {
                 const level = Math.floor(Math.random() * 4);
                 let colorClass = 'bg-cyber-surface border border-cyber-border';
-                if (level === 1) colorClass = 'bg-cyan-950 border border-cyan-800';
-                if (level === 2) colorClass = 'bg-cyan-700 border border-cyan-500';
-                if (level === 3) colorClass = 'bg-cyber-cyan border border-cyber-neon';
+                if (level === 1) colorClass = 'bg-cyan-500/20 border border-cyan-500/40';
+                if (level === 2) colorClass = 'bg-cyan-500/50 border border-cyan-500/70';
+                if (level === 3) colorClass = 'bg-cyber-cyan border border-cyan-400';
 
                 grid.innerHTML += `<div class="w-full h-6 rounded ${colorClass}" title="Day ${i+1}"></div>`;
             }
@@ -1820,11 +1841,11 @@
                 const isUnlocked = b.unlocked;
                 badgeContainer.innerHTML += `
                     <div class="glass-panel p-4 rounded-xl border ${isUnlocked ? 'border-amber-400/40 bg-amber-500/5' : 'border-cyber-border opacity-50'} flex items-center gap-3">
-                        <div class="p-3 rounded-xl ${isUnlocked ? 'bg-amber-400/20 text-amber-400' : 'bg-cyber-surface text-slate-600'}">
+                        <div class="p-3 rounded-xl ${isUnlocked ? 'bg-amber-400/20 text-amber-500' : 'bg-cyber-surface text-slate-600'}">
                             <i data-lucide="${b.icon || 'award'}" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <span class="text-[10px] font-mono ${isUnlocked ? 'text-amber-400' : 'text-slate-500'} block">${isUnlocked ? 'UNLOCKED' : 'LOCKED'}</span>
+                            <span class="text-[10px] font-mono ${isUnlocked ? 'text-amber-500' : 'text-slate-500'} block">${isUnlocked ? 'UNLOCKED' : 'LOCKED'}</span>
                             <h4 class="text-xs font-bold text-white">${b.title}</h4>
                             <p class="text-[11px] text-slate-400">${b.desc}</p>
                         </div>
@@ -1902,7 +1923,7 @@
             } else {
                 document.getElementById('form-fields-card').classList.add('hidden');
                 document.getElementById('form-fields-quiz').classList.remove('hidden');
-                document.getElementById('btn-mode-quiz').className = 'py-2 rounded-lg border border-purple-500 bg-purple-500/20 text-purple-300 font-bold font-mono';
+                document.getElementById('btn-mode-quiz').className = 'py-2 rounded-lg border border-purple-500 bg-purple-500/20 text-purple-400 font-bold font-mono';
                 document.getElementById('btn-mode-card').className = 'py-2 rounded-lg border border-cyber-border bg-cyber-bg text-slate-400 font-mono';
             }
         }
