@@ -11,7 +11,7 @@
 /* 画面のまわりの余白（上・左右・下）。下は少なめにして、ホームが画面に収まるように */
 body { padding: 4px 24px 14px; }
 
-/* 上から 名前とログイン日数 → アチーブ → 使った時間（グラフは小さめにして、画面に収まるようにしている） */
+/* 上から 名前とログイン日数 → アプリごとのカード → アチーブ → 使った時間（グラフは小さめにして、画面に収まるようにしている） */
 .home {
   min-height: calc(100vh - 18px);   /* 画面の高さいっぱい（上下の余白 4px + 14px をのぞく）→ 下のアプリのカードがのこりを使う */
   max-width: 1280px;
@@ -65,8 +65,15 @@ body { padding: 4px 24px 14px; }
 .home-link:hover { text-decoration: underline; }
 .home-small-title { margin-top: 0; font-size: 13px; font-weight: 800; color: var(--text); }
 
-/* ───────── 3. 使った時間（画面の残りいっぱい。左に円グラフ、右に棒グラフ・カレンダー） ───────── */
-.home-usage { gap: 12px; padding: 14px 20px 16px; }
+/* ───────── 3・4. いちばん下の段：左にアチーブ、右に使った時間（幅は 2：3。高さはそろう） ───────── */
+.home-bottom { flex: none; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 14px; align-items: stretch; }
+
+/* ───────── 4. 使った時間（上に円グラフとアプリごとの時間、下に棒グラフ・カレンダー） ───────── */
+.home-usage {
+  gap: 12px; padding: 14px 20px 16px;
+  /* 下のグラフの高さ。日・週・月・年のどれでも同じにする（切りかえても、まわりの大きさが動かないように） */
+  --chart-h: clamp(132px, 17vh, 190px);
+}
 /* 上の行：見出し・期間（‹ ›）・日週月年 */
 .home-usage-head { display: flex; align-items: center; gap: 18px; flex: none; }
 .home-usage-head h2 { font-size: 16px; font-weight: 800; }
@@ -87,13 +94,12 @@ body { padding: 4px 24px 14px; }
 .home-nav-btn:hover:not(:disabled) { border-color: var(--text-3); }
 .home-nav-btn:disabled { opacity: .35; cursor: default; }
 
-/* 下：左に円グラフとアプリごとの時間、右にグラフ */
-/* 左（アプリごと）と右（グラフ）：どちらも上に小見出し、そろった余白 */
-.home-usage-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
-/* 左：小見出し、その下に 円グラフ ｜ アプリごとの時間、いちばん下にひとこと */
+/* 上（アプリごと）と下（グラフ）：どちらも上に小見出し。あいだに線 */
+.home-usage-main { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+/* 上：小見出し、その下に 円グラフ ｜ アプリごとの時間、いちばん下にひとこと */
 .home-usage-left {
   display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto;
-  align-items: center; gap: 10px 20px; padding-right: 26px;
+  align-items: center; gap: 8px 20px;
 }
 .home-usage-left .home-small-title, .home-usage-left .home-usage-note { grid-column: 1 / -1; }
 .home-usage-left .home-pie { width: 124px; }
@@ -121,11 +127,11 @@ body { padding: 4px 24px 14px; }
 .home-usage-note { width: 100%; font-size: 13px; font-weight: 700; color: var(--text-2); }
 
 /* 円グラフの下のグラフ */
-.home-usage-chart { min-height: 0; display: flex; flex-direction: column; gap: 12px; padding-left: 26px; border-left: 1px solid var(--border); }
+.home-usage-chart { min-height: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
 .home-usage-chart-body { display: flex; flex-direction: column; }
 
 /* 積み上げ棒グラフ（日：時間ごと／週：曜日ごと／年：月ごと） */
-.home-bars { display: flex; gap: 10px; height: 190px; }
+.home-bars { display: flex; gap: 10px; height: var(--chart-h); }
 .home-bars-axis {   /* 左のめもり（上限・半分・0） */
   display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
   width: 60px; padding-bottom: 36px; font-size: 12px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums;
@@ -148,13 +154,17 @@ body { padding: 4px 24px 14px; }
 .home-bar-sub { margin-top: -4px; height: 14px; font-size: 11px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
 .home-bar.is-now .home-bar-label { color: var(--primary); }
 
-/* 月のカレンダー（長く使った日ほど濃い青） */
-.home-heat { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-auto-rows: 26px; gap: 4px; }
+/* 月のカレンダー（長く使った日ほど濃い青）
+   高さは棒グラフと同じ（--chart-h）。1 行目は曜日、その下の週の行（4〜6 行）で高さを等分する */
+.home-heat {
+  height: var(--chart-h); display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto; grid-auto-rows: minmax(0, 1fr); gap: 4px;
+}
 .home-heat-week { text-align: center; font-size: 12.5px; font-weight: 800; color: var(--text); }
 .home-heat-week.is-sat { color: var(--primary); }
 .home-heat-week.is-sun { color: #e11d48; }
 .home-heat-day {
-  display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 0; padding: 0 7px; overflow: hidden;   /* 日にち ｜ 時間 を 1 行に */
+  display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 0; padding: 0 7px; overflow: hidden; line-height: 1;   /* 日にち ｜ 時間 を 1 行に */
   border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border);
 }
 .home-heat-day b { font-size: 12px; font-weight: 800; }
@@ -164,20 +174,16 @@ body { padding: 4px 24px 14px; }
 .home-heat-day.is-future { opacity: .6; }
 .home-heat-day.is-blank { visibility: hidden; }
 
-/* ───────── 4. アチーブ ───────── */
-/* 横いっぱいのとき：左に円とレア度ごとの数、右に最近手に入れたもの */
-.home-achieve { flex: none; }
-/* 3 つに分ける：全体の円 ｜ レア度ごとの数 ｜ 最近手に入れたもの（あいだに線） */
-.home-achieve-body { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.15fr); align-items: stretch; }
-.home-achieve-body > * { padding: 2px 26px; }
-.home-achieve-body > * + * { border-left: 1px solid var(--border); }
-.home-achieve-body > :first-child { padding-left: 4px; }
-.home-achieve-body > :last-child { padding-right: 0; }
+/* ───────── 3. アチーブ（左下） ───────── */
+/* 3 つを、たてに並べる：全体の円 → レア度ごとの数 → 最近手に入れたもの（あいだに線。右の「使った時間」と高さをそろえる） */
+.home-achieve-body { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.home-achieve-body > :last-child { flex: 1 1 0; }   /* 最近手に入れたもの：枠の残りの高さいっぱい */
+.home-achieve-body > * + * { padding-top: 12px; border-top: 1px solid var(--border); }
 .home-achieve-all { display: flex; align-items: center; gap: 14px; }
 .home-achieve-count { display: flex; flex-direction: column; }
 .home-achieve-count strong { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .home-achieve-count span { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
-.home-achieve-col { display: flex; flex-direction: column; justify-content: center; gap: 8px; min-width: 0; }
+.home-achieve-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
 /* ゴールド・シルバー・ブロンズごとの数：名前・バー・数 を 1 行に */
 .home-rarity { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -204,10 +210,11 @@ body { padding: 4px 24px 14px; }
 .home-ach-text strong { font-size: 13px; }
 .home-ach-text > span { font-size: 12px; font-weight: 600; color: var(--text-2); }
 .home-empty { font-size: 13px; color: var(--text-2); }
-/* 最近手に入れたものが 3 つ以上のとき：2 つ分の高さ（js/main.js の fitRecent）で、残りはスクロール */
-.home-list.is-scroll { overflow-y: auto; padding-right: 6px; }
+/* 最近手に入れたもの：残りの高さいっぱいに見えるだけ出して、入りきらない分はスクロール（いちばん低くても 2 つ分。js/main.js の fitRecent） */
+#recent { flex: 1 1 0; overflow-y: auto; }
+.home-list.is-scroll { padding-right: 6px; }
 
-/* ───────── 4. アプリごとのカード（学習時間・アチーブの円グラフ） ─────────
+/* ───────── 2. アプリごとのカード（学習時間・アチーブの円グラフ。画面の残りの高さいっぱい） ─────────
    カードは上のアチーブ・使った時間と同じ枠（js/main.js で class="panel"）。横に 4 枚、せまいときは 2 枚ずつ
    画面の下ののこりの高さいっぱいに広がり、円グラフはカードの大きさに合わせて大きくなる（cqh・cqw） */
 .home-apps { flex: 1 1 auto; display: flex; min-height: 0; }
@@ -268,7 +275,7 @@ body { padding: 4px 24px 14px; }
 .home-app-stats li b { flex: none; font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
 .home-app-stats li small { flex: none; font-size: 11.5px; font-weight: 700; }
 
-/* 少し低いウィンドウのとき：上の 3 つを少し小さくして、下のアプリのカードに高さをのこす */
+/* 少し低いウィンドウのとき：アチーブ・使った時間などを少し小さくして、アプリのカードに高さをのこす */
 @media (max-height: 840px) {
   .home { gap: 10px; }
   .home-hero { padding: 10px 18px; }
@@ -280,8 +287,8 @@ body { padding: 4px 24px 14px; }
   .home-app-head { gap: 8px; }
   .home-app-icon { width: 28px; height: 28px; }
   /* 使った時間を低くする（グラフ・カレンダー・円グラフ） */
-  .home-bars { height: 118px; }
-  .home-heat { grid-auto-rows: 19px; gap: 3px; }
+  .home-usage { --chart-h: 132px; }
+  .home-heat { gap: 3px; }
   .home-usage-left .home-pie { width: 104px; }
   .home-usage-main { min-height: 0; }
   .home-ring { width: 64px; height: 64px; }
@@ -289,7 +296,11 @@ body { padding: 4px 24px 14px; }
   .home-list { gap: 4px; }
   .home-usage-row { padding: 2px 4px; }
   .home-usage-head { gap: 12px; }
-  .home-usage-chart { gap: 8px; }
+  .home-usage-chart { gap: 8px; padding-top: 8px; }
+  .home-usage-main { gap: 8px; }
+  .home-achieve-body { gap: 8px; }
+  .home-achieve-body > * + * { padding-top: 8px; }
+  .home-bottom { gap: 10px; }
 }
 
 /* 少しせまいウィンドウのとき：アプリのカードの余白を少しへらす */
@@ -313,21 +324,13 @@ body { padding: 4px 24px 14px; }
   .home-ring-pct { font-size: 15px; }
   .home-usage-row { padding: 1px 4px; }
   .home-usage-left .home-pie { width: 96px; }
-  .home-bars { height: 108px; }
+  .home-usage { --chart-h: 128px; }
 }
 
 /* せまいウィンドウのときは、たてに並べる */
 @media (max-width: 1000px) {
-  .home-usage-main { grid-template-columns: 1fr; }
-  .home-usage-left { padding-right: 0; }
-  .home-usage-chart { padding-left: 0; border-left: 0; padding-top: 14px; border-top: 1px solid var(--border); }
-
-}
-@media (max-width: 1000px) {
   .home-apps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .home-achieve-body { grid-template-columns: 1fr; gap: 14px; }
-  .home-achieve-body > * { padding: 0; }
-  .home-achieve-body > * + * { border-left: 0; padding-top: 12px; border-top: 1px solid var(--border); }
+  .home-bottom { grid-template-columns: 1fr; }   /* アチーブの下に、使った時間 */
   .home-hero-login { font-size: 12.5px; gap: 10px; }
   .home-hero-login b { font-size: 19px; }
 }

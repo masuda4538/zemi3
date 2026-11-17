@@ -17,15 +17,15 @@
 
   ホームに出しているもの（上から）
     1. いちばん上の帯 … 左にアイコンとログインしている人の名前、右はしにログイン日数・連続日数・累計勉強時間（下の枠と同じ見た目）
-    2. アチーブ …… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（2 つ分の高さ。残りはスクロール）
-                   （「すべて見る」でアチーブのページへ）
-    ※ グラフは小さめにして、画面に収まるように並べている（せまいときは、たてに並ぶ）
-    3. 使った時間 … アプリごとの円グラフ ＋ 日：何時に／週：何曜日に／月：カレンダー／年：何月に 使ったかのグラフ
-                   日・週・月・年で切りかえ、‹ › で前後へ
-                   （計っているのは core/storage/usage.js。プログラム学習〜問題作成を右に出しているあいだ。ホームは計らない）
-    4. アプリごとのカード … 学習時間の内訳（円グラフ）・アチーブの取得率（円グラフ）・大事な数と「開く」ボタン
+    2. アプリごとのカード … 学習時間の内訳（円グラフ）・アチーブの取得率（円グラフ）・大事な数と「開く」ボタン（画面の残りの高さいっぱい）
                    学習時間の内訳と大事な数は src/system/home_setting/<アプリの id>.js に書く（各アプリの担当者が決める。今は例）
                    時間は各アプリの JS で app.startStudy("id") / app.stopStudy()、数は app.addStat("id") と入れる
+    3. アチーブ（左下）…… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（2 つ分の高さ。残りはスクロール）
+                   （「すべて見る」でアチーブのページへ）
+    ※ グラフは小さめにして、画面に収まるように並べている（せまいときは、たてに並ぶ）
+    4. 使った時間（右下）… アプリごとの円グラフ ＋ 日：何時に／週：何曜日に／月：カレンダー／年：何月に 使ったかのグラフ
+                   日・週・月・年で切りかえ、‹ › で前後へ
+                   （計っているのは core/storage/usage.js。プログラム学習〜問題作成を右に出しているあいだ。ホームは計らない）
 -->
                    
 <html lang="ja">
@@ -60,13 +60,21 @@
       <button type="button" class="home-link home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
     </section>
 
-    <!-- 2. アチーブ（横いっぱい。左に円とレア度ごとの数、右に最近手に入れたもの） -->
+    <!-- 2. アプリごとのカード（学習時間・アチーブの円グラフ・大事な数と「開く」ボタン。画面の残りの高さいっぱい。中身は js/main.js の drawApps） -->
+    <section class="home-apps" aria-label="アプリごとの学習時間とアチーブ">
+      <div class="home-apps-grid" id="app-cards"></div>
+    </section>
+
+    <!-- 3・4. いちばん下の段：左にアチーブ、右に使った時間（横に並べる。せまいときは、たてに並ぶ） -->
+    <div class="home-bottom">
+
+    <!-- 3. アチーブ（左。上から 全体の円 → レア度ごとの数 → 最近手に入れたもの） -->
     <section class="panel home-card home-achieve">
       <div class="home-card-head">
         <h2>アチーブ</h2>
         <button type="button" class="home-link" id="open-achieve">すべて見る ›</button>
       </div>
-      <!-- 3 つに分ける：全体の円 ｜ レア度ごとの数 ｜ 最近手に入れたもの（スクロールで全部見られる） -->
+      <!-- 3 つを、たてに並べる：全体の円 → レア度ごとの数 → 最近手に入れたもの（スクロールで全部見られる） -->
       <div class="home-achieve-body">
         <div class="home-achieve-all">
           <div class="home-ring" id="ring" role="img" aria-label="アチーブの進み具合"></div>
@@ -87,7 +95,7 @@
       </div>
     </section>
 
-    <!-- 3. 使った時間（画面の残りいっぱい。左に円グラフとアプリごとの時間、右に棒グラフ・カレンダー。中身は js/main.js） -->
+    <!-- 4. 使った時間（右。上に円グラフとアプリごとの時間、下に棒グラフ・カレンダー。中身は js/main.js） -->
     <section class="panel home-card home-usage">
       <div class="home-usage-head">
         <h2>使った時間</h2>
@@ -107,14 +115,14 @@
       </div>
       <!-- ログインしているとき -->
       <div class="home-usage-main" id="usage-body">
-        <!-- 左：円グラフと、アプリごとの時間 -->
+        <!-- 上：円グラフと、アプリごとの時間 -->
         <div class="home-usage-left">
           <h3 class="home-small-title">アプリごと</h3>
           <div class="home-pie" id="usage-pie" role="img"></div>
           <ul class="home-usage-list" id="usage-list"></ul>
           <p class="home-usage-note" id="usage-note"></p>
         </div>
-        <!-- 右：円グラフだけでは分からないこと（日 → 何時に／週 → 何曜日に／月 → カレンダー／年 → 何月に） -->
+        <!-- 下：円グラフだけでは分からないこと（日 → 何時に／週 → 何曜日に／月 → カレンダー／年 → 何月に） -->
         <div class="home-usage-chart" id="usage-chart-box">
           <h3 class="home-small-title" id="usage-chart-title">時間ごと</h3>
           <div class="home-usage-chart-body" id="usage-chart"></div>
@@ -127,10 +135,7 @@
       </div>
     </section>
 
-    <!-- 4. アプリごとのカード（学習時間・アチーブの円グラフ・大事な数と「開く」ボタン。中身は js/main.js の drawApps） -->
-    <section class="home-apps" aria-label="アプリごとの学習時間とアチーブ">
-      <div class="home-apps-grid" id="app-cards"></div>
-    </section>
+    </div>
   </div>
 </body>
 </html>
