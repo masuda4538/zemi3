@@ -3,7 +3,7 @@
      ・index.html の「loading-screen」の目印のところに、そのまま入ります（vite.config.js の loadingScreen）
        → アプリのプログラムより先に出るので、HTML と CSS をここに直接書いています（JS は使わない）
      ・いつ消すか（出しておく時間・Enter キーで始める）は loading-screen.js
-     ・跳ねているキャラクター（スタビー）の画像は public/images/character/stabee_pose_jump.png
+     ・跳ねているキャラクター（スタッピー）の画像は src/system/character/images/stabee_pose_jump.png
      ・保存しても自動では読み直されないので、アプリの画面で Ctrl + R（または起動し直す）で確かめます
      ═══════════════════════════════════════════════════════════════ -->
 
@@ -14,7 +14,7 @@
 
 <!-- ═════ ロード画面の見た目（アプリのプログラムより先に出したいので、ここに直接書く） ═════
      背景は「青空と草原」：水色の空・お日さま・ゆっくり流れる雲・重なった緑の丘・木と花（下の <svg class="boot-land">）
-     ダークモードのときは夜空（星と月）になる。まん中でスタビーが跳ねて、アプリ名がふわっと浮かび上がる -->
+     ダークモードのときは夜空（星と月）になる。まん中でスタッピーが跳ねて、アプリ名がふわっと浮かび上がる -->
 <style>
   .boot {
     position: fixed; inset: 0; z-index: 100; overflow: hidden;
@@ -104,7 +104,7 @@
   @keyframes boot-dot { 0% { opacity: 1; } 100% { opacity: .2; } }
   [data-theme="dark"] .boot-dots i { background: #fff; }
 
-  /* キャラクター（スタビー）：ぴょんぴょん跳ねる。着地のときに少しつぶれて、空中では影が小さくなる */
+  /* キャラクター（スタッピー）：ぴょんぴょん跳ねる。着地のときに少しつぶれて、空中では影が小さくなる */
   .boot-chara { position: relative; width: 160px; height: 200px; margin-bottom: 14px; animation: boot-rise .9s cubic-bezier(.2, .8, .2, 1) both; }
   .boot-owl {
     position: absolute; left: 50%; bottom: 12px; width: 150px; margin-left: -75px;
@@ -176,10 +176,10 @@
       <circle cx="900" cy="368" r="5" fill="#fde68a"/><circle cx="1120" cy="356" r="6" fill="#fff"/><circle cx="1120" cy="356" r="2.6" fill="#f6c945"/>
       <circle cx="1380" cy="372" r="5" fill="#f9a8c8"/><circle cx="780" cy="384" r="5" fill="#fff"/></g>
   </svg>
-  <!-- キャラクター（スタビー）と、その影 -->
+  <!-- キャラクター（スタッピー）と、その影 -->
   <div class="boot-chara" aria-hidden="true">
     <span class="boot-shadow"></span>
-    <img class="boot-owl" src="/images/character/stabee_pose_jump.png" alt="" draggable="false">
+    <img class="boot-owl" src="/src/system/character/images/stabee_pose_jump.png" alt="" draggable="false">
   </div>
   <h1 class="boot-title">学習支援アプリ</h1>
   <p class="boot-sub">Learning Support</p>

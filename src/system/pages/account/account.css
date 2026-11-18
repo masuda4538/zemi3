@@ -52,3 +52,16 @@
 @media (max-width: 720px) {
   .acc-card-body.form-grid { grid-template-columns: 1fr; }
 }
+
+/* ───────── 右はしの「おまけ」：あなたの記録（とても広い画面のときだけ） ───────── */
+.acc-aside-me { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.acc-aside-name { min-width: 0; display: flex; flex-direction: column; }
+.acc-aside-me b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-aside-me small { font-size: 11px; color: var(--text-3); }
+.acc-aside-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.acc-aside-list li { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
+.acc-aside-list .icon { flex: none; width: 15px; height: 15px; color: var(--primary); }
+.acc-aside-list span { flex: 1; min-width: 0; white-space: nowrap; }
+.acc-aside-list b { color: var(--text); white-space: nowrap; font-size: 12.5px; }
+.acc-aside-btn { align-self: flex-end; border: 0; background: none; padding: 2px 4px; cursor: pointer; color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800; }
+.acc-aside-btn:hover { text-decoration: underline; }

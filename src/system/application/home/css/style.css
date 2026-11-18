@@ -27,7 +27,7 @@ body { padding: 4px 24px 14px; }
 .home-icon { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ───────── 1. いちばん上の帯（下のアチーブ・記録と同じ枠：index.html の class="panel"） ─────────
-   3 つに分けて、左はしにアイコンと名前・まん中にログイン日数・右はしにスタビーのあいさつ */
+   3 つに分けて、左はしにアイコンと名前・まん中にログイン日数・右はしにスタッピーのあいさつ */
 .home-hero {
   display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 24px;
   padding: 14px 20px; flex: none;
@@ -65,10 +65,10 @@ body { padding: 4px 24px 14px; }
 .home-link:hover { text-decoration: underline; }
 .home-small-title { margin-top: 0; font-size: 13px; font-weight: 800; color: var(--text); }
 
-/* ───────── 3・4. いちばん下の段：左にアチーブ、右に記録（幅は 1：1。画面の残りの高さいっぱい） ───────── */
+/* ───────── 3・4. いちばん下の段：左に記録、右にアチーブ（幅は 1：1。画面の残りの高さいっぱい） ───────── */
 .home-bottom { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
 
-/* ───────── 3. アチーブ（左下） ───────── */
+/* ───────── 3. アチーブ（右下） ───────── */
 /* 3 つを、たてに並べる：全体の円 → レア度ごとの数 → 最近手に入れたもの（あいだに線。右の「使った時間」と高さをそろえる） */
 .home-achieve-body { flex: 1; display: flex; flex-direction: column; gap: 12px; }
 .home-achieve-body > :last-child { flex: 1 1 0; }   /* 最近手に入れたもの：枠の残りの高さいっぱい */
@@ -108,14 +108,11 @@ body { padding: 4px 24px 14px; }
 #recent { flex: 1 1 0; overflow-y: auto; }
 .home-list.is-scroll { padding-right: 6px; }
 
-/* ───────── 1. いちばん上の帯の右はし：スタビーのあいさつ（ふきだし ＋ 絵） ───────── */
+/* ───────── 1. いちばん上の帯の右はし：スタッピーのあいさつ（ふきだし ＋ 絵） ───────── */
 .home-greet { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 4px; min-width: 0; }
-.home-greet-chara {
-  flex: none; height: 74px; margin: -14px -6px -14px 0;   /* 帯から少しはみ出して、のぞいているように */
-  filter: drop-shadow(0 4px 6px rgb(15 30 60 / .16)); user-select: none;
-  transform-origin: 50% 90%; animation: home-sway 4s ease-in-out infinite;
-}
-@keyframes home-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+/* スタッピー（動き・なでるは src/system/character/。ここでは大きさと場所だけ） */
+.home-greet-chara { flex: none; display: flex; margin: -14px -6px -14px 0; filter: drop-shadow(0 4px 6px rgb(15 30 60 / .16)); }   /* 帯から少しはみ出して、のぞいているように */
+.home-greet-chara .chara-img { height: 74px; }
 .home-greet-bubble { display: flex; flex-direction: column; gap: 1px; max-width: 280px; }
 .home-greet-bubble strong { font-size: 13.5px; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .home-greet-bubble span { font-size: 12px; font-weight: 700; color: var(--text-2); }
@@ -130,7 +127,7 @@ body { padding: 4px 24px 14px; }
   content: ""; position: absolute; width: 10px; height: 10px; background: inherit;
   border: inherit; border-width: 0 1.5px 1.5px 0; border-style: solid;
 }
-/* あいさつ：しっぽは右（スタビーのほう） */
+/* あいさつ：しっぽは右（スタッピーのほう） */
 .home-greet-bubble::after { right: -6.5px; top: 50%; transform: translateY(-50%) rotate(-45deg); }
 
 /* ───────── 2. アプリを開くカード（アイコン・名前・ひとこと。横に 5 枚、せまいときは 3 枚・2 枚） ───────── */
@@ -156,22 +153,20 @@ body { padding: 4px 24px 14px; }
 .home-app-go { flex: none; font-size: 22px; font-weight: 800; line-height: 1; color: var(--text-3); transition: color .15s, transform .15s; }
 .home-app:hover .home-app-go { color: var(--app); transform: translateX(2px); }
 
-/* ───────── 4. 記録へのカード（右下。上に空と丘とスタビー、下に時間と「記録を見る」） ───────── */
+/* ───────── 4. 記録へのカード（左下。上に空と丘とスタッピー、下に時間と「記録を見る」） ───────── */
 .home-records-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
-/* 上：空と丘の上のスタビー（ぴょんぴょん はねる）とふきだし。押すと記録のページへ。のこりの高さいっぱい
+/* 上：空と丘の上のスタッピー（ぴょんぴょん はねる。なでられる）とふきだし。のこりの高さいっぱい
    空 … 上から下へ うすい水色（ダークモードでは夜の青）、丘 … ::before の大きな楕円、雲 … .home-cloud（ゆっくり流れる）
-   container-type: size … この枠の高さ（cqh）に合わせて、スタビーの大きさを変える */
+   container-type: size … この枠の高さ（cqh）に合わせて、スタッピーの大きさを変える */
 .home-records-chara {
   --sky-top: color-mix(in srgb, var(--sky) 26%, var(--surface));
   --sky-bottom: color-mix(in srgb, var(--sky) 8%, var(--surface));
   --hill: color-mix(in srgb, var(--primary) 14%, var(--surface));
   position: relative; isolation: isolate; overflow: hidden; flex: 1 1 0; min-height: 170px; container-type: size;
   display: flex; align-items: flex-end; justify-content: center; gap: 6px;
-  padding: 0 16px 14px; border: 0; border-radius: 16px; cursor: pointer; font: inherit; color: var(--text);
+  padding: 0 16px 14px; border-radius: 16px; color: var(--text);
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
-  transition: box-shadow .15s;
 }
-.home-records-chara:hover { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 35%, transparent); }
 .home-records-chara::before {   /* 丘 */
   content: ""; position: absolute; z-index: -1; left: -20%; right: -20%; bottom: -60%; height: 85%; border-radius: 50%;
   background: var(--hill);
@@ -182,19 +177,10 @@ body { padding: 4px 24px 14px; }
 .home-cloud.c3 { top: 6%; width: 60px; animation-duration: 36s; animation-delay: -9s; opacity: .8; }
 @keyframes home-cloud { from { transform: translateX(0); } to { transform: translateX(calc(100cqw + 110px)); } }   /* 左はしの外 → 右はしの外（cqw ＝ この枠の幅） */
 :root[data-theme="dark"] .home-cloud { opacity: .14; }
-/* スタビーと足もとのかげ */
-.home-records-owl { flex: none; display: flex; flex-direction: column; align-items: center; }
-.home-records-owl img {
-  height: clamp(90px, 72cqh, 230px); width: auto; user-select: none;
-  animation: home-hop 1.8s ease-in-out infinite;
-}
-@keyframes home-hop { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-12px); } }
-.home-records-shadow {   /* 足もとのかげ（はねると小さくなる） */
-  width: 56%; height: 10px; margin-top: -6px; border-radius: 50%; background: rgb(15 30 60 / .16);
-  animation: home-shadow 1.8s ease-in-out infinite;
-}
-@keyframes home-shadow { 0%, 60%, 100% { transform: scale(1); opacity: 1; } 30% { transform: scale(.75); opacity: .6; } }
-/* ふきだし：スタビーの右。しっぽは左（スタビーのほう） */
+/* スタッピーと足もとのかげ */
+.home-records-owl { flex: none; display: flex; }
+.home-records-owl .chara-img { height: clamp(90px, 72cqh, 230px); }   /* 空の枠の高さに合わせる */
+/* ふきだし：スタッピーの右。しっぽは左（スタッピーのほう） */
 .home-records-bubble {
   align-self: center; min-width: 0; max-width: 260px; margin-left: 8px;
   font-size: 13.5px; font-weight: 800; color: var(--text); text-align: left; white-space: pre-line; background: var(--surface);
@@ -222,7 +208,8 @@ body { padding: 4px 24px 14px; }
   .home { gap: 10px; }
   .home-hero { padding: 10px 18px; }
   .home-avatar { width: 40px; height: 40px; font-size: 17px; }
-  .home-greet-chara { height: 64px; margin: -10px -6px -10px 0; }
+  .home-greet-chara { margin: -10px -6px -10px 0; }
+  .home-greet-chara .chara-img { height: 64px; }
   .home-card { padding: 10px 18px; gap: 8px; }
   .home-app { padding: 10px 12px 10px 14px; }
   .home-app-icon { width: 38px; height: 38px; border-radius: 11px; }
@@ -255,7 +242,7 @@ body { padding: 4px 24px 14px; }
   .home-apps-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* アプリのカードは 3 枚ずつ */
   .home-hero-login { font-size: 12.5px; gap: 10px; }
   .home-hero-login b { font-size: 19px; }
-  .home-greet-bubble { display: none; }          /* スタビーだけ */
+  .home-greet-bubble { display: none; }          /* スタッピーだけ */
 }
 @media (max-width: 640px) {
   .home-hero { grid-template-columns: 1fr; justify-items: center; }
@@ -263,3 +250,7 @@ body { padding: 4px 24px 14px; }
   .home-greet { display: none; }
   .home-apps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ふきだしの言葉が変わったときに、ぽんと出す */
+.home-bubble.is-pop { animation: home-pop .3s ease-out; }
+@keyframes home-pop { 0% { transform: scale(.9); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }

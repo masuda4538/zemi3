@@ -13,13 +13,15 @@
 //  ★ 書きかえやすいところ
 //    drawUser    … いちばん上の帯の左はしの、アイコンと名前
 //    drawLogin   … いちばん上の帯の、ログイン日数・連続日数
-//    drawGreet   … いちばん上の帯の右はしの、スタビー（キャラクター）のあいさつ（GREETS で言葉を変えられる）
+//    drawGreet   … いちばん上の帯の右はしの、スタッピー（キャラクター）のあいさつ（GREETS で言葉を変えられる）
 //    drawApps    … アプリを開くカード（APP_DESC がカードの説明、APP_COLORS が色）
 //    drawAchieve … アチーブ（円・レア度ごとの数・最近手に入れたもの。2 つ分の高さで、残りはスクロール）
-//    drawRecords … 「記録」へのカード（スタビーのひとこと・今日／今週／これまでの時間・「記録を見る」ボタン）
+//    drawRecords … 「記録」へのカード（スタッピーのひとこと・今日／今週／これまでの時間・「記録を見る」ボタン）
+//    スタッピー … いちばん下の mountCharacter（言葉は src/system/character/lines.js で変えられる）
 //  くわしい記録（グラフ）は、左のサイドバーの「記録」のページ（src/system/pages/records）で見る
-//  スタビーの絵は public/images/character/ にある（ここからは /images/character/〇〇.png で読める）
+//  スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）。ここでは置く場所とふきだしだけ決める
 // ═══════════════════════════════════════════════════════════════
+import { mountCharacter } from "../../../character/character.js";   // スタッピー（src/system/character）
 
 /** アイコン（core/components/Icon.jsx と同じ形） */
 const ICONS = {
@@ -131,7 +133,7 @@ function studyTimes() {
   };
 }
 
-// ───────── 1. いちばん上の帯の右はし：スタビーのあいさつ ─────────
+// ───────── 1. いちばん上の帯の右はし：スタッピーのあいさつ ─────────
 /** 時間ごとのあいさつ（[はじまりの時, ことば]。上から順に見て、いちばん最後に当てはまったもの） */
 const GREETS = [
   [0, "こんばんは"],
@@ -168,7 +170,7 @@ const drawApps = () => {
   }
 };
 
-// ───────── 4. 「記録」へのカード（くわしいグラフは記録のページで） ─────────
+// ───────── 4. 「記録」へのカード（左下。くわしいグラフは記録のページで） ─────────
 const drawRecords = () => {
   const times = studyTimes();   // ゲストなら null
   const info = app.loginDays();
@@ -181,16 +183,15 @@ const drawRecords = () => {
   $("rec-today").textContent = timeText(times.today);
   $("rec-week").textContent = timeText(times.week);
   $("rec-all").textContent = timeText(times.all);
-  // スタビーのひとこと（今週の時間・連続ログインで変わる）
+  // スタッピーのひとこと（今週の時間・連続ログインで変わる）
   $("records-bubble").textContent =
     times.week <= 0 ? "今週はまだ記録がないよ。\nいっしょにはじめよう！"
     : info?.streak >= 3 ? `${info.streak} 日連続ログイン中！\n今週は ${timeText(times.week)} がんばったね。`
     : `今週は ${timeText(times.week)} がんばったね！\n記録を見てみよう。`;   // \n のところで改行
 };
 $("open-records").addEventListener("click", () => app.open(app.user ? "records" : "account"));
-$("records-chara").addEventListener("click", () => app.open(app.user ? "records" : "account"));
 
-// ───────── 3. アチーブ（左下）（円・ゴールド／シルバー／ブロンズの数・最近手に入れたもの） ─────────
+// ───────── 3. アチーブ（右下）（円・ゴールド／シルバー／ブロンズの数・最近手に入れたもの） ─────────
 const drawAchieve = () => {
   const ALL = app.achievements();   // [{ key, name, appName, icon, goal, gotAt（手に入れた日時）, now（今の数） }, …]
   const got = ALL.filter((a) => a.gotAt).length;
@@ -258,6 +259,21 @@ window.addEventListener("resize", fitRecent);
 document.fonts?.ready.then(fitRecent);   // 文字の読み込みが終わって高さが変わったときも直す
 $("open-achieve").addEventListener("click", () => app.open("achieve"));
 $("go-login").addEventListener("click", () => app.open("account"));
+
+// ───────── スタッピー（なでる・押す・自分から動く。くわしくは src/system/character/character.js） ─────────
+/** ふきだしの言葉を変えて、ぽんと出す */
+function pop(node, text) {
+  node.textContent = text;
+  node.classList.remove("is-pop");
+  void node.offsetWidth;   // いったん描き直させる（同じアニメーションをもう一度始めるため）
+  node.classList.add("is-pop");
+}
+/** なでたとき：ホームのアチーブ（achieve_setting/home.js）。はじめて → pet-1、合計 100 回 → pet-100 */
+const onPet = () => { app.unlock("pet-1"); app.addProgress("pet-100"); };
+// 上の帯のスタッピー（立ち姿・ゆらゆら）：ふきだしの下の行（greet-text）が変わる
+mountCharacter($("chara-greet"), { pose: "main", motion: "sway", onSay: (t) => pop($("greet-text"), t), onRestore: drawGreet, onPet });
+// 記録へのカードのスタッピー（跳ねる姿・ぴょんぴょん・かげつき）：記録のふきだしが変わる
+mountCharacter($("chara-records"), { pose: "jump", motion: "hop", shadow: true, onSay: (t) => pop($("records-bubble"), t), onRestore: () => drawRecords(), onPet });
 
 // ───────── はじめに描く・変わったら描き直す ─────────
 const drawAll = () => { drawUser(); drawLogin(); drawGreet(); drawApps(); drawAchieve(); drawRecords(); };

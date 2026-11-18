@@ -4,6 +4,7 @@
 //    左上   … 名前・ログイン ID
 //    左の項目 … プロフィール / 言語・試験 / パスワード（下の SECTIONS）
 //    左下   … ログアウト
+//    右はし … あなたの記録（ログイン日数・勉強した時間・アチーブ。とても広い画面のときだけ。MyRecordAside）
 //  それぞれの「保存」は、その項目の内容だけを保存します。
 //  保存していない変更があるまま別の項目を押すと、「保存していない変更があります」と確認します。
 //  「保存しました」などは右上のお知らせ（core/utils/notify.js）、入力のエラーはボタンの横に出します（画面はずれません）。
@@ -11,7 +12,11 @@
 //  ログインしていないとき（user が null）は、ログイン・新規登録のフォームを出します（log_in/LoginForm.jsx）。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useMemo, useRef, useState } from "react";
-import SettingsLayout from "../../core/components/SettingsLayout";
+import SettingsLayout, { AsideCard } from "../../core/components/SettingsLayout";
+import { getLoginDays } from "../../core/storage/logins.js";
+import { getUsage } from "../../core/storage/usage.js";
+import { getUnlocked } from "../../core/storage/achievements.js";
+import { ALL as ALL_ACHIEVES } from "../achievements/achievement-list.js";
 import LanguagePicker from "../../core/components/LanguagePicker";
 import Icon from "../../core/components/Icon";
 import Avatar from "../../core/components/Avatar";
@@ -38,7 +43,7 @@ export default function Account(props) {
   return props.user ? <AccountSettings {...props} /> : <LoginForm onLogin={props.onLogin} />;
 }
 
-function AccountSettings({ user, onUserChange, onLogout, confirm }) {
+function AccountSettings({ user, onUserChange, onLogout, confirm, onOpenPage }) {
   const [current, setCurrent] = useState("profile");
   const [dirty, setDirty] = useState({});          // { profile: true, … } 保存していない変更がある項目
   const [genders, setGenders] = useState([]);
@@ -82,6 +87,7 @@ function AccountSettings({ user, onUserChange, onLogout, confirm }) {
       foot={<LogoutButton onLogout={onLogout} />}
       title={section.name}
       desc={section.desc}
+      aside={<MyRecordAside user={user} onOpenPage={onOpenPage} />}
     >
       {current === "profile" && <AvatarCard user={user} onUserChange={onUserChange} />}
       {current === "profile" && <BasicCard user={user} genders={genders} loadError={loadError} onUserChange={onUserChange} onDirty={markDirty.profile} />}
@@ -380,5 +386,39 @@ function PasswordCard({ onDirty }) {
         </button>
       </div>
     </form>
+  );
+}
+
+// ───────── 右はしの「おまけ」：あなたの記録（とても広い画面のときだけ出る） ─────────
+/** 秒を「1時間23分」「12分」の形にする */
+function timeText(sec) {
+  const m = Math.floor(sec / 60), h = Math.floor(m / 60);
+  return h ? `${h}時間${m % 60 ? `${m % 60}分` : ""}` : `${m}分`;
+}
+
+function MyRecordAside({ user, onOpenPage }) {
+  const login = getLoginDays() ?? { total: 0, streak: 0, best: 0 };
+  const study = getUsage("0000-01-01", "9999-12-31")?.total ?? 0;
+  const unlocked = getUnlocked();
+  const got = ALL_ACHIEVES.filter((a) => unlocked[a.key]).length;
+  const rows = [
+    { icon: "check", name: "ログインした日", value: `${login.total} 日` },
+    { icon: "power", name: "連続ログイン", value: `${login.streak} 日（最高 ${login.best} 日）` },
+    { icon: "timer", name: "勉強した時間", value: timeText(study) },
+    { icon: "trophy", name: "アチーブ", value: `${got} / ${ALL_ACHIEVES.length} こ` },
+  ];
+  return (
+    <AsideCard icon="account" title="あなたの記録">
+      <div className="acc-aside-me">
+        <Avatar user={user} size={40} />
+        <span className="acc-aside-name"><b>{user.name}</b><small>登録 {String(user.createdAt ?? "").slice(0, 10)}</small></span>
+      </div>
+      <ul className="acc-aside-list">
+        {rows.map((r) => (
+          <li key={r.name}><Icon name={r.icon} /><span>{r.name}</span><b>{r.value}</b></li>
+        ))}
+      </ul>
+      {onOpenPage && <button type="button" className="acc-aside-btn" onClick={() => onOpenPage("records")}>記録を見る ›</button>}
+    </AsideCard>
   );
 }

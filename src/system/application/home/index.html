@@ -14,12 +14,13 @@
     rust/logic.rs                 Rust の処理（rust/main.rs から呼ぶ）
     ※ アチーブは、このフォルダーの外の src/system/achieve_setting/home.js に書く
   ホームに出しているもの（上から）
-    1. いちばん上の帯 … 左にアイコンと名前、まん中にログイン日数・連続日数、右はしにスタビー（キャラクター）のあいさつ
+    1. いちばん上の帯 … 左にアイコンと名前、まん中にログイン日数・連続日数、右はしにスタッピー（キャラクター）のあいさつ
     2. アプリを開くカード … アイコン・名前・ひとこと（押すとそのアプリを開く）
-    3. アチーブ（左下）…… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（「すべて見る」でアチーブのページへ）
-    4. 記録（右下）…… スタビーのひとことと、今日・今週・これまでの時間。「記録を見る」で記録のページへ
+    3. アチーブ（右下）…… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（「すべて見る」でアチーブのページへ）
+    4. 記録（左下）…… スタッピーのひとことと、今日・今週・これまでの時間。「記録を見る」で記録のページへ
                    （くわしいグラフは記録のページ src/system/pages/records。時間を計っているのは core/storage/usage.js）
-  スタビーの絵は public/images/character/ にある（ここからは /images/character/〇〇.png で読める）
+  スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）
+  ここには入れる場所（id="chara-greet" と id="chara-records"）だけ置き、js/main.js の mountCharacter で中身を作る
 -->
 <html lang="ja">
 <head>
@@ -30,7 +31,7 @@
 </head>
 <body>
   <div class="home">
-    <!-- 1. いちばん上の帯：左にアイコンと名前、まん中にログイン日数、右はしにスタビーのあいさつ -->
+    <!-- 1. いちばん上の帯：左にアイコンと名前、まん中にログイン日数、右はしにスタッピーのあいさつ -->
     <section class="panel home-hero" aria-label="ログインしている人">
       <!-- 左はし：アイコン（画像がなければ名前の 1 文字）と、ログイン ID（上）・名前（下） -->
       <div class="home-user">
@@ -47,13 +48,14 @@
         <span>連続 <b id="login-streak">0</b> 日</span>
       </div>
       <button type="button" class="home-link home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
-      <!-- 右はし：スタビーのあいさつ（ふきだし ＋ 絵）。言葉は js/main.js の drawGreet -->
+      <!-- 右はし：スタッピーのあいさつ（ふきだし ＋ 絵）。言葉は js/main.js の drawGreet -->
       <div class="home-greet">
         <p class="home-bubble home-greet-bubble">
           <strong id="greet-hello">こんにちは！</strong>
           <span id="greet-text">今日もいっしょに学ぼう！</span>
         </p>
-        <img class="home-greet-chara" src="/images/character/stabee_main.png" alt="スタビー" draggable="false">
+        <!-- スタッピー（なでられる。中身は src/system/character/character.js が作る） -->
+        <span class="home-greet-chara" id="chara-greet"></span>
       </div>
     </section>
 
@@ -62,9 +64,34 @@
       <div class="home-apps-grid" id="app-cards"></div>
     </section>
 
-    <!-- 3・4. いちばん下の段：左にアチーブ、右に記録へのカード（横に並べる。せまいときは、たてに並ぶ） -->
+    <!-- 3・4. いちばん下の段：左に記録へのカード、右にアチーブ（横に並べる。せまいときは、たてに並ぶ） -->
     <div class="home-bottom">
-    <!-- 3. アチーブ（左。上から 全体の円 → レア度ごとの数 → 最近手に入れたもの） -->
+    <!-- 4. 記録へのカード（左。上にスタッピーのひとこと、下に今日／今週／これまでの時間と「記録を見る」。中身は js/main.js の drawRecords） -->
+    <section class="panel home-card home-records">
+      <div class="home-card-head">
+        <h2>記録</h2>
+      </div>
+      <div class="home-records-body">
+        <!-- 上：空と丘の上のスタッピーと、ふきだし。スタッピーはなでられる。雲はゆっくり流れる -->
+        <div class="home-records-chara" id="records-chara">
+          <svg class="home-cloud c1" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+          <svg class="home-cloud c2" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+          <svg class="home-cloud c3" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+          <!-- スタッピー（なでられる。中身は src/system/character/character.js が作る） -->
+          <span class="home-records-owl" id="chara-records"></span>
+          <p class="home-bubble home-records-bubble" id="records-bubble">今週もがんばろう！</p>
+        </div>
+        <!-- 下：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
+        <ul class="home-records-nums" id="records-nums">
+          <li><span>今日</span><b id="rec-today">0分</b></li>
+          <li><span>今週</span><b id="rec-week">0分</b></li>
+          <li><span>これまで</span><b id="rec-all">0分</b></li>
+        </ul>
+        <button type="button" class="home-records-btn" id="open-records">記録を見る</button>
+      </div>
+    </section>
+
+    <!-- 3. アチーブ（右。上から 全体の円 → レア度ごとの数 → 最近手に入れたもの） -->
     <section class="panel home-card home-achieve">
       <div class="home-card-head">
         <h2>アチーブ</h2>
@@ -88,33 +115,6 @@
           <h3 class="home-small-title">最近手に入れた</h3>
           <ul class="home-list" id="recent"></ul>
         </div>
-      </div>
-    </section>
-
-    <!-- 4. 記録へのカード（右。上にスタビーのひとこと、下に今日／今週／これまでの時間と「記録を見る」。中身は js/main.js の drawRecords） -->
-    <section class="panel home-card home-records">
-      <div class="home-card-head">
-        <h2>記録</h2>
-      </div>
-      <div class="home-records-body">
-        <!-- 上：空と丘の上のスタビーと、ふきだし（押しても記録のページへ）。雲はゆっくり流れる -->
-        <button type="button" class="home-records-chara" id="records-chara" aria-label="記録を見る">
-          <svg class="home-cloud c1" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
-          <svg class="home-cloud c2" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
-          <svg class="home-cloud c3" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
-          <span class="home-records-owl">
-            <img src="/images/character/stabee_pose_jump.png" alt="" draggable="false">
-            <span class="home-records-shadow" aria-hidden="true"></span>
-          </span>
-          <p class="home-bubble home-records-bubble" id="records-bubble">今週もがんばろう！</p>
-        </button>
-        <!-- 下：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
-        <ul class="home-records-nums" id="records-nums">
-          <li><span>今日</span><b id="rec-today">0分</b></li>
-          <li><span>今週</span><b id="rec-week">0分</b></li>
-          <li><span>これまで</span><b id="rec-all">0分</b></li>
-        </ul>
-        <button type="button" class="home-records-btn" id="open-records">記録を見る</button>
       </div>
     </section>
     </div>
