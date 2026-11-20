@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>データ登録・編集 - デジタル図鑑アプリ 画面モック</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <button class="icon-btn" id="burger" aria-label="メニューを開閉"><i data-lucide="panel-left"></i><kbd>Ctrl+B</kbd></button>
+  <div class="logo"><i data-lucide="book-open"></i></div>
+  <h1>デジタル図鑑</h1>
+  <span class="sp"></span>
+  <button class="icon-btn" id="theme" aria-label="テーマ切り替え"><i data-lucide="moon"></i></button>
+</header>
+<div class="layout">
+<nav id="nav" aria-label="メインナビゲーション">
+  <div class="lbl">メニュー</div>
+  <a href="index.html"><i data-lucide="library"></i>ホーム／図鑑一覧<span class="n" id="n-home"></span></a>
+  <a href="register.html" class="on"><i data-lucide="square-plus"></i>新規データ登録</a>
+  <a href="tags.html"><i data-lucide="tags"></i>タグ一覧<span class="n" id="n-tags"></span></a>
+</nav>
+<main>
+<div class="ptitle"><h2 id="title">データ登録・編集</h2><span class="count" id="pcount" style="display:none"></span></div>
+
+<section class="screen">
+  <div class="form">
+    <h2>単語名</h2>
+    <input type="text" id="word" placeholder="単語名を入力（編集の場合は既に入っている）">
+    <p class="err" id="werr"></p>
+    <h2>説明文</h2>
+    <div id="expls"></div>
+    <p class="err" id="eerr"></p>
+    <button id="addExpl">＋ 別の表現の説明を追加</button>
+    <h2>タグ追加</h2>
+    <div class="bar" style="position:relative">
+      <div class="field"><input type="text" id="tagin" placeholder="タグを入力、または一覧から選択" autocomplete="off">
+        <div class="suggest" id="tsug"></div></div>
+      <button class="pri" id="tadd">追加</button>
+    </div>
+    <div class="chips" id="tchips"></div>
+    <div class="actions">
+      <button class="dng" id="delWord">単語を削除</button><span class="sp"></span>
+      <button class="gry" id="cancel">キャンセル</button><button class="pri" id="save">保存</button>
+    </div>
+    <p class="note">モック: 「単語を削除」は編集時のみ表示する想定で、確認用に常時表示しています。</p>
+  </div>
+</section>
+</main>
+</div>
+
+<div class="dlg-bg" id="dbg">
+  <div class="dlg" role="alertdialog" aria-modal="true">
+    <i data-lucide="triangle-alert" class="warn" style="width:40px;height:40px"></i>
+    <p id="dmsg" style="font-weight:700"></p><p id="dsub" class="note"></p>
+    <div class="row-end"><button id="dno">キャンセル</button><button class="dng" id="dyes">削除する</button></div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+let ex = [""], ft = [];
+
+function drawE() {
+  $("#expls").innerHTML = ex.map((v, i) => `<div class="expl"><label>説明${i + 1}</label><textarea data-i="${i}" placeholder="説明を入力（編集の場合は既に入っている）">${esc(v)}</textarea>${i ? `<button class="dng" data-del="${i}" style="margin-top:6px;padding:2px 10px;font-size:13px">この説明を削除</button>` : ""}</div>`).join("");
+}
+
+function drawT() {
+  $("#tchips").innerHTML = ft.map(t => `<span class="chip">${esc(t)}<button data-t="${esc(t)}" aria-label="外す">✕</button></span>`).join("");
+  const v = $("#tagin").value.trim();
+  $("#tsug").innerHTML = tags.filter(t => !ft.includes(t) && t.includes(v)).map(t => `<button data-t="${esc(t)}">${esc(t)}</button>`).join("") || `<span class="note">「${esc(v)}」は新しいタグとして追加されます</span>`;
+}
+
+function addTag(t) {
+  t = t.trim();
+  if (t && !ft.includes(t)) ft.push(t);
+  $("#tagin").value = "";
+  drawT();
+}
+
+initCommon();
+$("#expls").addEventListener("input", e => { if (e.target.dataset.i) ex[e.target.dataset.i] = e.target.value; });
+$("#expls").addEventListener("click", e => { if (e.target.dataset.del) { ex.splice(e.target.dataset.del, 1); drawE(); } });
+$("#addExpl").onclick = () => { ex.push(""); drawE(); };
+$("#tagin").onfocus = () => { drawT(); $("#tsug").classList.add("on"); };
+$("#tagin").oninput = drawT;
+$("#tagin").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); addTag($("#tagin").value); } };
+$("#tadd").onclick = () => addTag($("#tagin").value);
+$("#tsug").onclick = e => { if (e.target.dataset.t) addTag(e.target.dataset.t); };
+$("#tchips").onclick = e => { const t = e.target.dataset.t; if (t) { ft = ft.filter(x => x !== t); drawT(); } };
+document.addEventListener("click", e => {
+  if (!e.target.closest("#tsug,#tagin")) $("#tsug").classList.remove("on");
+});
+
+$("#save").onclick = () => {
+  const w = $("#word").value.trim(), d = ex.map(x => x.trim()).filter(Boolean);
+  $("#werr").textContent = !w ? "単語名を入力してください。" : w.length > 50 ? "単語名は50文字以内で入力してください。" : "";
+  $("#eerr").textContent = d.length ? "" : "説明を1つ以上入力してください。";
+  if ($("#werr").textContent || $("#eerr").textContent) return;
+  ft.forEach(t => { if (!tags.includes(t)) tags.push(t); });
+  items.unshift({ w, d, t: [...ft] });
+  saveData();
+  location.href = "index.html";
+};
+$("#cancel").onclick = () => location.href = "index.html";
+$("#delWord").onclick = () => confirmDlg(`「${$("#word").value || "単語名"}」を削除します。`, "説明も一緒に削除されます。よろしいですか？", () => location.href = "index.html");
+
+drawE();
+drawT();
+</script>
+</body>
+</html>
