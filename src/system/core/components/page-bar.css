@@ -1,0 +1,59 @@
+/* ═════════ ページの上のバー（PageBar.jsx。記録・アチーブ・設定・アカウント） ═════════ */
+
+/* ── 4 つのページで共通の大きさ（ここをそろえておくと、ページを行き来しても形がガクッとならない） ──
+   記録（pages/records/records.css）と アチーブ・設定・アカウント（core/components/settings-layout.css）の両方が使う
+     --pl-side  … 左のタブの幅（とても広い画面では、右のおまけもこの幅 ＋ 左のサイドバーの幅）
+     --pl-gap   … タブ・中身・おまけ のあいだのすき間
+     --pl-main  … 中身のいちばん広い幅
+     --pl-tab-h … 左のタブ 1 つの高さ
+     --pl-top   … バーの下のすき間（中身・タブが始まる位置） */
+:root { --pl-side: 240px; --pl-gap: 24px; --pl-main: 1200px; --pl-tab-h: 42px; --pl-top: 14px; }
+@media (min-width: 1760px) { :root { --pl-side: 260px; } }   /* おまけが出るくらい広い画面 */
+
+.page-bar {
+  position: sticky; top: -4px; z-index: 5;   /* スクロールしても上に残る（-4px … .stage の上のすき間の分。上はしにくっつける） */
+  display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 24px;
+  /* 右側の広い部分（.stage）の 左はし・右はし・上はしに くっつける（.stage のすき間 上 4px・左右 24px の分だけ外へ出す） */
+  margin: -4px -24px var(--pl-top);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 14px -12px rgb(15 30 60 / .25);
+}
+/* その上の、窓のボタンの段（core/App.css の .titlebar）も同じ色にして、バーが上はしまでつながって見えるように */
+.main-col:has(> .stage > .page:not([hidden]) .page-bar) > .titlebar { background: var(--surface); }
+.page-bar-icon {
+  flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px;
+  background: linear-gradient(150deg, var(--sky), var(--primary) 75%); color: #fff;
+}
+.page-bar-icon .icon { width: 20px; height: 20px; }
+.page-bar-icon.is-trophy { background: linear-gradient(150deg, #fcd34d, #f59e0b 75%); }   /* アチーブは金色 */
+/* 「ページ名 › 項目」 */
+.page-bar-crumbs { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 17px; white-space: nowrap; }
+.page-bar-crumbs strong { font-weight: 800; color: var(--text); }
+.page-bar-sep { font-size: 20px; font-weight: 700; line-height: 1; color: var(--text-3); }
+.page-bar-item { font-weight: 800; color: var(--primary); animation: page-bar-in .2s var(--ease); }
+@keyframes page-bar-in { from { opacity: 0; transform: translateX(-4px); } }
+/* 小さな文字（「4 / 19 こ 手に入れた」など） */
+.page-bar-note {
+  flex: none; padding: 3px 10px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 12px; font-weight: 700; color: var(--text-2); white-space: nowrap;
+}
+/* 右に出すもの（いちばん右はしは、ダーク／ホワイトの切り替えボタン） */
+.page-bar-right { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+/* ダーク／ホワイトの切り替えボタン（四角いボタン。押すとアイコンがくるっと回って変わる） */
+.page-bar-theme {
+  flex: none; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text-2);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.page-bar-theme:hover { background: var(--hover); border-color: var(--border-strong); color: var(--text); }
+.page-bar-theme:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.page-bar-theme .icon { width: 18px; height: 18px; animation: page-bar-turn .35s var(--ease); }
+@keyframes page-bar-turn { from { opacity: 0; transform: rotate(-90deg) scale(.6); } }
+.reduce-motion .page-bar-theme .icon { animation: none; }
+
+@media (max-width: 900px) {
+  .page-bar { flex-wrap: wrap; }
+  /* 右に切り替えボタンのほかにも出すものがあるときだけ、次の行に下ろす */
+  .page-bar-right:has(> :not(.page-bar-theme)) { flex-basis: 100%; justify-content: flex-start; }
+  .page-bar-theme { margin-left: auto; }   /* せまいときも、切り替えボタンは右はし */
+}

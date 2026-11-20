@@ -9,10 +9,11 @@
 //    さがす（あいまい検索：名前・説明・アプリ名）／ レア度（ブロンズ・シルバー・ゴールド）／ 未取得・取得済み
 //    並べ方（1 行に 1 つ ／ 横に 3 つ）… 設定ファイルの achieveView に保存（次に開いたときもそのまま）
 //  カード：名前の左にレア度、枠がレア度の色（色は core/styles/theme.css）。どのアプリのアチーブかは右下のアイコンで出す
+//  とても広い画面では、右はしに「あと少しで取れる」「最近手に入れた」を出す（AchieveAside）
 //  形は core/components/SettingsLayout.jsx、アチーブを集める処理は achievement-list.js
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useMemo, useState } from "react";
-import SettingsLayout from "../../core/components/SettingsLayout";
+import SettingsLayout, { AsideCard } from "../../core/components/SettingsLayout";
 import Icon from "../../core/components/Icon";
 import { getUnlocked, getProgress, onAchievementsChange, unlockAchievement } from "../../core/storage/achievements.js";
 import { GROUPS, ALL, RARITIES, countGot, matchSearch } from "./achievement-list.js";
@@ -67,17 +68,13 @@ export default function Achieve({ settings, onSettings }) {
 
   return (
     <SettingsLayout
-      head={
-        <div className="ach-head">
-          <span className="ach-head-icon"><Icon name="trophy" /></span>
-          <div className="ach-head-text"><strong>アチーブ</strong><span>{allGot} / {ALL.length} こ 手に入れた</span></div>
-        </div>
-      }
+      bar={{ icon: "trophy", page: "アチーブ", note: `${allGot} / ${ALL.length} こ 手に入れた` }}
       items={items}
       current={current}
       onSelect={setCurrent}
       title={group ? group.app.name : "すべてのアチーブ"}
       desc={group ? `${group.app.name}で手に入るアチーブです。` : "各アプリ・ページで手に入れたアチーブの一覧です。"}
+      aside={<AchieveAside unlocked={unlocked} progress={progress} />}
     >
       <div className="panel ach-overview">
         <div className="ach-main-ring">
@@ -189,5 +186,55 @@ export default function Achieve({ settings, onSettings }) {
       </div>
       <p className="ach-note">手に入れたアチーブと進み具合は、この PC の中のファイル（achievements.json）にログイン ID ごとに保存しています。</p>
     </SettingsLayout>
+  );
+}
+
+// ───────── 右はしの「おまけ」（とても広い画面のときだけ出る） ─────────
+/** あと少しで取れるアチーブ（数をためるもので、進んでいる順に 4 つ）と、最近手に入れたもの（新しい順に 4 つ） */
+function AchieveAside({ unlocked, progress }) {
+  const near = ALL
+    .filter((a) => a.goal && !unlocked[a.key] && (progress[a.key] ?? 0) > 0)
+    .map((a) => ({ ...a, now: progress[a.key] ?? 0 }))
+    .sort((a, b) => b.now / b.goal - a.now / a.goal)
+    .slice(0, 4);
+  const recent = ALL
+    .filter((a) => unlocked[a.key])
+    .sort((a, b) => (unlocked[b.key] > unlocked[a.key] ? 1 : -1))
+    .slice(0, 4);
+  return (
+    <>
+      <AsideCard icon="trophy" title="あと少しで取れる">
+        {near.length === 0 ? <p className="ach-aside-none">数をためるアチーブを進めると、ここに出ます。</p> : (
+          <ul className="ach-aside-list">
+            {near.map((a) => (
+              <li key={a.key} className={`rarity-${a.rarity}`}>
+                <span className="ach-aside-icon"><Icon name={a.appIcon} /></span>
+                <span className="ach-aside-text">
+                  <b>{a.name}</b>
+                  <span className="ach-aside-bar"><span style={{ width: `${(a.now / a.goal) * 100}%` }} /></span>
+                  <small>{a.now} / {a.goal}・あと {a.goal - a.now}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </AsideCard>
+      <AsideCard icon="check" title="最近手に入れた">
+        {recent.length === 0 ? <p className="ach-aside-none">まだありません。アプリを使ってみましょう！</p> : (
+          <ul className="ach-aside-list">
+            {recent.map((a) => (
+              <li key={a.key} className={`rarity-${a.rarity}`}>
+                <span className="ach-aside-icon is-got"><Icon name={a.appIcon} /></span>
+                <span className="ach-aside-text">
+                  <b>{a.name}</b>
+                  <small>{a.appName}・{String(unlocked[a.key]).slice(5, 10).replace("-", "/")}</small>
+                </span>
+                <span className="ach-aside-rarity">{a.rarityName}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </AsideCard>
+    </>
   );
 }

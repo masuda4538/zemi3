@@ -7,7 +7,7 @@
 //  ・一度ログインしたら、ログアウトするまで覚えています（次の起動からは、すぐホームが開く）
 //  ・最後に使ってから 3 か月以上たったときは、もう一度ログインしてもらいます（session.js）
 //      → 前の人のログイン ID を入れておき、上にお知らせを出す
-//  ・ログイン・新規登録ができたら「ようこそ画面」（スタビーと「ようこそ、〇〇さん！」）を出し、
+//  ・ログイン・新規登録ができたら「ようこそ画面」（スタッピーと「ようこそ、〇〇さん！」）を出し、
 //    Enter キー（またはボタン）を押したら、アプリ（ホーム）に入る → 下の Welcome
 //  呼んでいるところ：core/App.jsx（ログインしていないとき、サイドバーと画面のかわりにこれを出す）
 // ═══════════════════════════════════════════════════════════════
@@ -15,6 +15,7 @@ import { useLayoutEffect, useState } from "react";
 import WindowControls from "../core/components/WindowControls";
 import LoginForm from "./LoginForm";
 import NatureBackground from "./NatureBackground";   // うしろの背景（青空と草原）
+import { IMAGES } from "../character/images.js";   // スタッピーの絵（src/system/character/images）
 import { APP_TITLE } from "../core/config";
 import { SESSION_MONTHS } from "./session.js";
 import "./login-screen.css";
@@ -50,7 +51,7 @@ export default function LoginScreen({ onLogin, expiredId = "" }) {
   );
 }
 
-// ───────── ようこそ画面（スタビーが出て、Enter キーでアプリに入る） ─────────
+// ───────── ようこそ画面（スタッピーが出て、Enter キーでアプリに入る） ─────────
 function Welcome({ user, how, onEnter }) {
   // 画面が出たのと同時に Enter キーを待ちはじめる（useLayoutEffect：画面に出る前に用意する）
   useLayoutEffect(() => {
@@ -68,7 +69,7 @@ function Welcome({ user, how, onEnter }) {
 
   return (
     <div className="gate-body gate-welcome" role="dialog" aria-label="ようこそ">
-      <img className="gate-owl" src="/images/character/stabee_main.png" alt="" draggable="false" />
+      <img className="gate-owl" src={IMAGES.main} alt="" draggable="false" />
       <h2>ようこそ、{user.name} さん！</h2>
       <p>{how === "register" ? "はじめまして！ これからいっしょに学んでいこうね。" : "今日もいっしょに学ぼう！"}</p>
       <button type="button" className="gate-enter" onClick={onEnter}>

@@ -34,6 +34,7 @@ import {
 import { APP_TITLE, START_PAGE, findPage } from "./page-list";
 import { comboFromEvent, actionOfCombo } from "./shortcuts.js";
 import { watchExit } from "../start-end/exit-confirm.js";   // 終了画面（閉じる前の確認）
+import { ThemeContext } from "./theme-context.js";   // ダーク／ホワイトの切り替え（上のバーのボタンで使う）
 import "./App.css";
 
 // 一度読み込んだ画面は覚えておく（2 回目からはすぐ出る）
@@ -215,11 +216,13 @@ export default function App() {
   };
 
   const theme = effectiveTheme(settings);
+  // 上のバー（PageBar）の切り替えボタン用：今の見た目と、反対にする関数（Ctrl+Shift+D と同じ動き）
+  const themeBox = { theme, toggle: () => runShortcutRef.current("theme") };
   const Page = shown?.Component;
   const accent = (shown?.page ?? findPage(current)).color;
 
   return (
-    <>
+    <ThemeContext.Provider value={themeBox}>
       {user ? (
         <div className={`shell${sideHidden ? " is-side-hidden" : ""}`}>
           <SidebarFrame current={current} onSelect={setCurrent} theme={theme} onTheme={(t) => changeSettings({ theme: t })} onHide={() => setSideHidden(true)} user={user} />
@@ -260,6 +263,6 @@ export default function App() {
       )}
       <ConfirmDialog dialog={dialog} onAnswer={answer} />
       <Toaster />
-    </>
+    </ThemeContext.Provider>
   );
 }

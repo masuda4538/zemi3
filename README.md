@@ -57,7 +57,7 @@ tauri-app/
 ├─ vite.config.js
 ├─ vite-apps.js            … 各アプリのページを普通の Web ページとして動かす設定（さわらなくてよい）
 ├─ public/                  … そのまま使うファイル
-│  └─ images/               … アプリ全体で使う画像を置く（character/ にキャラクター「スタビー」。各アプリの画像は、そのアプリのフォルダーに置く）
+│  └─ images/               … アプリ全体で使う画像を置く（各アプリの画像は、そのアプリのフォルダーに置く）
 ├─ src/                     … 画面側（React）
 │  ├─ main.jsx              … 起動の入口（さわらなくてよい）
 │  └─ system/
@@ -66,6 +66,7 @@ tauri-app/
 │     │  ├─ loading-screen.js    ロード画面を消す（出しておく時間・Enter キーで始める）
 │     │  └─ exit-confirm.js      × で閉じるときの「アプリを閉じますか？」（文）
 │     ├─ log_in/            … ★ ログインの処理（ログイン・新規登録・ログアウト）
+│     ├─ character/         … キャラクター「スタッピー」（images/ に絵、character.js に動き・なでる、lines.js にことば）
 │     │  ├─ LoginScreen.jsx      起動したときのログインの画面（login-screen.css が見た目）
 │     │  ├─ LoginForm.jsx        ログイン／新規登録の入力（login-form.css が見た目）
 │     │  ├─ register.js          新規登録のステップと入力チェック

@@ -20,4 +20,7 @@
 export default [
   { id: "streak-3", name: "三日坊主じゃない", desc: "3 日つづけてログインした", goal: 3, rarity: "silver" },
   { id: "days-10",  name: "常連さん",         desc: "合計 10 日ログインした", goal: 10, rarity: "gold" },
+  // ↓ どちらも application/home/js/main.js の setupPet が、スタッピーをなでた回数で数えている
+  { id: "pet-1",    name: "なかよし",         desc: "スタッピーをはじめてなでた" },
+  { id: "pet-100",  name: "大のなかよし",     desc: "スタッピーを合計 100 回なでた", goal: 100, rarity: "silver" },
 ];

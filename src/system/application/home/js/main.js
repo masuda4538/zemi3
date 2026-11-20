@@ -13,13 +13,19 @@
 //  ★ 書きかえやすいところ
 //    drawUser    … いちばん上の帯の左はしの、アイコンと名前
 //    drawLogin   … いちばん上の帯の、ログイン日数・連続日数
-//    drawGreet   … いちばん上の帯の右はしの、スタビー（キャラクター）のあいさつ（GREETS で言葉を変えられる）
+//    greet       … ホームを開いたときの、スタッピーのあいさつ（記録のカードのふきだし。GREETS で言葉を変えられる）
+//    drawScene   … 記録のカードの空（時間帯で 朝・昼・夕方・夜 の色に。1 分ごとに見直す）
+//    奥ゆき      … マウスを動かすと、空・奥の丘・手前の丘・草・スタッピーが べつべつの速さで ずれる（--px・--py。css で使う）
 //    drawApps    … アプリを開くカード（APP_DESC がカードの説明、APP_COLORS が色）
 //    drawAchieve … アチーブ（円・レア度ごとの数・最近手に入れたもの。2 つ分の高さで、残りはスクロール）
-//    drawRecords … 「記録」へのカード（スタビーのひとこと・今日／今週／これまでの時間・「記録を見る」ボタン）
+//    drawRecords … 「記録」へのカード（スタッピーのひとこと・今日／今週／これまでの時間・「記録を見る」ボタン）
+//    スタッピー … いちばん下の mountCharacter（言葉は src/system/character/lines.js で変えられる）
+//                 2 匹とも：マウスのほうへ体を向ける・近づくとよろこぶ（follow）、いろいろな動き、時間帯・今日の学習時間でしゃべる（talk）
+//                 上の帯の子だけ：しばらくさわらないと、ホームの画面の中をおさんぽして、もとの場所に帰る（roam）
 //  くわしい記録（グラフ）は、左のサイドバーの「記録」のページ（src/system/pages/records）で見る
-//  スタビーの絵は public/images/character/ にある（ここからは /images/character/〇〇.png で読める）
+//  スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）。ここでは置く場所とふきだしだけ決める
 // ═══════════════════════════════════════════════════════════════
+import { mountCharacter } from "../../../character/character.js";   // スタッピー（src/system/character）
 
 /** アイコン（core/components/Icon.jsx と同じ形） */
 const ICONS = {
@@ -131,7 +137,7 @@ function studyTimes() {
   };
 }
 
-// ───────── 1. いちばん上の帯の右はし：スタビーのあいさつ ─────────
+// ───────── スタッピーのあいさつ（ホームを開いたとき。記録のカードのふきだしに 5 秒出して、いつもの言葉にもどる） ─────────
 /** 時間ごとのあいさつ（[はじまりの時, ことば]。上から順に見て、いちばん最後に当てはまったもの） */
 const GREETS = [
   [0, "こんばんは"],
@@ -139,15 +145,26 @@ const GREETS = [
   [11, "こんにちは"],
   [18, "こんばんは"],
 ];
-const drawGreet = () => {
+let greetTimer = 0;
+const greet = () => {
   const hour = new Date().getHours();
   const hello = GREETS.filter(([h]) => hour >= h).at(-1)[1];
   const user = app.user;
   const times = studyTimes();
-  $("greet-hello").textContent = user ? `${hello}、${user.name} さん！` : `${hello}！`;
-  $("greet-text").textContent = !user ? "ログインすると、学んだ記録が残るよ。"
+  const line = !user ? "ログインすると、学んだ記録が残るよ。"
     : times.today > 0 ? `今日は ${timeText(times.today)} 学んだね。その調子！`
     : "今日もいっしょに学ぼう！";
+  pop($("records-bubble"), `${user ? `${hello}、${user.name} さん！` : `${hello}！`}\n${line}`);   // \n のところで改行
+  clearTimeout(greetTimer);
+  greetTimer = setTimeout(() => { greetTimer = 0; drawRecords(); }, 5000);
+};
+
+// ───────── 記録のカードの空（時間帯で色が変わる。css の .home-records-chara[data-time]） ─────────
+/** 時間帯（[はじまりの時, 名前]）：5 時〜朝、10 時〜昼、16 時〜夕方、19 時〜夜 */
+const SKY_TIMES = [[0, "night"], [5, "morning"], [10, "day"], [16, "evening"], [19, "night"]];
+const drawScene = () => {
+  const hour = new Date().getHours();
+  $("records-chara").dataset.time = SKY_TIMES.filter(([h]) => hour >= h).at(-1)[1];
 };
 
 // ───────── 2. アプリを開くカード（アイコン・名前・ひとこと。カードを押すと開く） ─────────
@@ -168,7 +185,7 @@ const drawApps = () => {
   }
 };
 
-// ───────── 4. 「記録」へのカード（くわしいグラフは記録のページで） ─────────
+// ───────── 4. 「記録」へのカード（左下。くわしいグラフは記録のページで） ─────────
 const drawRecords = () => {
   const times = studyTimes();   // ゲストなら null
   const info = app.loginDays();
@@ -181,16 +198,15 @@ const drawRecords = () => {
   $("rec-today").textContent = timeText(times.today);
   $("rec-week").textContent = timeText(times.week);
   $("rec-all").textContent = timeText(times.all);
-  // スタビーのひとこと（今週の時間・連続ログインで変わる）
+  // スタッピーのひとこと（今週の時間・連続ログインで変わる）
   $("records-bubble").textContent =
     times.week <= 0 ? "今週はまだ記録がないよ。\nいっしょにはじめよう！"
     : info?.streak >= 3 ? `${info.streak} 日連続ログイン中！\n今週は ${timeText(times.week)} がんばったね。`
     : `今週は ${timeText(times.week)} がんばったね！\n記録を見てみよう。`;   // \n のところで改行
 };
 $("open-records").addEventListener("click", () => app.open(app.user ? "records" : "account"));
-$("records-chara").addEventListener("click", () => app.open(app.user ? "records" : "account"));
 
-// ───────── 3. アチーブ（左下）（円・ゴールド／シルバー／ブロンズの数・最近手に入れたもの） ─────────
+// ───────── 3. アチーブ（右下）（円・ゴールド／シルバー／ブロンズの数・最近手に入れたもの） ─────────
 const drawAchieve = () => {
   const ALL = app.achievements();   // [{ key, name, appName, icon, goal, gotAt（手に入れた日時）, now（今の数） }, …]
   const got = ALL.filter((a) => a.gotAt).length;
@@ -259,10 +275,60 @@ document.fonts?.ready.then(fitRecent);   // 文字の読み込みが終わって
 $("open-achieve").addEventListener("click", () => app.open("achieve"));
 $("go-login").addEventListener("click", () => app.open("account"));
 
+// ───────── スタッピー（なでる・押す・自分から動く。くわしくは src/system/character/character.js） ─────────
+/** ふきだしの言葉を変えて、ぽんと出す */
+function pop(node, text) {
+  node.textContent = text;
+  node.classList.remove("is-pop");
+  void node.offsetWidth;   // いったん描き直させる（同じアニメーションをもう一度始めるため）
+  node.classList.add("is-pop");
+}
+/** スタッピーがしゃべる言葉（今日の学習時間に合わせる。時間帯の言葉は character の lines.js が足す） */
+const studyTalk = () => {
+  const t = studyTimes();   // ゲストなら null
+  if (!t) return ["ログインすると、学んだ時間をおぼえておくよ！"];
+  if (t.today <= 0) return ["今日はまだ勉強していないね。いっしょにはじめよう！"];
+  if (t.today >= 3600) return [`今日は ${timeText(t.today)} も学んだね！すごい！`];
+  return [`今日は ${timeText(t.today)} 学んだね！その調子！`];
+};
+/** なでたとき：ホームのアチーブ（achieve_setting/home.js）。はじめて → pet-1、合計 100 回 → pet-100 */
+const onPet = () => { app.unlock("pet-1"); app.addProgress("pet-100"); };
+// 記録へのカードのスタッピー（跳ねる姿・ぴょんぴょん・かげつき）：記録のふきだしが変わる
+//   follow … マウスのほうを向く（立体的にかたむく）・近づくとよろこぶ
+//   grab   … マウスでつかんで投げられる（重力で落ちて、地面でぽよんとはねる。止まったら歩いて丘に帰る）
+//   stroll … 丘の上をとことこ歩く（ふきだしもいっしょ。右に寄ったら、ふきだしは左がわに出す）
+//            rise … 奥へ歩ける高さ（px）。奥へ行くほど上に・小さく見える（css の --depth）
+//   roam   … しばらくさわらないと、ホームの画面の中をおさんぽ（歩くときは小さめ。帰ってくるまで、ふきだしはかくす）
+mountCharacter($("chara-records"), {
+  pose: "jump", motion: "hop", shadow: true, follow: true, grab: true, roam: true, roamHeight: 110, talk: studyTalk,
+  stroll: { area: $("records-chara"), mover: $("records-walker"), rise: 36, onMove: (r) => $("records-bubble").classList.toggle("is-left", r > 0.55) },
+  onRoam: (on) => $("records-bubble").classList.toggle("is-away", on),
+  onSay: (t) => { clearTimeout(greetTimer); greetTimer = 0; pop($("records-bubble"), t); },
+  onRestore: () => drawRecords(), onPet,
+});
+
+// ───────── 奥ゆき：マウスの位置（-1〜1）を記録のカードの空に わたす。css が、遠いものほど少し・近いものほど大きく ずらす ─────────
+const scene = $("records-chara");
+let depthFrame = 0;
+const setDepth = (px, py) => { scene.style.setProperty("--px", px.toFixed(3)); scene.style.setProperty("--py", py.toFixed(3)); };
+document.addEventListener("pointermove", (e) => {
+  if (depthFrame || document.documentElement.classList.contains("reduce-motion")) return;   // 「動きを少なくする」のときは ずらさない
+  depthFrame = requestAnimationFrame(() => {
+    depthFrame = 0;
+    const r = scene.getBoundingClientRect();
+    const clamp = (v) => Math.max(-1, Math.min(1, v));
+    setDepth(clamp((e.clientX - (r.left + r.width / 2)) / (window.innerWidth / 2)), clamp((e.clientY - (r.top + r.height / 2)) / (window.innerHeight / 2)));
+  });
+});
+document.addEventListener("pointerout", (e) => { if (!e.relatedTarget) setDepth(0, 0); });   // 画面の外へ出たら もとに
+
 // ───────── はじめに描く・変わったら描き直す ─────────
-const drawAll = () => { drawUser(); drawLogin(); drawGreet(); drawApps(); drawAchieve(); drawRecords(); };
+const drawAll = () => { drawUser(); drawLogin(); drawApps(); drawAchieve(); drawRecords(); };
 drawAll();
+drawScene();
+setInterval(drawScene, 60 * 1000);   // 時間帯が変わったら、空の色も変える
+greet();                             // ホームを開いたときのあいさつ
 app.onLoginDaysChange(drawAll);          // ログインした日・ログインしている人が変わったとき
-app.onUsageChange(() => { drawGreet(); drawRecords(); });   // 使った時間の記録が増えたとき（30 秒ごとなど）
+app.onUsageChange(() => { if (!greetTimer) drawRecords(); });   // 使った時間の記録が増えたとき（30 秒ごとなど。あいさつ中は待つ）
 app.onAchievementsChange(drawAchieve);   // ホームを開いているあいだにアチーブを手に入れたとき
-app.onUserChange(() => { drawUser(); drawGreet(); });       // 名前・アイコンを変えたとき（アカウント → プロフィール）
+app.onUserChange(drawUser);              // 名前・アイコンを変えたとき（アカウント → プロフィール）
