@@ -13,13 +13,12 @@
     rust/main.rs                  Rust の窓口：JS から呼べる関数を登録する
     rust/logic.rs                 Rust の処理（rust/main.rs から呼ぶ）
     ※ アチーブは、このフォルダーの外の src/system/achieve_setting/home.js に書く
-  ホームに出しているもの（上から）
-    1. いちばん上の帯 … 左にアイコンと名前、右にログイン日数・連続日数
-    2. アプリを開くカード … アイコン・名前・ひとこと（押すとそのアプリを開く）
-    3. アチーブ（右下）…… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（「すべて見る」でアチーブのページへ）
-    4. 記録（左下）…… 空と丘の上のスタッピー（あいさつ・ひとこと）と、今日・今週・これまでの時間。「記録を見る」で記録のページへ
-                   空の色は時間帯（朝・昼・夕方・夜）で変わる。スタッピーは丘の上をとことこ歩いたり、ホームの画面の中をおさんぽしたりする
-                   （くわしいグラフは記録のページ src/system/pages/records。時間を計っているのは core/storage/usage.js）
+  ホームは画面いっぱいの「広場」（空と丘）。その上に、帯と札を重ねる
+    1. 広場（画面いっぱい）… スタッピーとフレンドが歩く。空の色は時間帯（朝・昼・夕方・夜）で変わる
+                   スタッピーは丘の上をとことこ歩いたり、ホームの画面の中をおさんぽしたりする
+                   フレンド（★ 今は仮の見た目だけ）は js/plaza.js。押すと、名前・オンライン（最後のログイン）・アチーブの取得率が出る
+    2. いちばん上の帯（重ねる）… 左にアイコンと名前、右にログイン日数・連続日数。その下に「広場 フレンド 〇人・オンライン 〇人」
+    3. 左下の札（重ねる）…… 今日・今週・これまでの時間と「記録を見る」（くわしいグラフは記録のページ src/system/pages/records）
   スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）
   ここには入れる場所（id="chara-records"）だけ置き、js/main.js の mountCharacter で中身を作る
 -->
@@ -32,97 +31,67 @@
 </head>
 <body>
   <div class="home">
-    <!-- 1. いちばん上の帯：左にアイコンと名前、右にログイン日数 -->
-    <section class="panel home-hero" aria-label="ログインしている人">
-      <!-- 左はし：アイコン（画像がなければ名前の 1 文字）と、ログイン ID（上）・名前（下） -->
-      <div class="home-user">
-        <span class="home-avatar" id="user-avatar" aria-hidden="true"></span>
-        <div class="home-user-text">
-          <span class="home-user-sub" id="user-sub">ログインしていません</span>   <!-- 上：ログイン ID -->
-          <strong class="home-user-name" id="user-name">ゲスト</strong>           <!-- 下：名前 -->
-        </div>
+    <!-- 1. 広場（画面いっぱい）：空と丘・スタッピー・フレンド。
+         data-time … 時間帯（morning 朝／day 昼／evening 夕方／night 夜）。空の色・太陽と月・星が変わる（js/main.js の drawScene） -->
+    <div class="home-records-chara" id="records-chara" data-time="day">
+      <span class="home-sky-sun" aria-hidden="true"></span>   <!-- 太陽（夜は月） -->
+      <span class="home-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>   <!-- 星（夜だけ） -->
+      <svg class="home-cloud c1" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+      <svg class="home-cloud c2" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+      <svg class="home-cloud c3" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+      <span class="home-hill-back" aria-hidden="true"></span>   <!-- 奥の丘 -->
+      <!-- 丘の上の草と花（ゆらゆらゆれる） -->
+      <svg class="home-grass g1" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
+      <svg class="home-grass g2" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
+      <svg class="home-grass g3" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
+      <svg class="home-flower f1" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+      <svg class="home-flower f2" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+      <svg class="home-flower f3" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+      <!-- フレンド（広場を歩きまわる。中身は js/plaza.js が作る） -->
+      <div class="home-friends" id="plaza-friends"></div>
+      <!-- スタッピーとふきだし（いっしょに丘の上を左右に歩く。ふきだしは、右に寄ったら左がわに出る） -->
+      <div class="home-records-walker" id="records-walker">
+        <!-- スタッピー（なでられる。中身は src/system/character/character.js が作る） -->
+        <span class="home-records-owl" id="chara-records"></span>
+        <p class="home-bubble home-records-bubble" id="records-bubble">今週もがんばろう！</p>
       </div>
-      <!-- 右：ログイン日数（ゲストのときは「ログインすると記録されます」） -->
-      <div class="home-hero-login" id="login-stats">
-        <span>ログイン <b id="login-total">0</b> 日</span>
-        <span class="home-hero-sep" aria-hidden="true"></span>
-        <span>連続 <b id="login-streak">0</b> 日</span>
-      </div>
-      <button type="button" class="home-link home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
-    </section>
+    </div>
 
-    <!-- 2. アプリを開くカード（中身は js/main.js の drawApps） -->
-    <section class="home-apps" aria-label="アプリを開く">
-      <div class="home-apps-grid" id="app-cards"></div>
-    </section>
-
-    <!-- 3・4. いちばん下の段：左に記録へのカード、右にアチーブ（横に並べる。せまいときは、たてに並ぶ） -->
-    <div class="home-bottom">
-    <!-- 4. 記録へのカード（左。上にスタッピーのひとこと、下に今日／今週／これまでの時間と「記録を見る」。中身は js/main.js の drawRecords） -->
-    <section class="panel home-card home-records">
-      <div class="home-card-head">
-        <h2>記録</h2>
-      </div>
-      <div class="home-records-body">
-        <!-- 上：空と丘の上のスタッピーと、ふきだし。スタッピーはなでられる。雲はゆっくり流れる
-             data-time … 時間帯（morning 朝／day 昼／evening 夕方／night 夜）。空の色・太陽と月・星が変わる（js/main.js の drawScene） -->
-        <div class="home-records-chara" id="records-chara" data-time="day">
-          <span class="home-sky-sun" aria-hidden="true"></span>   <!-- 太陽（夜は月） -->
-          <span class="home-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>   <!-- 星（夜だけ） -->
-          <svg class="home-cloud c1" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
-          <svg class="home-cloud c2" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
-          <svg class="home-cloud c3" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
-          <span class="home-hill-back" aria-hidden="true"></span>   <!-- 奥の丘 -->
-          <!-- 丘の上の草と花（ゆらゆらゆれる） -->
-          <svg class="home-grass g1" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
-          <svg class="home-grass g2" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
-          <svg class="home-grass g3" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
-          <svg class="home-flower f1" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
-          <svg class="home-flower f2" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
-          <svg class="home-flower f3" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
-          <!-- スタッピーとふきだし（いっしょに丘の上を左右に歩く。ふきだしは、右に寄ったら左がわに出る） -->
-          <div class="home-records-walker" id="records-walker">
-            <!-- スタッピー（なでられる。中身は src/system/character/character.js が作る） -->
-            <span class="home-records-owl" id="chara-records"></span>
-            <p class="home-bubble home-records-bubble" id="records-bubble">今週もがんばろう！</p>
+    <!-- 2. いちばん上に重ねる：名前とログイン日数の帯、その下に広場の札 -->
+    <div class="home-top">
+      <section class="panel home-hero" aria-label="ログインしている人">
+        <!-- 左はし：アイコン（画像がなければ名前の 1 文字）と、ログイン ID（上）・名前（下） -->
+        <div class="home-user">
+          <span class="home-avatar" id="user-avatar" aria-hidden="true"></span>
+          <div class="home-user-text">
+            <span class="home-user-sub" id="user-sub">ログインしていません</span>   <!-- 上：ログイン ID -->
+            <strong class="home-user-name" id="user-name">ゲスト</strong>           <!-- 下：名前 -->
           </div>
         </div>
-        <!-- 下：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
-        <ul class="home-records-nums" id="records-nums">
-          <li><span>今日</span><b id="rec-today">0分</b></li>
-          <li><span>今週</span><b id="rec-week">0分</b></li>
-          <li><span>これまで</span><b id="rec-all">0分</b></li>
-        </ul>
-        <button type="button" class="home-records-btn" id="open-records">記録を見る</button>
+        <!-- 右：ログイン日数（ゲストのときは「ログインすると記録されます」） -->
+        <div class="home-hero-login" id="login-stats">
+          <span>ログイン <b id="login-total">0</b> 日</span>
+          <span class="home-hero-sep" aria-hidden="true"></span>
+          <span>連続 <b id="login-streak">0</b> 日</span>
+        </div>
+        <button type="button" class="home-link home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
+      </section>
+      <!-- 広場の札（フレンドの人数）。★ フレンドは まだ仮の表示 -->
+      <div class="home-plaza-label">
+        <b>広場</b>
+        <span id="plaza-count"></span>
+        <span class="home-plaza-tag" title="フレンドの機能はまだありません。今は仮のフレンドを出しています">イメージ</span>
       </div>
-    </section>
+    </div>
 
-    <!-- 3. アチーブ（右。上から 全体の円 → レア度ごとの数 → 最近手に入れたもの） -->
-    <section class="panel home-card home-achieve">
-      <div class="home-card-head">
-        <h2>アチーブ</h2>
-        <button type="button" class="home-link" id="open-achieve">すべて見る ›</button>
-      </div>
-      <!-- 3 つを、たてに並べる：全体の円 → レア度ごとの数 → 最近手に入れたもの（スクロールで全部見られる） -->
-      <div class="home-achieve-body">
-        <div class="home-achieve-all">
-          <div class="home-ring" id="ring" role="img" aria-label="アチーブの進み具合"></div>
-          <div class="home-achieve-count">
-            <strong id="achieve-count">0 / 0</strong>
-            <span>こ 手に入れた</span>
-          </div>
-        </div>
-        <div class="home-achieve-col">
-          <h3 class="home-small-title">レア度ごと</h3>
-          <!-- ゴールド・シルバー・ブロンズごとの数（バーの色はレア度の色） -->
-          <ul class="home-rarity" id="rarity-bars"></ul>
-        </div>
-        <div class="home-achieve-col">
-          <h3 class="home-small-title">最近手に入れた</h3>
-          <ul class="home-list" id="recent"></ul>
-        </div>
-      </div>
-    </section>
+    <!-- 3. 左下に重ねる：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
+    <div class="home-records-foot">
+      <ul class="home-records-nums" id="records-nums">
+        <li><span>今日</span><b id="rec-today">0分</b></li>
+        <li><span>今週</span><b id="rec-week">0分</b></li>
+        <li><span>これまで</span><b id="rec-all">0分</b></li>
+      </ul>
+      <button type="button" class="home-records-btn" id="open-records">記録を見る</button>
     </div>
   </div>
 </body>
