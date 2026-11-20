@@ -14,8 +14,11 @@
 //    greet       … ホームを開いたときの、スタッピーのあいさつ（スタッピーのふきだし。GREETS で言葉を変えられる）
 //    drawScene   … 広場の空（時間帯で 朝・昼・夕方・夜 の色に。1 分ごとに見直す）
 //    奥ゆき      … マウスを動かすと、空・奥の丘・手前の丘・草・スタッピーが べつべつの速さで ずれる（--px・--py。css で使う）
-//    drawRecords … 左下の札（今日／今週／これまでの時間・「記録を見る」ボタン）と、スタッピーのひとこと
+//    drawRecords … 右下の札（今日／今週／これまでの時間・「記録を見る」ボタン）と、スタッピーのひとこと
 //    広場        … フレンドが歩きまわる（js/plaza.js。★ 今は pages/friends/friends-sample.js の仮のフレンドで、見た目だけ）
+//                 まん中に噴水（index.html の SVG の絵）。フレンドもスタッピーも、噴水の上では立ち止まらない
+//    ポスト      … 左下。フレンドから届いた 手紙・問題・フレンド申請・応援 を受け取る（js/mailbox.js。★ 今は仮のデータで見た目だけ）
+//    openFriend  … 広場のカードの「くわしく見る」・ポストの送った人 → フレンドのページの「フレンド詳細」へ
 //    スタッピー … いちばん下の mountCharacter（言葉は src/system/character/lines.js で変えられる）
 //                 マウスのほうへ体を向ける・近づくとよろこぶ（follow）、つかんで投げられる（grab）、丘の上をとことこ（stroll）、
 //                 ホームの画面の中をおさんぽ（roam）、時間帯・今日の学習時間でしゃべる（talk）
@@ -25,6 +28,9 @@
 import { mountCharacter } from "../../../character/character.js";   // スタッピー（src/system/character）
 import { mountPlaza } from "./plaza.js";                              // 広場のフレンド（★ 今は見た目のイメージだけ）
 import { FRIENDS_SAMPLE } from "../../../pages/friends/friends-sample.js";   // 仮のフレンド（フレンドのページと同じ）
+import { mountMailbox } from "./mailbox.js";                          // 左下のポスト（★ 今は見た目のイメージだけ）
+import { MAIL_SAMPLE, MAIL_TYPES } from "../../../pages/friends/mail-sample.js";   // フレンドから届いたもの（仮のデータ）
+import { requestFriend } from "../../../pages/friends/open-friend.js";            // フレンドのページの「フレンド詳細」を開く
 
 /** アイコン（core/components/Icon.jsx と同じ形。ゲストのときのアイコンに使う） */
 const ICONS = {
@@ -136,7 +142,7 @@ const drawScene = () => {
   $("records-chara").dataset.time = SKY_TIMES.filter(([h]) => hour >= h).at(-1)[1];
 };
 
-// ───────── 左下の札：今日・今週・これまでの時間（くわしいグラフは記録のページで） ─────────
+// ───────── 右下の札：今日・今週・これまでの時間（くわしいグラフは記録のページで） ─────────
 const drawRecords = () => {
   const times = studyTimes();   // ゲストなら null
   const info = app.loginDays();
@@ -182,17 +188,22 @@ const onPet = () => { app.unlock("pet-1"); app.addProgress("pet-100"); };
 //   grab   … マウスでつかんで投げられる（重力で落ちて、地面でぽよんとはねる。止まったら歩いて丘に帰る）
 //   stroll … 丘の上をとことこ歩く（ふきだしもいっしょ。右に寄ったら、ふきだしは左がわに出す）
 //            rise … 奥へ歩ける高さ（px）。奥へ行くほど上に・小さく見える（css の --depth）
+//            avoid … 立ち止まらない場所（広場のまん中の噴水と、左下のポスト）。スタッピーは噴水より手前を歩くので、通るときは噴水の前に見える
 //   roam   … しばらくさわらないと、ホームの画面の中をおさんぽ（歩くときは小さめ。帰ってくるまで、ふきだしはかくす）
 mountCharacter($("chara-records"), {
   pose: "jump", motion: "hop", shadow: true, follow: true, grab: true, roam: true, roamHeight: 110, talk: studyTalk,
-  stroll: { area: $("records-chara"), mover: $("records-walker"), rise: 36, onMove: (r) => $("records-bubble").classList.toggle("is-left", r > 0.55) },
+  stroll: { area: $("records-chara"), mover: $("records-walker"), rise: 36, avoid: () => [$("plaza-fountain").getBoundingClientRect(), $("mailbox-post").getBoundingClientRect()], onMove: (r) => $("records-bubble").classList.toggle("is-left", r > 0.55) },
   onRoam: (on) => $("records-bubble").classList.toggle("is-away", on),
   onSay: (t) => { clearTimeout(greetTimer); greetTimer = 0; pop($("records-bubble"), t); },
   onRestore: () => drawRecords(), onPet,
 });
 
+// ───────── フレンド詳細を開く（フレンドのページ。だれを開くかは open-friend.js でメモしてわたす） ─────────
+const openFriend = (userId) => { requestFriend(userId); app.open("friends"); };
+const isFriend = (userId) => FRIENDS_SAMPLE.some((f) => f.userId === userId);
+
 // ───────── 広場のフレンド（★ 今は仮のフレンドで、見た目のイメージだけ。js/plaza.js） ─────────
-mountPlaza({ scene: $("records-chara"), layer: $("plaza-friends"), friends: FRIENDS_SAMPLE });
+mountPlaza({ scene: $("records-chara"), layer: $("plaza-friends"), friends: FRIENDS_SAMPLE, fountain: $("plaza-fountain"), rim: $("fountain-rim"), edge: $("mailbox-post"), onDetail: (f) => openFriend(f.userId) });
 $("plaza-count").textContent = `フレンド ${FRIENDS_SAMPLE.length}人・オンライン ${FRIENDS_SAMPLE.filter((f) => f.online).length}人`;
 
 // ───────── 奥ゆき：マウスの位置（-1〜1）を記録のカードの空に わたす。css が、遠いものほど少し・近いものほど大きく ずらす ─────────
@@ -219,3 +230,12 @@ greet();                             // ホームを開いたときのあいさ�
 app.onLoginDaysChange(drawAll);          // ログインした日・ログインしている人が変わったとき
 app.onUsageChange(() => { if (!greetTimer) drawRecords(); });   // 使った時間の記録が増えたとき（30 秒ごとなど。あいさつ中は待つ）
 app.onUserChange(drawUser);              // 名前・アイコンを変えたとき（アカウント → プロフィール）
+
+// ───────── 左下のポスト（フレンドから届いたもの。★ 今は仮のデータで、見た目のイメージだけ。js/mailbox.js） ─────────
+//   本当の機能を作ったら：届いたときに mailbox.receive({ id, type, from, at, text, stamp }) を呼ぶ（形は pages/friends/mail-sample.js）
+//   onReceive … あとから届いたときに、右上にお知らせを出す
+const mailbox = mountMailbox({
+  post: $("mailbox-post"), badge: $("mailbox-badge"), box: $("mailbox"), mails: MAIL_SAMPLE, isFriend, onFriend: openFriend,
+  onReceive: (m) => app.notify({ type: "info", title: `${m.from.name} さんから${MAIL_TYPES[m.type]?.name ?? ""}が届きました`, message: "左下のポストを押すと見られます。" }),
+});
+void mailbox;   // ★ 本当の機能を作るまでは、receive はまだ呼ばない
