@@ -50,7 +50,7 @@
         html.dark ::-webkit-scrollbar-track { background: #0a0d14; }
         html.dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         html.dark ::-webkit-scrollbar-thumb:hover { background: #334155; }
-
+        
         html:not(.dark) ::-webkit-scrollbar-track { background: #f1f5f9; }
         html:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
@@ -98,43 +98,213 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Light Mode Overrides for Dark-hardcoded Utility Classes */
-        html:not(.dark) .bg-cyber-bg { background-color: #f8fafc !important; }
-        html:not(.dark) .bg-cyber-bg\/50 { background-color: rgba(241, 245, 249, 0.8) !important; }
-        html:not(.dark) .bg-cyber-bg\/80 { background-color: rgba(241, 245, 249, 0.95) !important; }
+        /* Light Mode Utility Overrides (High Contrast & Clean Surface) */
+        html:not(.dark) body {
+            background-color: #f3f5f9 !important;
+            color: #0f172a !important;
+        }
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.94) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+        }
+        html:not(.dark) .glass-panel-glow {
+            background: #ffffff !important;
+            backdrop-filter: blur(12px);
+            border: 1.5px solid #0284c7 !important;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.12) !important;
+        }
+        html:not(.dark) .bg-cyber-bg { background-color: #f3f5f9 !important; }
+        html:not(.dark) .bg-cyber-bg\/50,
+        html:not(.dark) .bg-cyber-bg\/70 { background-color: #e8edf5 !important; }
         html:not(.dark) .bg-cyber-surface { background-color: #ffffff !important; }
-        html:not(.dark) .bg-cyber-surface\/95 { background-color: rgba(255, 255, 255, 0.96) !important; }
-        html:not(.dark) .bg-cyber-surface\/90 { background-color: rgba(241, 245, 249, 0.95) !important; }
-        html:not(.dark) .bg-cyber-surface\/50 { background-color: rgba(241, 245, 249, 0.6) !important; }
-        html:not(.dark) .bg-cyber-card { background-color: #f1f5f9 !important; }
+        html:not(.dark) .bg-cyber-surface\/95,
+        html:not(.dark) .bg-cyber-surface\/90 { background-color: rgba(255, 255, 255, 0.97) !important; }
+        html:not(.dark) .bg-cyber-surface\/50 { background-color: #f1f5f9 !important; }
+        html:not(.dark) .bg-cyber-card { background-color: #eef2f7 !important; }
         html:not(.dark) .hover\:bg-cyber-card:hover { background-color: #e2e8f0 !important; }
-        html:not(.dark) .hover\:bg-cyber-border:hover { background-color: #e2e8f0 !important; }
-        html:not(.dark) .border-cyber-border { border-color: #cbd5e1 !important; }
-        html:not(.dark) .border-cyber-border\/50 { border-color: rgba(203, 213, 225, 0.6) !important; }
-        html:not(.dark) .border-cyber-border\/40 { border-color: rgba(203, 213, 225, 0.5) !important; }
-        html:not(.dark) .divide-cyber-border\/40 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(203, 213, 225, 0.6) !important; }
+        html:not(.dark) .hover\:bg-cyber-border:hover { background-color: #cbd5e1 !important; }
+        html:not(.dark) .border-cyber-border,
+        html:not(.dark) .border-cyber-border\/50,
+        html:not(.dark) .border-cyber-border\/40 { border-color: #cbd5e1 !important; }
 
+        /* 文字色のコントラスト改善 */
         html:not(.dark) .text-white { color: #0f172a !important; }
         html:not(.dark) .text-slate-200 { color: #1e293b !important; }
         html:not(.dark) .text-slate-300 { color: #334155 !important; }
         html:not(.dark) .text-slate-400 { color: #475569 !important; }
         html:not(.dark) .text-slate-500 { color: #64748b !important; }
-        html:not(.dark) .hover\:text-white:hover { color: #0f172a !important; }
-        html:not(.dark) .text-cyber-neon { color: #0284c7 !important; }
-        html:not(.dark) .text-cyber-cyan { color: #0891b2 !important; }
-        html:not(.dark) .text-purple-300 { color: #7e22ce !important; }
-        html:not(.dark) .text-amber-300 { color: #b45309 !important; }
-        html:not(.dark) .text-amber-300\/80 { color: #d97706 !important; }
 
-        /* Preserve white text on colored gradient/solid buttons & overlay */
-        html:not(.dark) .bg-gradient-to-r.from-cyan-500 .text-white,
-        html:not(.dark) .bg-gradient-to-r.from-cyan-500,
-        html:not(.dark) .bg-gradient-to-tr .text-white,
-        html:not(.dark) .bg-cyber-primary,
-        html:not(.dark) .bg-purple-600,
-        html:not(.dark) #dopagaki-overlay,
-        html:not(.dark) #dopagaki-overlay .text-white {
-            color: #ffffff !important;
+        /* ネオン系テキストを白背景でも読みやすい濃いトーンへ */
+        html:not(.dark) .text-cyber-cyan,
+        html:not(.dark) .text-cyan-300,
+        html:not(.dark) .text-cyan-400 { color: #0369a1 !important; }
+        html:not(.dark) .text-purple-300,
+        html:not(.dark) .text-purple-400 { color: #6d28d9 !important; }
+        html:not(.dark) .text-amber-300,
+        html:not(.dark) .text-amber-400 { color: #b45309 !important; }
+        html:not(.dark) .text-emerald-300,
+        html:not(.dark) .text-emerald-400 { color: #047857 !important; }
+        html:not(.dark) .text-pink-400 { color: #be185d !important; }
+
+        /* 薄いカラーバッジの背景・枠線・文字をくっきりさせる */
+        html:not(.dark) [class*="bg-cyan-500/"] { background-color: #e0f2fe !important; border-color: #7dd3fc !important; color: #0369a1 !important; }
+        html:not(.dark) [class*="bg-purple-500/"] { background-color: #ede9fe !important; border-color: #c4b5fd !important; color: #5b21b6 !important; }
+        html:not(.dark) [class*="bg-amber-500/"] { background-color: #fef3c7 !important; border-color: #fcd34d !important; color: #92400e !important; }
+        html:not(.dark) [class*="bg-emerald-500/"] { background-color: #d1fae5 !important; border-color: #6ee7b7 !important; color: #065f46 !important; }
+        html:not(.dark) [class*="bg-blue-500/"] { background-color: #dbeafe !important; border-color: #93c5fd !important; color: #1d4ed8 !important; }
+        html:not(.dark) [class*="bg-red-500/"] { background-color: #fee2e2 !important; border-color: #fca5a5 !important; color: #b91c1c !important; }
+
+        /* フォーム要素の視認性向上 */
+        html:not(.dark) input,
+        html:not(.dark) select,
+        html:not(.dark) textarea {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        html:not(.dark) input::placeholder,
+        html:not(.dark) textarea::placeholder {
+            color: #94a3b8 !important;
+        }
+
+        /* ==========================================================
+           CALENDAR CELL PALETTE (DARK & LIGHT OPTIMIZED)
+           ========================================================== */
+        .cal-header-sun {
+            color: #fb7185;
+            background-color: rgba(244, 63, 94, 0.12);
+            border-color: rgba(244, 63, 94, 0.25);
+        }
+        html:not(.dark) .cal-header-sun {
+            color: #be123c;
+            background-color: #ffe4e6;
+            border-color: #fecdd3;
+        }
+
+        .cal-header-sat {
+            color: #38bdf8;
+            background-color: rgba(14, 165, 233, 0.12);
+            border-color: rgba(14, 165, 233, 0.25);
+        }
+        html:not(.dark) .cal-header-sat {
+            color: #0369a1;
+            background-color: #e0f2fe;
+            border-color: #bae6fd;
+        }
+
+        .cal-header-weekday {
+            color: #cbd5e1;
+            background-color: rgba(18, 24, 36, 0.85);
+            border-color: rgba(42, 54, 79, 0.7);
+        }
+        html:not(.dark) .cal-header-weekday {
+            color: #334155;
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .cal-cell-empty {
+            background: rgba(15, 23, 42, 0.35);
+            border: 1px dashed rgba(51, 65, 85, 0.45);
+            color: #475569;
+        }
+        html:not(.dark) .cal-cell-empty {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            color: #94a3b8;
+        }
+
+        .cal-cell-none {
+            background: rgba(18, 24, 36, 0.72);
+            border: 1px solid rgba(42, 54, 79, 0.75);
+            color: #94a3b8;
+        }
+        html:not(.dark) .cal-cell-none {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .cal-cell-studied {
+            background: linear-gradient(180deg, rgba(8, 145, 178, 0.24) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(34, 211, 238, 0.45);
+            color: #f8fafc;
+        }
+        html:not(.dark) .cal-cell-studied {
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+            border: 1px solid #38bdf8;
+            color: #0c4a6e;
+        }
+
+        .cal-cell-streak {
+            background: linear-gradient(180deg, rgba(180, 83, 9, 0.28) 0%, rgba(18, 24, 36, 0.94) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.65);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.16);
+            color: #fef3c7;
+        }
+        html:not(.dark) .cal-cell-streak {
+            background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+            border: 1.5px solid #f59e0b;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.16);
+            color: #78350f;
+        }
+
+        .cal-cell-today {
+            background: linear-gradient(180deg, rgba(6, 182, 212, 0.34) 0%, rgba(30, 58, 138, 0.92) 100%);
+            border: 2px solid #00f0ff;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.32);
+            color: #ffffff;
+        }
+        html:not(.dark) .cal-cell-today {
+            background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #2563eb;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+            color: #1e3a8a;
+        }
+
+        .cal-pill-studied {
+            background-color: rgba(6, 182, 212, 0.18);
+            color: #67e8f9;
+        }
+        html:not(.dark) .cal-pill-studied {
+            background-color: rgba(2, 132, 199, 0.14);
+            color: #0369a1;
+        }
+
+        .cal-pill-streak {
+            color: #fcd34d;
+        }
+        html:not(.dark) .cal-pill-streak {
+            color: #b45309;
+        }
+
+        /* ==========================================================
+           FLAME BURNING ANIMATION (CALENDAR STREAK)
+           ========================================================== */
+        @keyframes flame-burn {
+            0%, 100% {
+                transform: scale(1) rotate(-3deg) translateY(0px);
+                filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.85)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.65));
+            }
+            25% {
+                transform: scale(1.18, 1.25) rotate(4deg) translateY(-2px);
+                filter: drop-shadow(0 0 12px rgba(251, 191, 36, 1)) drop-shadow(0 0 20px rgba(239, 68, 68, 0.9));
+            }
+            50% {
+                transform: scale(1.08, 1.15) rotate(-2deg) translateY(-1px);
+                filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.95)) drop-shadow(0 0 16px rgba(220, 38, 38, 0.8));
+            }
+            75% {
+                transform: scale(1.22, 1.28) rotate(3deg) translateY(-3px);
+                filter: drop-shadow(0 0 14px rgba(253, 224, 71, 1)) drop-shadow(0 0 22px rgba(239, 68, 68, 0.95));
+            }
+        }
+        .animate-flame-burn {
+            animation: flame-burn 1.15s ease-in-out infinite;
+            transform-origin: bottom center;
         }
 
         /* ==========================================================
@@ -202,38 +372,17 @@
             100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 20px #ef4444); }
         }
 
-        .animate-susuru-thermal {
-            animation: susuru-thermal-pulse 0.3s ease-in-out infinite;
-        }
-
+        .animate-susuru-thermal { animation: susuru-thermal-pulse 0.3s ease-in-out infinite; }
         .animate-susuru-gold {
             animation: susuru-gold-explosion 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             text-shadow: 0 0 35px #ffffff, 0 0 70px #facc15, 0 0 110px #ff0055;
         }
-
-        .animate-dopagaki-shake {
-            animation: dopagaki-shake 0.35s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
-        .animate-dopagaki-earthquake {
-            animation: dopagaki-earthquake 0.22s cubic-bezier(.36,.07,.19,.97) infinite;
-        }
-
-        .animate-rainbow-bg {
-            animation: dopagaki-rainbow-bg 0.1s linear infinite;
-        }
-
-        .animate-flash-red {
-            animation: flash-red 0.15s ease-in-out infinite;
-        }
-
-        .animate-flash-gold {
-            animation: flash-gold 0.12s ease-in-out infinite;
-        }
-
-        .animate-patlamp {
-            animation: patlamp-spin 0.35s linear infinite;
-        }
+        .animate-dopagaki-shake { animation: dopagaki-shake 0.35s cubic-bezier(.36,.07,.19,.97) both; }
+        .animate-dopagaki-earthquake { animation: dopagaki-earthquake 0.22s cubic-bezier(.36,.07,.19,.97) infinite; }
+        .animate-rainbow-bg { animation: dopagaki-rainbow-bg 0.1s linear infinite; }
+        .animate-flash-red { animation: flash-red 0.15s ease-in-out infinite; }
+        .animate-flash-gold { animation: flash-gold 0.12s ease-in-out infinite; }
+        .animate-patlamp { animation: patlamp-spin 0.35s linear infinite; }
 
         /* Perspective Flashcard */
         .perspective-1000 { perspective: 1000px; }
@@ -252,6 +401,169 @@
             border-left: 3px solid #0891b2;
             color: #0891b2;
         }
+        /* ==========================================================
+           THEME-AWARE INTERACTION STATES (HOVER / SELECTION / FOCUS)
+           ========================================================== */
+        /* Native controls and text-selection should follow the active theme. */
+        html.dark { color-scheme: dark; }
+        html:not(.dark) { color-scheme: light; }
+
+        html.dark ::selection,
+        html.dark ::-moz-selection {
+            background: #0891b2;
+            color: #ecfeff;
+        }
+        html:not(.dark) ::selection,
+        html:not(.dark) ::-moz-selection {
+            background: #bae6fd;
+            color: #0c4a6e;
+        }
+
+        /* Dropdown options: avoid the browser's default gray selected row. */
+        html.dark select option {
+            background-color: #121824;
+            color: #e2e8f0;
+        }
+        html.dark select option:checked,
+        html.dark select option:hover {
+            background-color: #155e75;
+            color: #ecfeff;
+        }
+        html:not(.dark) select option {
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+        html:not(.dark) select option:checked,
+        html:not(.dark) select option:hover {
+            background-color: #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        /* Dark mode: visible blue-cyan hover instead of barely changing gray. */
+        html.dark .hover\:bg-cyber-card:hover {
+            background-color: #263b55 !important;
+        }
+        html.dark .hover\:bg-cyber-border:hover {
+            background-color: #31516f !important;
+        }
+        html.dark .hover\:bg-cyber-surface\/50:hover {
+            background-color: rgba(6, 182, 212, 0.14) !important;
+        }
+        html.dark .hover\:bg-cyber-cyan\/20:hover {
+            background-color: rgba(6, 182, 212, 0.30) !important;
+        }
+        html.dark button:focus-visible,
+        html.dark select:focus-visible,
+        html.dark input:focus-visible,
+        html.dark textarea:focus-visible,
+        html.dark label:focus-visible {
+            outline: 2px solid #22d3ee;
+            outline-offset: 2px;
+        }
+        html.dark #manage-deck-selector-grid .manage-deck-select-button:hover {
+            border-color: #22d3ee !important;
+            box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.24), 0 0 18px rgba(6, 182, 212, 0.14);
+        }
+
+        /* Light mode: replace gray hover/selection with readable blue-cyan accents. */
+        html:not(.dark) .hover\:bg-cyber-card:hover {
+            background-color: #dbeafe !important;
+            color: #0c4a6e !important;
+        }
+        html:not(.dark) .hover\:bg-cyber-border:hover {
+            background-color: #c7e7f5 !important;
+            color: #0c4a6e !important;
+        }
+        html:not(.dark) .hover\:bg-cyber-surface\/50:hover {
+            background-color: #e0f2fe !important;
+        }
+        html:not(.dark) .hover\:bg-cyber-cyan\/20:hover {
+            background-color: #cffafe !important;
+            color: #155e75 !important;
+        }
+        html:not(.dark) .hover\:text-white:hover {
+            color: #0369a1 !important;
+        }
+        html:not(.dark) button:focus-visible,
+        html:not(.dark) select:focus-visible,
+        html:not(.dark) input:focus-visible,
+        html:not(.dark) textarea:focus-visible,
+        html:not(.dark) label:focus-visible {
+            outline: 2px solid #0284c7;
+            outline-offset: 2px;
+        }
+        html:not(.dark) #manage-deck-selector-grid .manage-deck-select-button:hover {
+            background-color: #eff6ff !important;
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 1px rgba(2, 132, 199, 0.18), 0 5px 16px rgba(2, 132, 199, 0.10);
+        }
+        html:not(.dark) #manage-deck-selector-grid .manage-deck-select-button.glass-panel-glow,
+        html:not(.dark) #manage-deck-selector-grid .manage-deck-select-button.glass-panel-glow:hover {
+            background-color: #e0f2fe !important;
+            border-color: #0284c7 !important;
+            color: #0c4a6e !important;
+        }
+        html:not(.dark) .nav-tab:not(.active):hover {
+            background-color: #e0f2fe !important;
+            color: #075985 !important;
+        }
+
+
+        #manage-deck-selector-grid .manage-deck-card {
+            min-width: 0;
+        }
+        #manage-deck-selector-grid .manage-deck-select-button {
+            min-height: 88px;
+        }
+        #manage-deck-selector-grid .manage-deck-select-button:focus-visible,
+        #manage-deck-selector-grid .manage-deck-card > button:last-child:focus-visible {
+            outline: 2px solid #22d3ee;
+            outline-offset: 2px;
+        }
+        html:not(.dark) #manage-deck-selector-grid .manage-deck-card > button:last-child {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-color: #7dd3fc;
+        }
+        html:not(.dark) #manage-deck-selector-grid .manage-deck-card > button:last-child:hover {
+            background-color: #bae6fd;
+            color: #075985;
+        }
+
+        /* Deck management: keep the problem editor in a stable position even with many decks. */
+        #manage-deck-selector-grid {
+            max-height: 232px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            align-content: start;
+            padding: 2px 8px 8px 2px;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+        }
+        #manage-deck-selector-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+        #manage-deck-selector-grid::-webkit-scrollbar-track {
+            background: rgba(100, 116, 139, 0.12);
+            border-radius: 999px;
+        }
+        #manage-deck-selector-grid::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.55);
+            border-radius: 999px;
+        }
+        html.dark #manage-deck-selector-grid {
+            scrollbar-color: #52718a rgba(15, 23, 42, 0.35);
+        }
+        html:not(.dark) #manage-deck-selector-grid {
+            scrollbar-color: #94a3b8 #e8edf5;
+        }
+        html.dark #manage-deck-selector-grid::-webkit-scrollbar-thumb {
+            background: #52718a;
+        }
+        html:not(.dark) #manage-deck-selector-grid::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+        }
+
     </style>
 </head>
 <body id="app-body" class="bg-cyber-bg text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-cyber-cyan selection:text-black transition-colors duration-200">
@@ -260,37 +572,24 @@
        10-STAGE "SUSURU" PACHISLOT FULLSCREEN OVERLAY
        ========================================================== -->
     <div id="dopagaki-overlay" class="fixed inset-0 z-50 pointer-events-none hidden flex items-center justify-center overflow-hidden transition-all">
-        <!-- Background Tint & Flash Layer -->
         <div id="dopagaki-bg-layer" class="absolute inset-0 transition-all duration-100"></div>
-
-        <!-- Marquee / Group Notification Banner -->
         <div id="dopagaki-marquee-container" class="absolute top-12 left-0 w-full bg-red-600/95 border-y-4 border-yellow-300 py-3 overflow-hidden hidden z-20 shadow-2xl">
             <div id="dopagaki-marquee-text" class="whitespace-nowrap font-black italic text-2xl sm:text-3xl text-yellow-200 tracking-widest animate-[marquee-slide_3.5s_linear_infinite]">
                 🔥 【HEAT HEAT !! 激アツ赤外線サーモグラフィー群通過中！】 すするパチンコ演出発動！！ 🔥
             </div>
         </div>
-
-        <!-- Central Giant Typography / Logo Box -->
         <div class="relative z-30 text-center px-4 space-y-4">
             <div id="dopagaki-stage-badge" class="inline-block px-5 py-2 rounded-full bg-black/90 border-2 border-yellow-400 text-yellow-300 font-mono text-xs sm:text-sm font-black uppercase tracking-widest shadow-2xl animate-bounce">
                 🚀 STAGE 1 : 青保留変化
             </div>
-            <div id="dopagaki-main-title" class="text-4xl sm:text-8xl font-black italic tracking-tighter text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
-                <!-- Dynamic Title -->
-            </div>
-            <div id="dopagaki-sub-title" class="text-xl sm:text-3xl font-bold font-mono text-cyan-300">
-                <!-- Sub description -->
-            </div>
+            <div id="dopagaki-main-title" class="text-4xl sm:text-8xl font-black italic tracking-tighter text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]"></div>
+            <div id="dopagaki-sub-title" class="text-xl sm:text-3xl font-bold font-mono text-cyan-300"></div>
         </div>
-
-        <!-- Pato Lamp / Special Gimmick Icon Container -->
         <div id="dopagaki-gimmick-box" class="absolute bottom-16 z-30 flex items-center justify-center gap-4 hidden">
             <div id="patlamp-icon" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-red-600 border-4 border-yellow-300 flex items-center justify-center shadow-[0_0_60px_#ef4444] animate-patlamp">
                 <span class="text-white font-black text-xs sm:text-sm tracking-tighter">キュイン✨</span>
             </div>
         </div>
-
-        <!-- Sparkle & Lightning Particle Elements -->
         <div id="dopagaki-sparks" class="absolute inset-0 pointer-events-none"></div>
     </div>
 
@@ -314,9 +613,9 @@
             </div>
         </div>
 
-        <!-- Quick Top Stats & Actions (Right Top Controls) -->
+        <!-- Quick Top Stats & Actions -->
         <div class="flex items-center space-x-2 sm:space-x-4">
-            <!-- Theme Toggle Button (Dark / White Mode) -->
+            <!-- Theme Toggle Button -->
             <button onclick="toggleTheme()" id="theme-toggle-btn" title="ダーク / ホワイト モード切替" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-cyber-border bg-cyber-surface hover:bg-cyber-card text-slate-300 text-xs font-mono font-bold transition-all shadow-sm">
                 <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
                 <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 text-indigo-500 hidden"></i>
@@ -368,17 +667,16 @@
                     <i data-lucide="layout-dashboard" class="w-4 h-4 text-cyber-cyan"></i> ダッシュボード
                 </button>
                 <button onclick="switchTab('decks')" id="nav-decks" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-cyber-card transition-all font-medium">
-                    <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> デッキ＆問題管理
+                    <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> デッキ管理
                 </button>
                 <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-cyber-card transition-all font-medium">
-                    <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i> 学習分析・実績
+                    <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i> 学習分析
                 </button>
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-cyber-card transition-all font-medium">
                     <i data-lucide="settings" class="w-4 h-4 text-amber-400"></i> 設定・データ管理
                 </button>
             </nav>
 
-            <!-- Bottom Active Session Quick Panel -->
             <div class="p-4 border-t border-cyber-border bg-cyber-bg/50">
                 <div class="flex items-center justify-between text-xs mb-2">
                     <span class="text-slate-400 font-mono">Quick Review</span>
@@ -398,7 +696,6 @@
 
             <!-- ================= TAB 1: DASHBOARD ================= -->
             <section id="tab-dashboard" class="tab-content space-y-6">
-                <!-- Banner Status Card -->
                 <div class="glass-panel-glow rounded-2xl p-6 relative overflow-hidden">
                     <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-gradient-to-br from-cyber-cyan/20 to-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -422,7 +719,6 @@
                     </div>
                 </div>
 
-                <!-- KPI Metric Cards Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="glass-panel p-4 rounded-xl space-y-1">
                         <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
@@ -463,7 +759,6 @@
                     </div>
                 </div>
 
-                <!-- Deck List Section Header -->
                 <div class="flex items-center justify-between border-l-4 border-cyber-cyan pl-3">
                     <div>
                         <h3 class="text-lg font-bold text-white">登録中のデッキ一覧</h3>
@@ -475,65 +770,75 @@
                     </div>
                 </div>
 
-                <!-- Deck Cards Grid Container -->
-                <div id="deck-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <!-- Populated dynamically via JS -->
-                </div>
+                <div id="deck-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
             </section>
 
-            <!-- ================= TAB 2: DECKS & QUESTION CRUD ================= -->
+            <!-- ================= TAB 2: DECK MANAGEMENT ================= -->
             <section id="tab-decks" class="tab-content space-y-6 hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cyber-border pb-4">
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-wide">デッキ＆問題の編集・CRUD</h2>
-                        <p class="text-xs text-slate-400">問題作成時に「カード形式」と「問題形式（選択・文字入力）」を個別に設定できます</p>
+                        <h2 class="text-xl font-bold text-white tracking-wide">デッキ管理</h2>
+                        <p class="text-xs text-slate-400">デッキを選んで中の問題を確認・編集・削除できます</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="openDeckModal()" class="px-3.5 py-2 bg-cyber-surface hover:bg-cyber-border border border-cyber-border text-white text-xs font-semibold rounded-lg flex items-center gap-2">
                             <i data-lucide="folder-plus" class="w-4 h-4 text-cyber-cyan"></i> 新規デッキ作成
                         </button>
-                        <button onclick="openQuestionModal()" class="px-4 py-2 bg-cyber-cyan hover:bg-cyan-400 text-black text-xs font-bold rounded-lg flex items-center gap-2 shadow-lg shadow-cyan-500/20">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i> 新規問題追加
+                        <button onclick="openQuestionModal(null, selectedDeckIdForManage)" class="px-4 py-2 bg-cyber-cyan hover:bg-cyan-400 text-black text-xs font-bold rounded-lg flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> 問題を追加
                         </button>
                     </div>
                 </div>
 
-                <!-- Filter Controls -->
-                <div class="flex flex-wrap items-center gap-3 bg-cyber-surface p-3 rounded-xl border border-cyber-border text-xs">
-                    <div class="flex items-center gap-2">
-                        <span class="text-slate-400 font-mono">絞り込み:</span>
-                        <select id="crud-deck-filter" onchange="renderCrudQuestionList()" class="bg-cyber-bg border border-cyber-border rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-cyber-cyan">
-                            <option value="ALL">全てのデッキ</option>
-                        </select>
+                <!-- デッキ検索：検索結果からデッキ選択・問題追加へ進めます -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-cyber-surface border border-cyber-border rounded-xl p-3">
+                    <div class="relative flex-1 min-w-0 sm:max-w-md">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                        <input
+                            type="search"
+                            id="manage-deck-search-input"
+                            oninput="renderManageDeckSelector()"
+                            placeholder="デッキ名・説明で検索..."
+                            aria-label="デッキ名・説明で検索"
+                            class="w-full bg-cyber-bg border border-cyber-border rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan"
+                        >
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-slate-400 font-mono">形式:</span>
-                        <select id="crud-type-filter" onchange="renderCrudQuestionList()" class="bg-cyber-bg border border-cyber-border rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-cyber-cyan">
-                            <option value="ALL">全ての形式</option>
-                            <option value="CARD">🎴 カード形式</option>
-                            <option value="QUIZ_SINGLE">📝 問題形式 (択一選択)</option>
-                            <option value="QUIZ_TEXT">📝 問題形式 (文字入力)</option>
-                        </select>
+                    <div id="manage-deck-search-count" class="text-[11px] text-slate-400 font-mono whitespace-nowrap" aria-live="polite"></div>
+                </div>
+                <div id="manage-deck-selector-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-cyber-surface p-3.5 rounded-xl border border-cyber-border text-xs">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-400 font-mono">選択デッキ:</span>
+                            <select id="crud-deck-filter" onchange="onManageDeckSelectChange(this.value)" class="bg-cyber-bg border border-cyber-border rounded-lg px-3 py-1.5 text-white font-semibold focus:outline-none focus:border-cyber-cyan"></select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-400 font-mono">形式:</span>
+                            <select id="crud-type-filter" onchange="renderCrudQuestionList()" class="bg-cyber-bg border border-cyber-border rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-cyber-cyan">
+                                <option value="ALL">全ての形式</option>
+                                <option value="CARD">🎴 カード形式</option>
+                                <option value="QUIZ_SINGLE">📝 問題形式 (択一選択)</option>
+                                <option value="QUIZ_TEXT">📝 問題形式 (文字入力)</option>
+                            </select>
+                        </div>
                     </div>
+                    <div id="manage-selected-deck-summary" class="font-mono text-[11px] text-cyber-cyan"></div>
                 </div>
 
-                <!-- Questions List Table -->
                 <div class="glass-panel rounded-xl overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-cyber-surface text-slate-400 font-mono border-b border-cyber-border">
                                 <tr>
                                     <th class="p-3">形式</th>
-                                    <th class="p-3">所属デッキ</th>
                                     <th class="p-3">表面 / 問題文</th>
                                     <th class="p-3">裏面 / 正解</th>
-                                    <th class="p-3">段階/期日</th>
-                                    <th class="p-3 text-right">操作</th>
+                                    <th class="p-3">段階</th>
+                                    <th class="p-3 text-right">編集 / 削除</th>
                                 </tr>
                             </thead>
-                            <tbody id="crud-questions-table-body" class="divide-y divide-cyber-border/40 text-slate-300">
-                                <!-- Populated dynamically -->
-                            </tbody>
+                            <tbody id="crud-questions-table-body" class="divide-y divide-cyber-border/40 text-slate-300"></tbody>
                         </table>
                     </div>
                 </div>
@@ -541,7 +846,6 @@
 
             <!-- ================= TAB 3: STUDY & REVIEW SESSION ================= -->
             <section id="tab-study" class="tab-content space-y-6 hidden">
-                <!-- Session Top Toolbar -->
                 <div class="flex items-center justify-between glass-panel px-4 py-3 rounded-xl border border-cyber-cyan/30">
                     <div class="flex items-center space-x-3">
                         <button onclick="switchTab('dashboard')" class="text-slate-400 hover:text-white p-1">
@@ -553,7 +857,6 @@
                         </div>
                     </div>
                     
-                    <!-- COMBO & STAGE COUNTER DISPLAY -->
                     <div id="combo-badge-container" class="hidden flex items-center gap-2 px-3.5 py-1 bg-gradient-to-r from-amber-500/20 to-purple-600/20 border border-amber-400/50 rounded-full font-mono">
                         <i data-lucide="zap" class="w-4 h-4 text-amber-400 animate-bounce"></i>
                         <span id="combo-count-text" class="text-xs font-extrabold text-amber-300 tracking-wider">STAGE 1 SUSURU</span>
@@ -570,52 +873,35 @@
                     </div>
                 </div>
 
-                <!-- MAIN CARD STUDY AREA CONTAINER -->
                 <div id="study-main-wrapper" class="max-w-3xl mx-auto space-y-6 transition-transform">
-
-                    <!-- FLASHCARD DISPLAY PANEL -->
                     <div id="card-study-container" class="space-y-6">
-                        <!-- Flashcard Flip Box -->
                         <div id="flashcard" onclick="flipCard()" class="perspective-1000 cursor-pointer min-h-[260px] sm:min-h-[320px] rounded-2xl relative transition-all duration-300 transform">
                             <div id="flashcard-inner" class="transform-style-3d transition-transform duration-500 w-full h-full relative">
-                                <!-- FRONT SIDE -->
                                 <div class="glass-panel-glow w-full h-full min-h-[260px] sm:min-h-[320px] rounded-2xl p-6 sm:p-8 flex flex-col justify-between absolute inset-0 backface-hidden border-2 border-cyber-cyan/40">
                                     <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
                                         <span class="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-blue-500">🎴 カード形式 [表面]</span>
                                         <span>クリックして開く <i data-lucide="rotate-cw" class="w-3.5 h-3.5 inline"></i></span>
                                     </div>
                                     <div class="my-auto text-center">
-                                        <div id="card-front-text" class="text-xl sm:text-2xl font-bold text-white tracking-wide leading-relaxed">
-                                            Card Front Content
-                                        </div>
+                                        <div id="card-front-text" class="text-xl sm:text-2xl font-bold text-white tracking-wide leading-relaxed"></div>
                                     </div>
-                                    <div class="text-[11px] text-center text-slate-500 font-mono">
-                                        提示画面：解答は隠されています
-                                    </div>
+                                    <div class="text-[11px] text-center text-slate-500 font-mono">提示画面：解答は隠されています</div>
                                 </div>
 
-                                <!-- BACK SIDE -->
                                 <div class="glass-panel w-full h-full min-h-[260px] sm:min-h-[320px] rounded-2xl p-6 sm:p-8 flex flex-col justify-between absolute inset-0 backface-hidden rotate-y-180 border-2 border-purple-500/40 bg-cyber-surface/95">
                                     <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
                                         <span class="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-500">🎴 カード形式 [裏面/正解]</span>
                                         <span class="text-cyber-cyan font-semibold">解答開示済み</span>
                                     </div>
                                     <div class="my-auto text-center space-y-3">
-                                        <div id="card-back-text" class="text-xl sm:text-2xl font-bold text-cyber-neon tracking-wide leading-relaxed">
-                                            Card Back Content
-                                        </div>
-                                        <div id="card-explanation-text" class="text-xs text-slate-400 max-w-lg mx-auto">
-                                            解説テキスト
-                                        </div>
+                                        <div id="card-back-text" class="text-xl sm:text-2xl font-bold text-cyber-neon tracking-wide leading-relaxed"></div>
+                                        <div id="card-explanation-text" class="text-xs text-slate-400 max-w-lg mx-auto"></div>
                                     </div>
-                                    <div class="text-[11px] text-center text-slate-500 font-mono">
-                                        下記ボタンで自己評価（2段階）を選択してください
-                                    </div>
+                                    <div class="text-[11px] text-center text-slate-500 font-mono">下記ボタンで自己評価を選択してください</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 2-STAGE SELF EVALUATION BUTTONS -->
                         <div id="card-action-buttons" class="hidden grid grid-cols-2 gap-4">
                             <button onclick="handleCardAnswer(false)" class="p-4 rounded-xl bg-cyber-card border border-cyber-warning/50 hover:border-cyber-warning text-white flex flex-col items-center justify-center space-y-1 transition-all active:scale-95 group">
                                 <div class="flex items-center gap-1.5 text-cyber-warning font-bold text-sm">
@@ -628,58 +914,33 @@
                                 <div class="flex items-center gap-1.5 text-cyber-neon font-bold text-sm">
                                     <i data-lucide="check-circle" class="w-4 h-4"></i> 正解 (🔥 すする演出発動)
                                 </div>
-                                <span class="text-[11px] text-cyber-cyan font-mono" id="card-next-interval-label">段階昇格 (10分 ➔ 1日 ➔ 3日...)</span>
+                                <span class="text-[11px] text-cyber-cyan font-mono" id="card-next-interval-label">段階昇格</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- QUESTION PRACTICE DISPLAY PANEL -->
                     <div id="quiz-study-container" class="glass-panel rounded-2xl p-6 sm:p-8 space-y-6 hidden border-2 border-purple-500/30">
                         <div class="flex items-center justify-between text-xs font-mono">
                             <span class="px-2.5 py-1 rounded bg-purple-500/10 border border-purple-500/30 text-purple-500">📝 問題形式 演習</span>
                             <span id="quiz-type-badge" class="text-slate-400">一問一答</span>
                         </div>
-
-                        <div id="quiz-question-text" class="text-lg font-bold text-white leading-relaxed">
-                            Question Prompt
-                        </div>
-
-                        <!-- Quiz Options Container -->
-                        <div id="quiz-options-container" class="space-y-2.5">
-                            <!-- Populated dynamically -->
-                        </div>
-
-                        <!-- Quiz Text Input Area -->
+                        <div id="quiz-question-text" class="text-lg font-bold text-white leading-relaxed"></div>
+                        <div id="quiz-options-container" class="space-y-2.5"></div>
                         <div id="quiz-text-input-container" class="space-y-3 hidden">
                             <input type="text" id="quiz-user-input" placeholder="解答を入力してください..." class="w-full bg-cyber-bg border border-cyber-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyber-cyan">
-                            <button onclick="submitQuizTextInput()" class="w-full py-2.5 bg-cyber-primary hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-all">
-                                <span class="text-white">解答を送信して答え合わせ</span>
-                            </button>
+                            <button onclick="submitQuizTextInput()" class="w-full py-2.5 bg-cyber-primary hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-all"><span class="text-white">解答を送信して答え合わせ</span></button>
                         </div>
-
-                        <!-- Quiz Answer Feedback Result -->
                         <div id="quiz-feedback-box" class="p-4 rounded-xl bg-cyber-bg border border-cyber-border space-y-3 hidden">
-                            <div id="quiz-result-badge" class="font-bold text-sm flex items-center gap-2">
-                                <!-- Correct / Incorrect badge -->
-                            </div>
-                            <div id="quiz-explanation-box" class="text-xs text-slate-300">
-                                正解: <span id="quiz-correct-answer-text" class="text-cyber-cyan font-bold font-mono">--</span>
-                            </div>
-
+                            <div id="quiz-result-badge" class="font-bold text-sm flex items-center gap-2"></div>
+                            <div id="quiz-explanation-box" class="text-xs text-slate-300">正解: <span id="quiz-correct-answer-text" class="text-cyber-cyan font-bold font-mono">--</span></div>
                             <div class="pt-2 border-t border-cyber-border/50 flex items-center justify-between">
-                                <span class="text-xs text-slate-400">大体あっていた（ニュアンス合致）として正解にする:</span>
-                                <button onclick="overrideQuizCorrect()" class="px-3 py-1 bg-cyber-surface hover:bg-cyber-card border border-cyber-cyan/40 text-cyber-cyan rounded text-xs font-mono">
-                                    自己採点で正解扱い (🔥 発動)
-                                </button>
+                                <span class="text-xs text-slate-400">自己採点で正解扱いにする:</span>
+                                <button onclick="overrideQuizCorrect()" class="px-3 py-1 bg-cyber-surface hover:bg-cyber-card border border-cyber-cyan/40 text-cyber-cyan rounded text-xs font-mono">正解扱い (🔥 発動)</button>
                             </div>
-
-                            <button onclick="nextStudyCard()" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs rounded-xl transition-all">
-                                <span class="text-white">次の問題へ進む</span>
-                            </button>
+                            <button onclick="nextStudyCard()" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs rounded-xl transition-all"><span class="text-white">次の問題へ進む</span></button>
                         </div>
                     </div>
 
-                    <!-- SCRATCHPAD & NOTE-TAKING COLLAPSIBLE PANEL -->
                     <div class="glass-panel rounded-xl overflow-hidden border border-cyber-border">
                         <div class="px-4 py-3 bg-cyber-surface border-b border-cyber-border flex items-center justify-between">
                             <div class="flex items-center space-x-2 text-xs font-mono text-slate-300">
@@ -689,19 +950,16 @@
                             <div class="flex items-center space-x-2 text-xs">
                                 <button onclick="toggleNoteMode('text')" id="btn-note-text" class="px-2.5 py-1 rounded bg-cyber-card border border-cyber-cyan text-cyber-cyan font-mono text-[10px]">テキスト</button>
                                 <button onclick="toggleNoteMode('draw')" id="btn-note-draw" class="px-2.5 py-1 rounded bg-cyber-bg border border-cyber-border text-slate-400 font-mono text-[10px]">手書き</button>
-                                <button onclick="clearCanvas()" id="btn-clear-canvas" class="px-2 py-1 text-slate-400 hover:text-white text-[10px] hidden">消去</button>
+                                <button onclick="clearCanvas()" id="btn-clear-canvas" class="px-2.5 py-1 text-slate-400 hover:text-white text-[10px] hidden">消去</button>
                             </div>
                         </div>
-
                         <div class="p-4 space-y-3">
                             <div id="note-text-wrapper">
                                 <textarea id="study-text-note" rows="2" placeholder="思考過程や覚え方のメモを入力（自動保存）..." class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyber-cyan"></textarea>
                             </div>
-
                             <div id="note-draw-wrapper" class="hidden">
                                 <canvas id="scratch-canvas" width="600" height="180" class="w-full bg-cyber-bg rounded-lg border border-cyber-border cursor-crosshair touch-none"></canvas>
                             </div>
-
                             <div class="pt-2 border-t border-cyber-border/40">
                                 <span class="text-[10px] text-slate-500 font-mono block mb-1">過去3回分のメモ履歴:</span>
                                 <div id="note-history-list" class="space-y-1 text-xs text-slate-400 font-mono">
@@ -710,82 +968,94 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </section>
 
-            <!-- ================= TAB 4: ANALYTICS & ACHIEVEMENTS ================= -->
+            <!-- ================= TAB 4: ANALYTICS & ACHIEVEMENTS (UPDATED) ================= -->
             <section id="tab-analytics" class="tab-content space-y-6 hidden">
                 <div class="border-b border-cyber-border pb-4">
-                    <h2 class="text-xl font-bold text-white tracking-wide">学習分析・実績ダッシュボード</h2>
-                    <p class="text-xs text-slate-400">学習時間の多角的グラフ化・ストリーク・実績バッジ解除状態</p>
+                    <h2 class="text-xl font-bold text-white tracking-wide">学習分析ダッシュボード</h2>
+                    <p class="text-xs text-slate-400">現在の日時を基準とした過去1週間の解答数推移・カレンダー形式ヒートマップ</p>
                 </div>
 
-                <!-- Time Frame Selector & Charts Panel -->
-                <div class="glass-panel p-6 rounded-xl space-y-6">
+                <!-- 過去1週間の解答数グラフ（現在曜日基準・横メモリ・水平グリッド付き） -->
+                <div class="glass-panel p-6 rounded-xl space-y-5">
                     <div class="flex items-center justify-between flex-wrap gap-3">
-                        <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
-                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyber-cyan"></i> 学習時間・解答数グラフ
+                        <div>
+                            <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyber-cyan"></i> 過去1週間の解答数推移
+                            </h3>
+                            <p id="weekly-range-label" class="text-[11px] text-slate-400 font-mono mt-0.5">直近7日間の記録</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center bg-cyber-surface rounded-md border border-cyber-border p-0.5">
+                                <button type="button" onclick="shiftWeeklyChart(1)" title="前の1週間を見る" class="p-1.5 rounded hover:bg-cyber-card text-slate-300 hover:text-cyber-cyan transition-colors">
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                </button>
+                                <button type="button" id="btn-weekly-reset" onclick="resetWeeklyChart()" class="px-2 py-1 text-[10px] font-mono text-slate-400 hover:text-white transition-colors hidden">
+                                    最新へ
+                                </button>
+                                <button type="button" id="btn-weekly-next" onclick="shiftWeeklyChart(-1)" title="次の1週間へ戻る" class="p-1.5 rounded hover:bg-cyber-card text-slate-300 hover:text-cyber-cyan disabled:opacity-35 disabled:pointer-events-none transition-colors" disabled>
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div class="text-xs text-slate-400 font-mono bg-cyber-surface px-2.5 py-1.5 rounded-md border border-cyber-border">
+                                期間合計: <span id="weekly-total-count" class="text-cyber-cyan font-bold">0</span> 問
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Y軸メモリ + バーグラフコンテナ -->
+                    <div class="flex items-stretch gap-3 pt-4 pb-2 px-3 sm:px-5 bg-cyber-surface/50 rounded-xl border border-cyber-border/50">
+                        <!-- 左側 Y軸横メモリ -->
+                        <div id="weekly-y-axis" class="flex flex-col justify-between text-right pr-2 pb-8 pt-5 text-[11px] font-mono text-slate-400 select-none border-r border-cyber-border/60 min-w-[44px]">
+                            <!-- Populated via JS -->
+                        </div>
+                        
+                        <!-- 右側 グラフ本体エリア（横線グリッド＋棒グラフ） -->
+                        <div class="relative flex-1 h-60 flex flex-col justify-end">
+                            <!-- 背景の横目盛りグリッド線 -->
+                            <div class="absolute inset-x-0 top-5 bottom-8 flex flex-col justify-between pointer-events-none">
+                                <div class="border-b border-dashed border-cyber-border/60 w-full"></div>
+                                <div class="border-b border-dashed border-cyber-border/60 w-full"></div>
+                                <div class="border-b border-dashed border-cyber-border/60 w-full"></div>
+                                <div class="border-b border-cyber-border w-full"></div>
+                            </div>
+
+                            <!-- 棒グラフ本体 -->
+                            <div class="relative z-10 h-full flex items-end justify-between gap-1.5 sm:gap-4 px-1 sm:px-3" id="weekly-answer-bars">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- カレンダー形式ヒートマップ（ダーク/ホワイト最適化＋大型アニメーションほのお付き） -->
+                <div class="glass-panel p-5 sm:p-6 rounded-xl space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyber-border/50 pb-3">
+                        <h3 id="calendar-month-title" class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i> カレンダー形式ヒートマップ
                         </h3>
-                        <div class="flex items-center space-x-1 bg-cyber-surface p-1 rounded-lg border border-cyber-border text-xs font-mono">
-                            <button onclick="switchChartFrame('DAY')" id="btn-frame-day" class="px-3 py-1 rounded bg-cyber-cyan text-black font-bold">日</button>
-                            <button onclick="switchChartFrame('WEEK')" id="btn-frame-week" class="px-3 py-1 rounded text-slate-400 hover:text-white">週</button>
-                            <button onclick="switchChartFrame('MONTH')" id="btn-frame-month" class="px-3 py-1 rounded text-slate-400 hover:text-white">月</button>
+                        <!-- 凡例 -->
+                        <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono text-slate-400">
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded cal-cell-none inline-block"></span> 未学習
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded cal-cell-studied inline-block"></span> 学習済
+                            </span>
+                            <span class="flex items-center gap-1 text-amber-400 font-bold">
+                                <i data-lucide="flame" class="w-4 h-4 text-amber-400 fill-amber-400"></i> 連続ストリーク
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Simulated Visual Bar Chart -->
-                    <div class="h-48 flex items-end justify-between gap-2 pt-6 pb-2 px-4 bg-cyber-surface/50 rounded-xl border border-cyber-border/50">
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-cyber-cyan/30 border border-cyber-cyan rounded-t transition-all hover:bg-cyber-cyan/50" style="height: 35%;"></div>
-                            <span class="text-[10px] text-slate-500 font-mono">月</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-cyber-cyan/30 border border-cyber-cyan rounded-t transition-all hover:bg-cyber-cyan/50" style="height: 55%;"></div>
-                            <span class="text-[10px] text-slate-500 font-mono">火</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-cyber-cyan/30 border border-cyber-cyan rounded-t transition-all hover:bg-cyber-cyan/50" style="height: 40%;"></div>
-                            <span class="text-[10px] text-slate-500 font-mono">水</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-cyber-cyan/30 border border-cyber-cyan rounded-t transition-all hover:bg-cyber-cyan/50" style="height: 70%;"></div>
-                            <span class="text-[10px] text-slate-500 font-mono">木</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-cyber-cyan/30 border border-cyber-cyan rounded-t transition-all hover:bg-cyber-cyan/50" style="height: 20%;"></div>
-                            <span class="text-[10px] text-slate-500 font-mono">金</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-gradient-to-t from-cyan-500 to-blue-500 rounded-t transition-all" style="height: 90%;"></div>
-                            <span class="text-[10px] text-cyber-cyan font-mono font-bold">土</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                            <div class="w-full bg-cyber-cyan/30 border border-cyber-cyan rounded-t transition-all hover:bg-cyber-cyan/50" style="height: 60%;"></div>
-                            <span class="text-[10px] text-slate-500 font-mono">日</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Simulated Heatmap Grid -->
-                <div class="glass-panel p-5 rounded-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white font-mono flex items-center gap-2">
-                        <i data-lucide="grid" class="w-4 h-4 text-emerald-400"></i> 学習コミット・ヒートマップ (過去30日間)
-                    </h3>
-                    <div id="heatmap-grid" class="grid grid-cols-10 sm:grid-cols-15 gap-1.5 pt-2">
+                    <!-- カレンダーグリッド -->
+                    <div id="calendar-heatmap-grid" class="grid grid-cols-7 gap-2 sm:gap-2.5 pt-1 text-center">
                         <!-- Populated via JS -->
                     </div>
                 </div>
 
-                <!-- Achievements & Badges Grid -->
-                <div class="space-y-3">
-                    <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
-                        <i data-lucide="award" class="w-4 h-4 text-amber-400"></i> 実績・解除バッジ一覧
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="badges-container">
-                        <!-- Populated via JS -->
-                    </div>
-                </div>
             </section>
 
             <!-- ================= TAB 5: SETTINGS & DATA MANAGEMENT ================= -->
@@ -796,7 +1066,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Backup & Restore -->
                     <div class="glass-panel p-6 rounded-xl space-y-4">
                         <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
                             <i data-lucide="database" class="w-4 h-4 text-cyber-cyan"></i> バックアップと復元
@@ -815,7 +1084,6 @@
                         </div>
                     </div>
 
-                    <!-- Reset & Danger Zone -->
                     <div class="glass-panel p-6 rounded-xl space-y-4 border-red-500/30">
                         <h3 class="text-sm font-bold text-red-500 font-mono flex items-center gap-2">
                             <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i> データリセット
@@ -829,15 +1097,12 @@
                     </div>
                 </div>
 
-                <!-- Storage State Inspector -->
                 <div class="glass-panel p-6 rounded-xl space-y-3">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xs font-bold text-slate-400 font-mono uppercase">LocalStorage Raw Inspector</h3>
                         <span class="text-[10px] text-cyber-cyan font-mono" id="storage-size-label">0 KB</span>
                     </div>
-                    <pre id="storage-json-preview" class="p-3 bg-cyber-bg border border-cyber-border rounded-lg text-[11px] font-mono text-emerald-500 max-h-48 overflow-y-auto">
-// Data JSON preview
-                    </pre>
+                    <pre id="storage-json-preview" class="p-3 bg-cyber-bg border border-cyber-border rounded-lg text-[11px] font-mono text-emerald-500 max-h-48 overflow-y-auto">// Data JSON preview</pre>
                 </div>
             </section>
 
@@ -845,8 +1110,6 @@
     </div>
 
     <!-- ================= MODALS ================= -->
-
-    <!-- Modal: CREATE / EDIT DECK -->
     <div id="modal-deck" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-panel-glow w-full max-w-md rounded-2xl p-6 space-y-4 relative">
             <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -872,7 +1135,6 @@
         </div>
     </div>
 
-    <!-- Modal: CREATE / EDIT QUESTION -->
     <div id="modal-question" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-panel-glow w-full max-w-lg rounded-2xl p-6 space-y-4 relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -881,30 +1143,18 @@
                 </h3>
                 <button onclick="closeModal('modal-question')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            
             <div class="space-y-4 text-xs">
-                <!-- Deck Selector -->
                 <div>
                     <label class="block text-slate-400 font-mono mb-1">所属デッキ *</label>
-                    <select id="q-deck-select" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan">
-                        <!-- Dynamic decks -->
-                    </select>
+                    <select id="q-deck-select" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan"></select>
                 </div>
-
-                <!-- Format Switcher -->
                 <div>
                     <label class="block text-slate-400 font-mono mb-1">コンテンツ形式 *</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="switchQuestionFormMode('CARD')" id="btn-mode-card" class="py-2 rounded-lg border border-cyber-cyan bg-cyber-cyan/20 text-cyber-cyan font-bold font-mono">
-                            🎴 カード形式
-                        </button>
-                        <button type="button" onclick="switchQuestionFormMode('QUIZ')" id="btn-mode-quiz" class="py-2 rounded-lg border border-cyber-border bg-cyber-bg text-slate-400 font-mono">
-                            📝 問題形式
-                        </button>
+                        <button type="button" onclick="switchQuestionFormMode('CARD')" id="btn-mode-card" class="py-2 rounded-lg border border-cyber-cyan bg-cyber-cyan/20 text-cyber-cyan font-bold font-mono">🎴 カード形式</button>
+                        <button type="button" onclick="switchQuestionFormMode('QUIZ')" id="btn-mode-quiz" class="py-2 rounded-lg border border-cyber-border bg-cyber-bg text-slate-400 font-mono">📝 問題形式</button>
                     </div>
                 </div>
-
-                <!-- CARD FORM FIELDS -->
                 <div id="form-fields-card" class="space-y-3">
                     <div>
                         <label class="block text-slate-400 font-mono mb-1">表面 (提示内容) *</label>
@@ -915,8 +1165,6 @@
                         <textarea id="q-back-input" rows="2" placeholder="裏面に表示する意味や解答..." class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan"></textarea>
                     </div>
                 </div>
-
-                <!-- QUIZ FORM FIELDS -->
                 <div id="form-fields-quiz" class="space-y-3 hidden">
                     <div>
                         <label class="block text-slate-400 font-mono mb-1">問題形式タイプ</label>
@@ -925,13 +1173,10 @@
                             <option value="QUIZ_TEXT">文字入力問題</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-slate-400 font-mono mb-1">問題文 *</label>
                         <textarea id="q-prompt-input" rows="2" placeholder="演習問題文..." class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan"></textarea>
                     </div>
-
-                    <!-- Options inputs for choice quiz -->
                     <div id="quiz-options-inputs" class="space-y-2">
                         <label class="block text-slate-400 font-mono">選択肢（1つ目を正解に設定）</label>
                         <input type="text" id="opt-1" placeholder="選択肢 A (正解)" class="w-full bg-cyber-bg border border-emerald-500/50 rounded-lg p-2 text-white text-xs">
@@ -939,35 +1184,54 @@
                         <input type="text" id="opt-3" placeholder="選択肢 C" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2 text-white text-xs">
                         <input type="text" id="opt-4" placeholder="選択肢 D" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2 text-white text-xs">
                     </div>
-
-                    <!-- Text input correct answer -->
                     <div id="quiz-text-answer-input" class="hidden">
                         <label class="block text-slate-400 font-mono mb-1">正解キーワード *</label>
                         <input type="text" id="opt-text-correct" placeholder="完全一致させる解答テキスト" class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white text-xs">
                     </div>
                 </div>
-
-                <!-- Common Explanation -->
                 <div>
                     <label class="block text-slate-400 font-mono mb-1">解説 / 補足メモ</label>
                     <input type="text" id="q-explanation-input" placeholder="問題解答後の補足説明..." class="w-full bg-cyber-bg border border-cyber-border rounded-lg p-2.5 text-white focus:outline-none focus:border-cyber-cyan">
                 </div>
             </div>
-
             <div class="flex items-center justify-end gap-2 pt-2">
                 <button onclick="closeModal('modal-question')" class="px-4 py-2 bg-cyber-surface hover:bg-cyber-border text-slate-300 rounded-lg text-xs font-medium">キャンセル</button>
-                <button onclick="saveQuestion()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-purple-500/20">
-                    <span class="text-white">保存する</span>
-                </button>
+                <button onclick="saveQuestion()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-purple-500/20"><span class="text-white">保存する</span></button>
             </div>
         </div>
     </div>
 
-    <!-- APP APPLICATION LOGIC -->
+    <!-- SCRIPT APPLICATION LOGIC -->
     <script>
-        // Default seed data
+        function getLocalDateStr(dateObj = new Date()) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function getDaysAgoDateStr(daysAgo) {
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() - daysAgo);
+            return getLocalDateStr(d);
+        }
+
+        function buildDefaultHistoryLogs() {
+            const sampleOffsets = [8, 14, 10, 15, 19, 22, 12];
+            const logs = [];
+            for (let i = 6; i >= 0; i--) {
+                const idx = 6 - i;
+                logs.push({
+                    date: getDaysAgoDateStr(i),
+                    count: sampleOffsets[idx]
+                });
+            }
+            return logs;
+        }
+
         const INITIAL_STATE = {
-            streak: 3,
+            streak: 4,
             todayCount: 12,
             decks: [
                 { id: "deck-1", name: "英単語 Basic", desc: "日常英会話と基本単語", createdAt: "2026-10-20" },
@@ -975,55 +1239,12 @@
                 { id: "deck-3", name: "計算ドリル", desc: "暗算と公式適用トレーニング", createdAt: "2026-10-23" }
             ],
             questions: [
-                {
-                    id: "q-101",
-                    deckId: "deck-1",
-                    format: "CARD",
-                    front: "Meticulous",
-                    back: "細部まで行き届いた、極めて細心な",
-                    explanation: "Synonym: careful, precise",
-                    stage: 2,
-                    due: "2026-10-24",
-                    notes: ["過去ミス: 細いと聞き間違えがち"]
-                },
-                {
-                    id: "q-102",
-                    deckId: "deck-1",
-                    format: "CARD",
-                    front: "Reluctant",
-                    back: "乗り気でない、気が進まない (to do)",
-                    explanation: "be reluctant to do ~",
-                    stage: 0,
-                    due: "2026-10-23",
-                    notes: []
-                },
-                {
-                    id: "q-201",
-                    deckId: "deck-2",
-                    format: "QUIZ_SINGLE",
-                    prompt: "リレーショナルデータベースにおける「主キー(Primary Key)」の特性として適切なものはどれか？",
-                    options: ["非空かつ一意である", "重複を許容する", "ヌル(NULL)値を保持できる", "暗号化が必須である"],
-                    correctIndex: 0,
-                    explanation: "主キーはNOT NULLおよびUNIQUE制約を持ちます。",
-                    stage: 1,
-                    due: "2026-10-23",
-                    notes: []
-                },
-                {
-                    id: "q-301",
-                    deckId: "deck-3",
-                    format: "QUIZ_TEXT",
-                    prompt: "12 × 15 の計算結果を入力してください。",
-                    textCorrect: "180",
-                    explanation: "12×10 + 12×5 = 120 + 60 = 180",
-                    stage: 0,
-                    due: "2026-10-23",
-                    notes: []
-                }
+                { id: "q-101", deckId: "deck-1", format: "CARD", front: "Meticulous", back: "細部まで行き届いた、極めて細心な", explanation: "Synonym: careful, precise", stage: 2, due: "2026-10-24", notes: ["過去ミス: 細いと聞き間違えがち"] },
+                { id: "q-102", deckId: "deck-1", format: "CARD", front: "Reluctant", back: "乗り気でない、気が進まない (to do)", explanation: "be reluctant to do ~", stage: 0, due: "2026-10-23", notes: [] },
+                { id: "q-201", deckId: "deck-2", format: "QUIZ_SINGLE", prompt: "リレーショナルデータベースにおける「主キー(Primary Key)」の特性として適切なものはどれか？", options: ["非空かつ一意である", "重複を許容する", "ヌル(NULL)値を保持できる", "暗号化が必須である"], correctIndex: 0, explanation: "主キーはNOT NULLおよびUNIQUE制約を持ちます。", stage: 1, due: "2026-10-23", notes: [] },
+                { id: "q-301", deckId: "deck-3", format: "QUIZ_TEXT", prompt: "12 × 15 の計算結果を入力してください。", textCorrect: "180", explanation: "12×10 + 12×5 = 120 + 60 = 180", stage: 0, due: "2026-10-23", notes: [] }
             ],
-            historyLogs: [
-                { date: "2026-10-23", count: 12, correct: 10 }
-            ],
+            historyLogs: buildDefaultHistoryLogs(),
             badges: [
                 { id: "b1", title: "初陣の証", desc: "初めて問題セッションを完了する", icon: "shield-check", unlocked: true },
                 { id: "b2", title: "継続は力なり", desc: "3日連続学習を達成", icon: "flame", unlocked: true },
@@ -1031,10 +1252,7 @@
             ]
         };
 
-        // App State Reference
         let state = {};
-
-        // Active Session Variables
         let currentSessionCards = [];
         let sessionIndex = 0;
         let cardFlipped = false;
@@ -1042,15 +1260,27 @@
         let sessionSeconds = 0;
         let currentNoteMode = 'text';
         let modalQuestionMode = 'CARD';
-
-        // SUSURU 10-STAGE COMBO & SOUND SYSTEMS
+        let editingQuestionId = null;
+        let selectedDeckIdForManage = null;
         let currentCombo = 0;
         let audioSoundEnabled = true;
         let audioCtx = null;
+        let isAnsweringLocked = false;
+        let weeklyOffset = 0; // 0: 最新7日間, 1: 1週間前, 2: 2週間前...
 
-        // ==========================================================
-        // THEME TOGGLE (DARK MODE <-> WHITE / LIGHT MODE)
-        // ==========================================================
+        function recordDailyAnswers(addCount) {
+            if (!addCount || addCount <= 0) return;
+            const todayStr = getLocalDateStr();
+            if (!Array.isArray(state.historyLogs)) state.historyLogs = [];
+            const existing = state.historyLogs.find(item => item.date === todayStr);
+            if (existing) {
+                existing.count = (existing.count || 0) + addCount;
+            } else {
+                state.historyLogs.push({ date: todayStr, count: addCount });
+            }
+        }
+
+        // Theme Toggle
         function initTheme() {
             const savedTheme = localStorage.getItem('app_quiz_theme') || 'dark';
             applyTheme(savedTheme);
@@ -1061,6 +1291,10 @@
             const nextTheme = isDark ? 'light' : 'dark';
             localStorage.setItem('app_quiz_theme', nextTheme);
             applyTheme(nextTheme);
+            const analyticsSection = document.getElementById('tab-analytics');
+            if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
+                renderAnalyticsTab();
+            }
         }
 
         function applyTheme(theme) {
@@ -1082,7 +1316,6 @@
             }
         }
 
-        // Load & Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             lucide.createIcons();
@@ -1092,26 +1325,19 @@
             initSidebarMobile();
         });
 
-        // ==========================================================
-        // WEB AUDIO API SYNTHESIZER
-        // ==========================================================
+        // Audio synthesizer
         function initAudioContext() {
             if (!audioCtx) {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (AudioContextClass) {
-                    audioCtx = new AudioContextClass();
-                }
+                if (AudioContextClass) audioCtx = new AudioContextClass();
             }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         }
 
         function toggleAudioSound() {
             audioSoundEnabled = !audioSoundEnabled;
             const textEl = document.getElementById('sound-btn-text');
             const iconBtn = document.getElementById('sound-toggle-btn');
-            
             if (audioSoundEnabled) {
                 textEl.innerText = 'SOUND: ON';
                 iconBtn.className = 'flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan text-xs font-mono font-bold hover:bg-cyber-cyan/20 transition-all';
@@ -1206,9 +1432,7 @@
             } catch(e) {}
         }
 
-        // ==========================================================
-        // 10-STAGE "SUSURU" PACHISLOT OVERLOAD ENGINE
-        // ==========================================================
+        // Pachislot Overload Engine
         function runDopagakiSequence(forcedStage = null, callback = null) {
             if (forcedStage === null || typeof forcedStage !== 'number') {
                 currentCombo++;
@@ -1217,7 +1441,6 @@
             }
 
             const stage = Math.min(Math.max(currentCombo, 1), 10);
-
             const overlay = document.getElementById('dopagaki-overlay');
             const bgLayer = document.getElementById('dopagaki-bg-layer');
             const titleEl = document.getElementById('dopagaki-main-title');
@@ -1327,15 +1550,12 @@
                     titleEl.className = "text-6xl sm:text-9xl font-black italic tracking-tighter text-yellow-300 animate-susuru-gold";
                     titleEl.innerText = "👑 すする GOD RUSH !! 👑";
                     subTitleEl.innerText = "YouTubeパチンコ実機演出全冠制覇・脳汁神域到達！！";
-                    
                     gimmickBox.classList.remove('hidden');
                     marqueeContainer.classList.remove('hidden');
                     marqueeText.innerText = "🔥🌟 【究極神域達成！】 すするパチンコ演出完走！ HEAT HEAT 永久発動中 🌟🔥";
-
                     playExplosionImpact();
                     setTimeout(playKyuinSound, 250);
                     setTimeout(playGodFreezeChord, 600);
-
                     if (mainWrapper) mainWrapper.classList.add('animate-dopagaki-earthquake');
                     confetti({
                         particleCount: 450,
@@ -1362,6 +1582,7 @@
                     mainWrapper.classList.remove('animate-dopagaki-shake');
                     mainWrapper.classList.remove('animate-dopagaki-earthquake');
                 }
+                isAnsweringLocked = false;
                 if (typeof callback === 'function') callback();
             }, displayTime);
         }
@@ -1377,11 +1598,14 @@
             if (stored) {
                 try {
                     state = JSON.parse(stored);
+                    if (!Array.isArray(state.historyLogs)) {
+                        state.historyLogs = buildDefaultHistoryLogs();
+                    }
                 } catch(e) {
-                    state = INITIAL_STATE;
+                    state = { ...INITIAL_STATE, historyLogs: buildDefaultHistoryLogs() };
                 }
             } else {
-                state = INITIAL_STATE;
+                state = { ...INITIAL_STATE, historyLogs: buildDefaultHistoryLogs() };
                 saveState();
             }
             updateInspector();
@@ -1399,7 +1623,7 @@
             document.getElementById('storage-size-label').innerText = `${size} KB`;
         }
 
-        // ================= TAB NAVIGATION =================
+        // Tab Navigation
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -1412,7 +1636,7 @@
 
             if (tabId === 'dashboard') renderDashboard();
             if (tabId === 'decks') renderCrudTab();
-            if (tabId === 'analytics') renderAnalyticsTab();
+            if (tabId === 'analytics') { weeklyOffset = 0; renderAnalyticsTab(); }
             if (tabId === 'settings') updateInspector();
 
             document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -1428,18 +1652,15 @@
                 sidebar.classList.toggle('-translate-x-full');
                 overlay.classList.toggle('hidden');
             });
-
             overlay.addEventListener('click', () => {
                 sidebar.classList.add('-translate-x-full');
                 overlay.classList.add('hidden');
             });
         }
 
-        // ================= DASHBOARD RENDER =================
         function renderDashboard() {
             document.getElementById('header-streak').innerText = state.streak || 0;
             document.getElementById('header-today-count').innerText = state.todayCount || 0;
-
             document.getElementById('stat-today-cards').innerText = state.todayCount || 0;
             document.getElementById('stat-streak').innerText = `${state.streak || 0}日`;
 
@@ -1472,7 +1693,6 @@
                         <h4 class="text-base font-bold text-white">${deck.name}</h4>
                         <p class="text-xs text-slate-400 leading-snug line-clamp-2">${deck.desc}</p>
                     </div>
-
                     <div class="pt-3 border-t border-cyber-border/50 flex items-center justify-between">
                         <div class="text-[11px] font-mono text-cyber-warning flex items-center gap-1">
                             <i data-lucide="clock" class="w-3.5 h-3.5"></i> 復習待ち: ${dueCount}
@@ -1487,58 +1707,240 @@
             lucide.createIcons();
         }
 
-        // ================= CRUD TAB RENDER =================
         function renderCrudTab() {
             const deckSelect = document.getElementById('crud-deck-filter');
-            deckSelect.innerHTML = '<option value="ALL">全てのデッキ</option>';
-            state.decks.forEach(d => {
-                deckSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            const decks = Array.isArray(state.decks) ? state.decks : [];
+            if (!deckSelect) return;
+
+            deckSelect.innerHTML = '';
+            if (decks.length === 0) {
+                selectedDeckIdForManage = null;
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'デッキがありません';
+                deckSelect.appendChild(option);
+                renderManageDeckSelector();
+                renderCrudQuestionList();
+                return;
+            }
+
+            if (!selectedDeckIdForManage || !decks.some(d => d.id === selectedDeckIdForManage)) {
+                selectedDeckIdForManage = decks[0].id;
+            }
+
+            decks.forEach(deck => {
+                const option = document.createElement('option');
+                option.value = deck.id;
+                option.textContent = deck.name || '名称未設定';
+                option.selected = deck.id === selectedDeckIdForManage;
+                deckSelect.appendChild(option);
             });
 
+            renderManageDeckSelector();
             renderCrudQuestionList();
+        }
+
+        function renderManageDeckSelector() {
+            const grid = document.getElementById('manage-deck-selector-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const decks = Array.isArray(state.decks) ? state.decks : [];
+            const searchInput = document.getElementById('manage-deck-search-input');
+            const searchQuery = searchInput ? searchInput.value.trim().toLocaleLowerCase() : '';
+            const searchCount = document.getElementById('manage-deck-search-count');
+
+            if (decks.length === 0) {
+                if (searchCount) searchCount.textContent = '0 / 0 デッキ';
+                const empty = document.createElement('div');
+                empty.className = 'text-xs text-slate-400 p-4 rounded-xl border border-dashed border-cyber-border';
+                empty.textContent = 'デッキがありません。「新規デッキ作成」から作成してください。';
+                grid.appendChild(empty);
+                return;
+            }
+
+            const visibleDecks = decks.filter(deck => {
+                if (!searchQuery) return true;
+                const searchableText = `${deck.name || ''} ${deck.desc || ''}`.toLocaleLowerCase();
+                return searchableText.includes(searchQuery);
+            });
+            if (searchCount) searchCount.textContent = `${visibleDecks.length} / ${decks.length} デッキ`;
+
+            if (visibleDecks.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'col-span-full text-xs text-slate-400 text-center p-6 rounded-xl border border-dashed border-cyber-border';
+                empty.textContent = '一致するデッキがありません。検索語を変更してください。';
+                grid.appendChild(empty);
+                return;
+            }
+
+            visibleDecks.forEach(deck => {
+                const qCount = (state.questions || []).filter(q => q.deckId === deck.id).length;
+                const isSelected = deck.id === selectedDeckIdForManage;
+                const activeCls = isSelected
+                    ? 'glass-panel-glow border-2 border-cyber-cyan'
+                    : 'glass-panel border border-cyber-border hover:border-cyber-cyan/50';
+
+                // カード全体を1つのbuttonにせず、選択と追加を独立した操作にする。
+                const card = document.createElement('div');
+                card.className = 'manage-deck-card min-w-0 rounded-xl flex flex-col gap-2';
+
+                const selectButton = document.createElement('button');
+                selectButton.type = 'button';
+                selectButton.className = `manage-deck-select-button w-full text-left p-4 rounded-xl transition-all flex flex-col justify-between space-y-2 ${activeCls}`;
+                selectButton.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                selectButton.setAttribute('aria-label', `${deck.name || '名称未設定'}を選択`);
+                selectButton.addEventListener('click', () => selectManageDeck(deck.id));
+
+                const top = document.createElement('div');
+                top.className = 'flex items-center justify-between w-full gap-2';
+                const status = document.createElement('span');
+                status.className = `text-[10px] font-mono px-2 py-0.5 rounded ${isSelected ? 'bg-cyber-cyan text-black font-bold' : 'bg-cyber-surface text-cyber-cyan border border-cyber-cyan/30'}`;
+                status.textContent = isSelected ? '選択中' : 'DECK';
+                const count = document.createElement('span');
+                count.className = 'text-[11px] font-mono text-slate-400';
+                count.textContent = `${qCount} 問`;
+                top.append(status, count);
+
+                const details = document.createElement('div');
+                details.className = 'w-full min-w-0';
+                const name = document.createElement('div');
+                name.className = 'text-sm font-bold text-white truncate';
+                name.textContent = deck.name || '名称未設定';
+                const desc = document.createElement('div');
+                desc.className = 'text-[11px] text-slate-400 truncate mt-0.5';
+                desc.textContent = deck.desc || '説明なし';
+                details.append(name, desc);
+                selectButton.append(top, details);
+
+                const addButton = document.createElement('button');
+                addButton.type = 'button';
+                addButton.className = 'w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-cyber-cyan/40 bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan text-[11px] font-bold transition-colors';
+                addButton.innerHTML = '<i data-lucide="plus-circle" class="w-3.5 h-3.5"></i><span>このデッキに問題を追加</span>';
+                addButton.setAttribute('aria-label', `${deck.name || '名称未設定'}に問題を追加`);
+                addButton.addEventListener('click', () => addQuestionToDeck(deck.id));
+
+                card.append(selectButton, addButton);
+                grid.appendChild(card);
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function addQuestionToDeck(deckId) {
+            const exists = (state.decks || []).some(deck => deck.id === deckId);
+            if (!exists) {
+                alert('追加先のデッキが見つかりません。');
+                return;
+            }
+            selectManageDeck(deckId);
+            openQuestionModal(null, deckId);
+        }
+
+        function selectManageDeck(deckId) {
+            if (!(state.decks || []).some(deck => deck.id === deckId)) return;
+            selectedDeckIdForManage = deckId;
+            const deckSelect = document.getElementById('crud-deck-filter');
+            if (deckSelect) deckSelect.value = deckId;
+            renderManageDeckSelector();
+            renderCrudQuestionList();
+        }
+
+        function onManageDeckSelectChange(deckId) {
+            selectManageDeck(deckId);
         }
 
         function renderCrudQuestionList() {
             const tbody = document.getElementById('crud-questions-table-body');
+            const summaryEl = document.getElementById('manage-selected-deck-summary');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            const selectedDeck = document.getElementById('crud-deck-filter').value;
-            const selectedType = document.getElementById('crud-type-filter').value;
+            const decks = Array.isArray(state.decks) ? state.decks : [];
+            const questions = Array.isArray(state.questions) ? state.questions : [];
+            const deckSelect = document.getElementById('crud-deck-filter');
+            const selectedDeck = selectedDeckIdForManage || (deckSelect ? deckSelect.value : '');
+            const typeSelect = document.getElementById('crud-type-filter');
+            const selectedType = typeSelect ? typeSelect.value : 'ALL';
+            const deckObj = decks.find(deck => deck.id === selectedDeck);
+            const deckQuestions = questions.filter(q => q.deckId === selectedDeck);
+            const filtered = deckQuestions.filter(q => selectedType === 'ALL' || q.format === selectedType);
 
-            const filtered = state.questions.filter(q => {
-                const matchDeck = selectedDeck === 'ALL' || q.deckId === selectedDeck;
-                const matchType = selectedType === 'ALL' || q.format === selectedType;
-                return matchDeck && matchType;
-            });
+            if (summaryEl) {
+                summaryEl.textContent = deckObj
+                    ? `「${deckObj.name}」: 表示 ${filtered.length} / 全 ${deckQuestions.length} 問`
+                    : 'デッキ未選択';
+            }
+
+            if (!deckObj || filtered.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 5;
+                td.className = 'p-6 text-center text-slate-400 text-xs';
+                td.textContent = deckObj
+                    ? 'このデッキには表示対象の問題がありません。「問題を追加」から作成してください。'
+                    : 'デッキがありません。「新規デッキ作成」から作成してください。';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
 
             filtered.forEach(q => {
-                const deck = state.decks.find(d => d.id === q.deckId) || { name: "未分類" };
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-cyber-surface/50";
+                tr.className = 'hover:bg-cyber-surface/50';
 
-                let formatBadge = `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/30 text-[10px]">🎴 カード</span>`;
-                if (q.format === 'QUIZ_SINGLE') formatBadge = `<span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 border border-purple-500/30 text-[10px]">📝 4択演習</span>`;
-                if (q.format === 'QUIZ_TEXT') formatBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px]">📝 文字入力</span>`;
+                const formatCell = document.createElement('td');
+                formatCell.className = 'p-3';
+                const badge = document.createElement('span');
+                badge.className = 'px-2 py-0.5 rounded border text-[10px]';
+                if (q.format === 'QUIZ_SINGLE') {
+                    badge.classList.add('bg-purple-500/10', 'text-purple-500', 'border-purple-500/30');
+                    badge.textContent = '📝 4択演習';
+                } else if (q.format === 'QUIZ_TEXT') {
+                    badge.classList.add('bg-emerald-500/10', 'text-emerald-500', 'border-emerald-500/30');
+                    badge.textContent = '📝 文字入力';
+                } else {
+                    badge.classList.add('bg-blue-500/10', 'text-blue-500', 'border-blue-500/30');
+                    badge.textContent = '🎴 カード';
+                }
+                formatCell.appendChild(badge);
 
-                const frontText = q.front || q.prompt || '';
-                const backText = q.back || (q.options ? q.options[q.correctIndex] : q.textCorrect) || '';
+                const frontCell = document.createElement('td');
+                frontCell.className = 'p-3 text-white max-w-xs truncate';
+                frontCell.textContent = q.front || q.prompt || '';
 
-                tr.innerHTML = `
-                    <td class="p-3">${formatBadge}</td>
-                    <td class="p-3 text-slate-300 font-medium">${deck.name}</td>
-                    <td class="p-3 text-white max-w-xs truncate">${frontText}</td>
-                    <td class="p-3 text-cyber-cyan max-w-xs truncate">${backText}</td>
-                    <td class="p-3 font-mono text-[11px]">Stage ${q.stage || 0}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="deleteQuestion('${q.id}')" class="text-slate-500 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                `;
+                const backCell = document.createElement('td');
+                backCell.className = 'p-3 text-cyber-cyan max-w-xs truncate';
+                const answer = q.back || (Array.isArray(q.options) ? q.options[q.correctIndex ?? 0] : q.textCorrect) || '';
+                backCell.textContent = answer;
+
+                const stageCell = document.createElement('td');
+                stageCell.className = 'p-3 font-mono text-[11px]';
+                stageCell.textContent = `Stage ${q.stage ?? 0}`;
+
+                const actionCell = document.createElement('td');
+                actionCell.className = 'p-3 text-right whitespace-nowrap';
+                const editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.title = '問題を編集';
+                editButton.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded bg-cyber-surface hover:bg-cyber-cyan/20 border border-cyber-cyan/40 text-cyber-cyan text-[11px] font-mono mr-1.5 transition-all';
+                editButton.innerHTML = '<i data-lucide="pencil" class="w-3.5 h-3.5"></i> 編集';
+                editButton.addEventListener('click', () => openQuestionModal(q.id));
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.title = '問題を削除';
+                deleteButton.className = 'inline-flex items-center p-1.5 text-slate-500 hover:text-red-500 transition-colors';
+                deleteButton.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i>';
+                deleteButton.addEventListener('click', () => deleteQuestion(q.id));
+                actionCell.append(editButton, deleteButton);
+
+                tr.append(formatCell, frontCell, backCell, stageCell, actionCell);
                 tbody.appendChild(tr);
             });
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
-        // ================= STUDY & REVIEW SESSION ENGINE =================
         function startSession(deckId) {
             if (deckId === 'ALL') {
                 currentSessionCards = [...state.questions];
@@ -1562,9 +1964,7 @@
             loadCurrentStudyCard();
         }
 
-        function startQuickReview() {
-            startSession('ALL');
-        }
+        function startQuickReview() { startSession('ALL'); }
 
         function startSessionTimer() {
             clearInterval(sessionTimerInterval);
@@ -1580,9 +1980,11 @@
             if (sessionIndex >= currentSessionCards.length) {
                 clearInterval(sessionTimerInterval);
                 runDopagakiSequence(10, () => {
-                    state.todayCount += currentSessionCards.length;
+                    const completedCount = currentSessionCards.length;
+                    state.todayCount = (state.todayCount || 0) + completedCount;
+                    recordDailyAnswers(completedCount);
                     saveState();
-                    alert(`🎉 セッション完了！ ${currentSessionCards.length} 問の復習を消化しました。`);
+                    alert(`🎉 セッション完了！ ${completedCount} 問の復習を消化しました。`);
                     switchTab('dashboard');
                 });
                 return;
@@ -1598,18 +2000,14 @@
             if (card.format === 'CARD') {
                 document.getElementById('card-study-container').classList.remove('hidden');
                 document.getElementById('quiz-study-container').classList.add('hidden');
-
                 document.getElementById('card-front-text').innerText = card.front;
                 document.getElementById('card-back-text').innerText = card.back;
                 document.getElementById('card-explanation-text').innerText = card.explanation || '';
-
                 const intervals = ['10分後', '1日後', '3日後', '7日後', '14日後', '以降 2倍'];
-                const nextLabel = intervals[Math.min(card.stage || 0, intervals.length - 1)];
-                document.getElementById('card-next-interval-label').innerText = `段階昇格 (${nextLabel})`;
+                document.getElementById('card-next-interval-label').innerText = `段階昇格 (${intervals[Math.min(card.stage || 0, intervals.length - 1)]})`;
             } else {
                 document.getElementById('card-study-container').classList.add('hidden');
                 document.getElementById('quiz-study-container').classList.remove('hidden');
-
                 document.getElementById('quiz-question-text').innerText = card.prompt || '';
                 document.getElementById('quiz-feedback-box').classList.add('hidden');
 
@@ -1617,7 +2015,6 @@
                     document.getElementById('quiz-type-badge').innerText = '4択演習';
                     document.getElementById('quiz-options-container').classList.remove('hidden');
                     document.getElementById('quiz-text-input-container').classList.add('hidden');
-
                     const optsContainer = document.getElementById('quiz-options-container');
                     optsContainer.innerHTML = '';
                     (card.options || []).forEach((opt, idx) => {
@@ -1634,7 +2031,6 @@
                     document.getElementById('quiz-user-input').value = '';
                 }
             }
-
             renderNoteHistory(card);
             clearCanvas();
         }
@@ -1647,7 +2043,14 @@
         }
 
         function handleCardAnswer(isCorrect) {
+            if (isAnsweringLocked) return;
+            isAnsweringLocked = true;
+
             const card = currentSessionCards[sessionIndex];
+            state.todayCount = (state.todayCount || 0) + 1;
+            recordDailyAnswers(1);
+            saveState();
+
             if (isCorrect) {
                 card.stage = (card.stage || 0) + 1;
                 runDopagakiSequence(null, () => {
@@ -1662,19 +2065,32 @@
                 saveTextNoteToCard();
                 sessionIndex++;
                 loadCurrentStudyCard();
+                isAnsweringLocked = false;
             }
         }
 
         function submitQuizOption(selectedIdx) {
+            if (isAnsweringLocked) return;
+            isAnsweringLocked = true;
+
             const card = currentSessionCards[sessionIndex];
             const isCorrect = selectedIdx === card.correctIndex;
+            state.todayCount = (state.todayCount || 0) + 1;
+            recordDailyAnswers(1);
+            saveState();
             showQuizFeedback(isCorrect, card.options[card.correctIndex]);
         }
 
         function submitQuizTextInput() {
+            if (isAnsweringLocked) return;
+            isAnsweringLocked = true;
+
             const card = currentSessionCards[sessionIndex];
             const val = (document.getElementById('quiz-user-input').value || '').trim();
             const isCorrect = val.toLowerCase() === (card.textCorrect || '').toLowerCase();
+            state.todayCount = (state.todayCount || 0) + 1;
+            recordDailyAnswers(1);
+            saveState();
             showQuizFeedback(isCorrect, card.textCorrect);
         }
 
@@ -1682,7 +2098,6 @@
             const feedbackBox = document.getElementById('quiz-feedback-box');
             const resultBadge = document.getElementById('quiz-result-badge');
             document.getElementById('quiz-correct-answer-text').innerText = correctAnswerText;
-
             feedbackBox.classList.remove('hidden');
 
             if (isCorrect) {
@@ -1694,37 +2109,36 @@
                 resultBadge.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 不正解`;
                 resetCombo();
                 playExplosionImpact();
+                isAnsweringLocked = false;
             }
             lucide.createIcons();
         }
 
         function overrideQuizCorrect() {
-            runDopagakiSequence(null, () => {
-                nextStudyCard();
-            });
+            if (isAnsweringLocked) { isAnsweringLocked = false; }
+            runDopagakiSequence(null, () => { nextStudyCard(); });
         }
 
         function nextStudyCard() {
             saveTextNoteToCard();
             sessionIndex++;
             loadCurrentStudyCard();
+            isAnsweringLocked = false;
         }
 
-        // ================= SCRATCHPAD & NOTE SYSTEM =================
+        // Notes and Canvas
         function toggleNoteMode(mode) {
             currentNoteMode = mode;
             if (mode === 'text') {
                 document.getElementById('note-text-wrapper').classList.remove('hidden');
                 document.getElementById('note-draw-wrapper').classList.add('hidden');
                 document.getElementById('btn-clear-canvas').classList.add('hidden');
-
                 document.getElementById('btn-note-text').className = 'px-2.5 py-1 rounded bg-cyber-card border border-cyber-cyan text-cyber-cyan font-mono text-[10px]';
                 document.getElementById('btn-note-draw').className = 'px-2.5 py-1 rounded bg-cyber-bg border border-cyber-border text-slate-400 font-mono text-[10px]';
             } else {
                 document.getElementById('note-text-wrapper').classList.add('hidden');
                 document.getElementById('note-draw-wrapper').classList.remove('hidden');
                 document.getElementById('btn-clear-canvas').classList.remove('hidden');
-
                 document.getElementById('btn-note-draw').className = 'px-2.5 py-1 rounded bg-cyber-card border border-cyber-cyan text-cyber-cyan font-mono text-[10px]';
                 document.getElementById('btn-note-text').className = 'px-2.5 py-1 rounded bg-cyber-bg border border-cyber-border text-slate-400 font-mono text-[10px]';
             }
@@ -1734,12 +2148,10 @@
             const list = document.getElementById('note-history-list');
             list.innerHTML = '';
             const notes = card.notes || [];
-
             if (notes.length === 0) {
                 list.innerHTML = `<div class="text-[11px] text-slate-600 italic">履歴はありません</div>`;
                 return;
             }
-
             notes.slice(-3).forEach(note => {
                 list.innerHTML += `<div class="p-1.5 bg-cyber-bg/80 border border-cyber-border/40 rounded text-slate-300">${note}</div>`;
             });
@@ -1748,19 +2160,15 @@
         function saveTextNoteToCard() {
             const text = (document.getElementById('study-text-note').value || '').trim();
             if (!text || sessionIndex >= currentSessionCards.length) return;
-
             const card = currentSessionCards[sessionIndex];
             if (!card.notes) card.notes = [];
             card.notes.push(text);
             if (card.notes.length > 3) card.notes.shift();
-
             document.getElementById('study-text-note').value = '';
             saveState();
         }
 
-        // Canvas Drawing Setup
         let canvas, ctx, drawing = false;
-
         function initCanvas() {
             canvas = document.getElementById('scratch-canvas');
             if (!canvas) return;
@@ -1770,19 +2178,13 @@
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
                 const scaleY = canvas.height / rect.height;
-
                 let clientX = e.clientX;
                 let clientY = e.clientY;
-
                 if (e.touches && e.touches.length > 0) {
                     clientX = e.touches[0].clientX;
                     clientY = e.touches[0].clientY;
                 }
-
-                return {
-                    x: (clientX - rect.left) * scaleX,
-                    y: (clientY - rect.top) * scaleY
-                };
+                return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
             }
 
             function startDraw(e) {
@@ -1809,64 +2211,219 @@
             canvas.addEventListener('mousemove', draw);
             canvas.addEventListener('mouseup', stopDraw);
             canvas.addEventListener('mouseleave', stopDraw);
-
             canvas.addEventListener('touchstart', (e) => { startDraw(e); e.preventDefault(); }, { passive: false });
             canvas.addEventListener('touchmove', (e) => { draw(e); e.preventDefault(); }, { passive: false });
             canvas.addEventListener('touchend', stopDraw);
         }
 
         function clearCanvas() {
-            if (ctx && canvas) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
+            if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        // ================= ANALYTICS & BADGES RENDER =================
-        function renderAnalyticsTab() {
-            const grid = document.getElementById('heatmap-grid');
-            grid.innerHTML = '';
-            for (let i = 0; i < 30; i++) {
-                const level = Math.floor(Math.random() * 4);
-                let colorClass = 'bg-cyber-surface border border-cyber-border';
-                if (level === 1) colorClass = 'bg-cyan-500/20 border border-cyan-500/40';
-                if (level === 2) colorClass = 'bg-cyan-500/50 border border-cyan-500/70';
-                if (level === 3) colorClass = 'bg-cyber-cyan border border-cyan-400';
+        // 週次グラフの表示期間を移動（1 = 過去へ、-1 = 最新側へ）
+        function shiftWeeklyChart(deltaWeeks) {
+            const nextOffset = weeklyOffset + deltaWeeks;
+            if (nextOffset < 0) return;
+            weeklyOffset = nextOffset;
+            renderAnalyticsTab();
+        }
 
-                grid.innerHTML += `<div class="w-full h-6 rounded ${colorClass}" title="Day ${i+1}"></div>`;
+        function resetWeeklyChart() {
+            weeklyOffset = 0;
+            renderAnalyticsTab();
+        }
+
+        // ================= ANALYTICS & ACHIEVEMENTS RENDER (UPDATED) =================
+        function renderAnalyticsTab() {
+            const now = new Date();
+            const weekdayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            const todayStr = getLocalDateStr(now);
+
+            const logMap = new Map();
+            (state.historyLogs || []).forEach(item => {
+                if (item && item.date) {
+                    logMap.set(item.date, (logMap.get(item.date) || 0) + (Number(item.count) || 0));
+                }
+            });
+            if (!logMap.has(todayStr) && (state.todayCount || 0) > 0) {
+                logMap.set(todayStr, state.todayCount);
             }
 
-            const badgeContainer = document.getElementById('badges-container');
-            badgeContainer.innerHTML = '';
-            (state.badges || []).forEach(b => {
-                const isUnlocked = b.unlocked;
-                badgeContainer.innerHTML += `
-                    <div class="glass-panel p-4 rounded-xl border ${isUnlocked ? 'border-amber-400/40 bg-amber-500/5' : 'border-cyber-border opacity-50'} flex items-center gap-3">
-                        <div class="p-3 rounded-xl ${isUnlocked ? 'bg-amber-400/20 text-amber-500' : 'bg-cyber-surface text-slate-600'}">
-                            <i data-lucide="${b.icon || 'award'}" class="w-6 h-6"></i>
+            // 1. weeklyOffset に応じた7日間を算出（0=直近、1=その前の週...）
+            const daySpanStart = weeklyOffset * 7 + 6;
+            const daySpanEnd = weeklyOffset * 7;
+            const last7Days = [];
+            for (let offset = daySpanStart; offset >= daySpanEnd; offset--) {
+                const d = new Date(now);
+                d.setHours(0, 0, 0, 0);
+                d.setDate(now.getDate() - offset);
+                const dateKey = getLocalDateStr(d);
+                const monthDay = `${d.getMonth() + 1}/${d.getDate()}`;
+                const dayLabel = weekdayNames[d.getDay()];
+                const count = logMap.get(dateKey) || 0;
+                last7Days.push({
+                    dateKey,
+                    monthDay,
+                    dayLabel,
+                    count,
+                    isToday: offset === 0
+                });
+            }
+
+            const nextBtn = document.getElementById('btn-weekly-next');
+            const resetBtn = document.getElementById('btn-weekly-reset');
+            if (nextBtn) nextBtn.disabled = weeklyOffset <= 0;
+            if (resetBtn) resetBtn.classList.toggle('hidden', weeklyOffset === 0);
+
+            const rangeLabelEl = document.getElementById('weekly-range-label');
+            if (rangeLabelEl && last7Days.length === 7) {
+                const first = last7Days[0];
+                const last = last7Days[6];
+                const weekTag = weeklyOffset === 0 ? '直近7日間' : `${weeklyOffset}週間前`;
+                rangeLabelEl.innerText = `${first.monthDay}(${first.dayLabel}) 〜 ${last.monthDay}(${last.dayLabel}) [${weekTag}]`;
+            }
+
+            const weeklyBars = document.getElementById('weekly-answer-bars');
+            const yAxisEl = document.getElementById('weekly-y-axis');
+            const totalLabel = document.getElementById('weekly-total-count');
+            weeklyBars.innerHTML = '';
+            yAxisEl.innerHTML = '';
+
+            const counts = last7Days.map(d => d.count);
+            const totalSum = counts.reduce((a, b) => a + b, 0);
+            if (totalLabel) totalLabel.innerText = totalSum;
+
+            const rawMax = Math.max(...counts, 12);
+            const maxVal = Math.max(Math.ceil(rawMax / 6) * 6, 12);
+            const tickHigh = maxVal;
+            const tickMidHigh = Math.round((maxVal * 2) / 3);
+            const tickMidLow = Math.round(maxVal / 3);
+
+            yAxisEl.innerHTML = `
+                <span class="leading-none">${tickHigh}問</span>
+                <span class="leading-none">${tickMidHigh}問</span>
+                <span class="leading-none">${tickMidLow}問</span>
+                <span class="leading-none">0問</span>
+            `;
+
+            last7Days.forEach((item) => {
+                const heightPercent = item.count > 0 ? Math.max(Math.min(Math.round((item.count / maxVal) * 100), 100), 6) : 0;
+                const barGradient = item.isToday
+                    ? 'bg-gradient-to-t from-cyan-500 via-teal-400 to-amber-300 shadow-[0_0_14px_rgba(0,240,255,0.4)]'
+                    : 'bg-gradient-to-t from-blue-600 via-cyan-500 to-cyber-neon shadow-[0_0_10px_rgba(6,182,212,0.25)]';
+                const dayColor = item.dayLabel === '日'
+                    ? 'text-rose-400'
+                    : (item.dayLabel === '土' ? 'text-sky-400' : 'text-slate-200');
+
+                weeklyBars.innerHTML += `
+                    <div title="${item.monthDay}(${item.dayLabel}): ${item.count}問" class="flex-1 flex flex-col items-center h-full justify-end group">
+                        <div class="text-[11px] text-cyber-cyan font-mono font-bold mb-1 transition-transform group-hover:scale-110">${item.count}問</div>
+                        <div class="w-full max-w-[44px] flex-1 flex items-end justify-center">
+                            <div class="w-full ${barGradient} rounded-t-md transition-all duration-300 group-hover:brightness-125" style="height: ${heightPercent}%;"></div>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-mono ${isUnlocked ? 'text-amber-500' : 'text-slate-500'} block">${isUnlocked ? 'UNLOCKED' : 'LOCKED'}</span>
-                            <h4 class="text-xs font-bold text-white">${b.title}</h4>
-                            <p class="text-[11px] text-slate-400">${b.desc}</p>
+                        <div class="mt-1.5 flex flex-col items-center leading-tight">
+                            <span class="text-xs font-mono font-bold ${dayColor}">${item.dayLabel}</span>
+                            <span class="text-[10px] font-mono text-slate-400">${item.monthDay}</span>
                         </div>
                     </div>
                 `;
             });
+
+            // 2. カレンダー形式ヒートマップ（現在の年月に連動・ダーク＆ホワイト最適化＋大型ほのおアニメーション）
+            const year = now.getFullYear();
+            const monthIndex = now.getMonth(); // 0-11
+            const todayDate = now.getDate();
+            const firstDayOfMonth = new Date(year, monthIndex, 1).getDay(); // 0(日)〜6(土)
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+            const monthTitleEl = document.getElementById('calendar-month-title');
+            if (monthTitleEl) {
+                monthTitleEl.innerHTML = `<i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i> カレンダー形式ヒートマップ（${year}年${monthIndex + 1}月）`;
+            }
+
+            const calendarGrid = document.getElementById('calendar-heatmap-grid');
+            calendarGrid.innerHTML = '';
+
+            const headerDays = [
+                { label: '日', cls: 'cal-header-sun' },
+                { label: '月', cls: 'cal-header-weekday' },
+                { label: '火', cls: 'cal-header-weekday' },
+                { label: '水', cls: 'cal-header-weekday' },
+                { label: '木', cls: 'cal-header-weekday' },
+                { label: '金', cls: 'cal-header-weekday' },
+                { label: '土', cls: 'cal-header-sat' }
+            ];
+            headerDays.forEach(d => {
+                calendarGrid.innerHTML += `<div class="text-xs font-mono font-bold py-1.5 rounded-md border ${d.cls}">${d.label}</div>`;
+            });
+
+            for (let empty = 0; empty < firstDayOfMonth; empty++) {
+                calendarGrid.innerHTML += `<div class="h-16 sm:h-20 rounded-xl cal-cell-empty"></div>`;
+            }
+
+            const streakDaysCount = Math.max(Number(state.streak) || 0, 1);
+            const streakStartDate = Math.max(todayDate - streakDaysCount + 1, 1);
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cellDate = new Date(year, monthIndex, day);
+                const cellKey = getLocalDateStr(cellDate);
+                let count = logMap.get(cellKey);
+
+                // 当月内の過去日〜今日に記録がない場合、デモ用の自然な学習記録を補完（未来日は0）
+                if (count === undefined) {
+                    if (day < todayDate && day % 2 === 1) {
+                        count = 6 + ((day * 3) % 12);
+                    } else {
+                        count = 0;
+                    }
+                }
+
+                const isToday = day === todayDate;
+                const isStreakActive = day >= streakStartDate && day <= todayDate;
+                const isStudied = count > 0;
+
+                let cellStyle = 'cal-cell-none';
+                if (isToday) {
+                    cellStyle = 'cal-cell-today';
+                } else if (isStreakActive) {
+                    cellStyle = 'cal-cell-streak';
+                } else if (isStudied) {
+                    cellStyle = 'cal-cell-studied';
+                }
+
+                let centerContent = '';
+                if (isStreakActive) {
+                    centerContent = `
+                        <div class="my-auto flex flex-col items-center justify-center">
+                            <i data-lucide="flame" class="w-7 h-7 sm:w-8 sm:h-8 text-amber-400 fill-orange-500 animate-flame-burn"></i>
+                        </div>
+                        <span class="text-[10px] font-mono cal-pill-streak font-extrabold leading-none">${count}問</span>
+                    `;
+                } else if (isStudied) {
+                    centerContent = `
+                        <div class="my-auto flex items-center justify-center">
+                            <span class="px-1.5 py-0.5 rounded cal-pill-studied text-[10px] sm:text-xs font-mono font-bold">${count}問</span>
+                        </div>
+                    `;
+                } else {
+                    centerContent = `<div class="my-auto text-[10px] opacity-60 font-mono">-</div>`;
+                }
+
+                calendarGrid.innerHTML += `
+                    <div title="${monthIndex + 1}月${day}日: ${count}問解答" class="h-16 sm:h-20 p-1.5 rounded-xl ${cellStyle} flex flex-col justify-between items-center relative transition-all hover:scale-105 hover:z-10 cursor-default">
+                        <div class="w-full flex items-center justify-between px-0.5">
+                            <span class="text-[11px] sm:text-xs font-mono font-bold">${day}</span>
+                            ${isToday ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-500 text-white font-extrabold leading-none">今日</span>' : ''}
+                        </div>
+                        ${centerContent}
+                    </div>
+                `;
+            }
+
             lucide.createIcons();
         }
 
-        function switchChartFrame(frame) {
-            ['day', 'week', 'month'].forEach(f => {
-                const btn = document.getElementById(`btn-frame-${f}`);
-                if (f === frame.toLowerCase()) {
-                    btn.className = 'px-3 py-1 rounded bg-cyber-cyan text-black font-bold';
-                } else {
-                    btn.className = 'px-3 py-1 rounded text-slate-400 hover:text-white';
-                }
-            });
-        }
-
-        // ================= CRUD MODAL ACTIONS =================
+        // CRUD & Modals
         function openDeckModal() {
             document.getElementById('deck-name-input').value = '';
             document.getElementById('deck-desc-input').value = '';
@@ -1876,16 +2433,8 @@
         function saveDeck() {
             const name = document.getElementById('deck-name-input').value.trim();
             const desc = document.getElementById('deck-desc-input').value.trim();
-
             if (!name) { alert("デッキ名を入力してください。"); return; }
-
-            const newDeck = {
-                id: 'deck-' + Date.now(),
-                name: name,
-                desc: desc,
-                createdAt: new Date().toISOString().split('T')[0]
-            };
-
+            const newDeck = { id: 'deck-' + Date.now(), name: name, desc: desc, createdAt: getLocalDateStr() };
             state.decks.push(newDeck);
             saveState();
             closeModal('modal-deck');
@@ -1893,13 +2442,32 @@
             renderCrudTab();
         }
 
-        function openQuestionModal() {
+        function openQuestionModal(questionId = null, presetDeckId = null) {
+            editingQuestionId = questionId;
             const select = document.getElementById('q-deck-select');
             select.innerHTML = '';
-            state.decks.forEach(d => {
-                select.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            const availableDecks = Array.isArray(state.decks) ? state.decks : [];
+            if (availableDecks.length === 0) {
+                editingQuestionId = null;
+                alert('先にデッキを作成してください。');
+                return;
+            }
+            availableDecks.forEach(deck => {
+                const option = document.createElement('option');
+                option.value = deck.id;
+                option.textContent = deck.name || '名称未設定';
+                select.appendChild(option);
             });
 
+            const modalTitle = document.querySelector('#modal-question h3');
+            const target = questionId ? state.questions.find(q => q.id === questionId) : null;
+            if (questionId && !target) {
+                editingQuestionId = null;
+                alert("編集対象の問題が見つかりません。");
+                return;
+            }
+
+            // Reset all fields first to prevent values from a previous modal session leaking in.
             document.getElementById('q-front-input').value = '';
             document.getElementById('q-back-input').value = '';
             document.getElementById('q-prompt-input').value = '';
@@ -1908,9 +2476,44 @@
             document.getElementById('opt-3').value = '';
             document.getElementById('opt-4').value = '';
             document.getElementById('opt-text-correct').value = '';
+            document.getElementById('q-explanation-input').value = '';
 
-            switchQuestionFormMode('CARD');
+            if (target) {
+                if (modalTitle) modalTitle.lastChild.textContent = ' 問題の編集';
+                select.value = target.deckId;
+                document.getElementById('q-explanation-input').value = target.explanation || '';
+                if (target.format === 'CARD') {
+                    switchQuestionFormMode('CARD');
+                    document.getElementById('q-front-input').value = target.front || '';
+                    document.getElementById('q-back-input').value = target.back || '';
+                } else {
+                    switchQuestionFormMode('QUIZ');
+                    document.getElementById('q-quiz-type-select').value = target.format;
+                    toggleQuizOptionInputs();
+                    document.getElementById('q-prompt-input').value = target.prompt || '';
+                    if (target.format === 'QUIZ_SINGLE') {
+                        const opts = target.options || [];
+                        const correctIdx = Number.isInteger(target.correctIndex) ? target.correctIndex : 0;
+                        const correct = opts[correctIdx] || '';
+                        const otherOpts = opts.filter((_, idx) => idx !== correctIdx);
+                        document.getElementById('opt-1').value = correct;
+                        document.getElementById('opt-2').value = otherOpts[0] || '';
+                        document.getElementById('opt-3').value = otherOpts[1] || '';
+                        document.getElementById('opt-4').value = otherOpts[2] || '';
+                    } else {
+                        document.getElementById('opt-text-correct').value = target.textCorrect || '';
+                    }
+                }
+            } else {
+                if (modalTitle) modalTitle.lastChild.textContent = ' 問題の新規登録';
+                const preferredDeckId = presetDeckId || selectedDeckIdForManage;
+                if (preferredDeckId && availableDecks.some(deck => deck.id === preferredDeckId)) {
+                    select.value = preferredDeckId;
+                }
+                switchQuestionFormMode('CARD');
+            }
             document.getElementById('modal-question').classList.remove('hidden');
+            lucide.createIcons();
         }
 
         function switchQuestionFormMode(mode) {
@@ -1942,51 +2545,63 @@
         function saveQuestion() {
             const deckId = document.getElementById('q-deck-select').value;
             const explanation = document.getElementById('q-explanation-input').value.trim();
-
             if (!deckId) { alert("所属デッキを選択してください。"); return; }
 
-            let newQ = {
-                id: 'q-' + Date.now(),
-                deckId: deckId,
-                explanation: explanation,
-                stage: 0,
-                due: new Date().toISOString().split('T')[0],
-                notes: []
+            const existingIndex = editingQuestionId
+                ? state.questions.findIndex(q => q.id === editingQuestionId)
+                : -1;
+            const existingItem = existingIndex >= 0 ? state.questions[existingIndex] : null;
+            if (editingQuestionId && !existingItem) {
+                alert("編集対象の問題が見つかりません。");
+                editingQuestionId = null;
+                return;
+            }
+
+            let updatedQ = {
+                id: existingItem ? existingItem.id : ('q-' + Date.now()),
+                deckId,
+                explanation,
+                stage: existingItem ? (existingItem.stage ?? 0) : 0,
+                due: existingItem ? (existingItem.due || getLocalDateStr()) : getLocalDateStr(),
+                notes: existingItem ? (existingItem.notes || []) : []
             };
 
             if (modalQuestionMode === 'CARD') {
                 const front = document.getElementById('q-front-input').value.trim();
                 const back = document.getElementById('q-back-input').value.trim();
                 if (!front || !back) { alert("表面と裏面を入力してください。"); return; }
-
-                newQ.format = 'CARD';
-                newQ.front = front;
-                newQ.back = back;
+                updatedQ.format = 'CARD';
+                updatedQ.front = front;
+                updatedQ.back = back;
             } else {
                 const type = document.getElementById('q-quiz-type-select').value;
                 const prompt = document.getElementById('q-prompt-input').value.trim();
                 if (!prompt) { alert("問題文を入力してください。"); return; }
-
-                newQ.format = type;
-                newQ.prompt = prompt;
-
+                updatedQ.format = type;
+                updatedQ.prompt = prompt;
                 if (type === 'QUIZ_SINGLE') {
                     const opt1 = document.getElementById('opt-1').value.trim();
                     const opt2 = document.getElementById('opt-2').value.trim();
                     const opt3 = document.getElementById('opt-3').value.trim();
                     const opt4 = document.getElementById('opt-4').value.trim();
                     if (!opt1 || !opt2) { alert("少なくとも2つの選択肢を入力してください。"); return; }
-
-                    newQ.options = [opt1, opt2, opt3 || 'なし', opt4 || 'なし'];
-                    newQ.correctIndex = 0;
+                    updatedQ.options = [opt1, opt2, opt3 || 'なし', opt4 || 'なし'];
+                    updatedQ.correctIndex = 0;
                 } else {
                     const textCorrect = document.getElementById('opt-text-correct').value.trim();
                     if (!textCorrect) { alert("正解キーワードを入力してください。"); return; }
-                    newQ.textCorrect = textCorrect;
+                    updatedQ.textCorrect = textCorrect;
                 }
             }
 
-            state.questions.push(newQ);
+            if (existingIndex >= 0) {
+                state.questions[existingIndex] = updatedQ;
+            } else {
+                state.questions.push(updatedQ);
+            }
+
+            selectedDeckIdForManage = deckId;
+            editingQuestionId = null;
             saveState();
             closeModal('modal-question');
             renderCrudTab();
@@ -2001,16 +2616,13 @@
             renderDashboard();
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
 
-        // ================= SETTINGS & BACKUP ACTIONS =================
         function exportDataJSON() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
             const dlAnchorElem = document.createElement('a');
             dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `quiz_app_backup_${new Date().toISOString().split('T')[0]}.json`);
+            dlAnchorElem.setAttribute("download", `quiz_app_backup_${getLocalDateStr()}.json`);
             document.body.appendChild(dlAnchorElem);
             dlAnchorElem.click();
             dlAnchorElem.remove();
@@ -2026,19 +2638,15 @@
                         saveState();
                         alert("データが正常に復元されました！");
                         renderDashboard();
-                    } else {
-                        alert("無効なバックアップファイルフォーマットです。");
-                    }
-                } catch(err) {
-                    alert("JSONファイルの読み込みエラーが発生しました。");
-                }
+                    } else { alert("無効なバックアップファイルフォーマットです。"); }
+                } catch(err) { alert("JSONファイルの読み込みエラーが発生しました。"); }
             };
             fileReader.readAsText(event.target.files[0]);
         }
 
         function resetAllData() {
             if (!confirm("全データを削除して初期化しますか？この操作は戻せません。")) return;
-            state = INITIAL_STATE;
+            state = { ...INITIAL_STATE, historyLogs: buildDefaultHistoryLogs() };
             saveState();
             alert("データが初期化されました。");
             renderDashboard();
