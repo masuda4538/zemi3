@@ -8,29 +8,29 @@
        --primary（青） --sky（水色） --sky-soft（うすい水色）
    ═══════════════════════════════════════════════════════════════ */
 
-/* 画面のまわりの余白（上・左右・下）。下は少なめにして、ホームが画面に収まるように */
-body { padding: 4px 24px 14px; }
-
-/* 上から 名前とあいさつ → アプリを開くカード → アチーブ・記録（画面に収まるようにしている） */
-.home {
-  min-height: calc(100vh - 18px);   /* 画面の高さいっぱい（上下の余白 4px + 14px をのぞく）→ いちばん下の段（アチーブ・記録）がのこりを使う */
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* ホームは画面いっぱいの広場（余白なし）。その上に、いちばん上の帯（.home-top）と左下の札（.home-records-foot）を重ねる */
+body { padding: 0; overflow: hidden; }
+.home { position: relative; height: 100vh; overflow: hidden; }
 
 /* hidden を付けたものは必ず隠す（display: flex などを書いても消えるように） */
 .home [hidden] { display: none !important; }
 
 .home-icon { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ───────── 1. いちばん上の帯（下のアチーブ・記録と同じ枠：index.html の class="panel"） ─────────
-   2 つに分けて、左はしにアイコンと名前・右はしにログイン日数 */
+/* ───────── 2. いちばん上に重ねる：帯（左はしにアイコンと名前・右はしにログイン日数）と、その下の広場の札 ─────────
+   広場が少し すけて見えるように、半とうめい ＋ ぼかし */
+.home-top {
+  position: absolute; z-index: 30; top: 12px; left: 16px; right: 16px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; pointer-events: none;   /* すき間は広場を押せるように */
+}
+.home-top > * { pointer-events: auto; }
+.home-hero, .home-plaza-label, .home-records-foot {
+  background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent); box-shadow: 0 6px 20px rgb(15 30 60 / .1);
+}
 .home-hero {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px;
-  padding: 14px 20px; flex: none;
+  align-self: stretch; padding: 12px 20px;
 }
 .home-user { grid-column: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
 /* アイコン（丸）。左のサイドバーの「アカウント」と同じ色。画像があれば画像、なければ名前の 1 文字 */
@@ -53,60 +53,12 @@ body { padding: 4px 24px 14px; }
 .home-hero-sep { width: 1px; height: 26px; background: var(--border); }
 .home-hero-guest { grid-column: 2; justify-self: end; }
 
-/* ───────── 枠（共通） ───────── */
-.home-card { display: flex; flex-direction: column; gap: 10px; padding: 14px 20px; }
-.home-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.home-card-head h2 { font-size: 16px; font-weight: 800; }
-.home-card-note { font-size: 12.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ボタンのような文字（ログインすると記録されます） */
 .home-link {
   border: 0; background: none; padding: 2px 4px; cursor: pointer;
   color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800;
 }
 .home-link:hover { text-decoration: underline; }
-.home-small-title { margin-top: 0; font-size: 13px; font-weight: 800; color: var(--text); }
-
-/* ───────── 3・4. いちばん下の段：左に記録、右にアチーブ（幅は 1：1。画面の残りの高さいっぱい） ───────── */
-.home-bottom { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
-
-/* ───────── 3. アチーブ（右下） ───────── */
-/* 3 つを、たてに並べる：全体の円 → レア度ごとの数 → 最近手に入れたもの（あいだに線。右の「使った時間」と高さをそろえる） */
-.home-achieve-body { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-.home-achieve-body > :last-child { flex: 1 1 0; }   /* 最近手に入れたもの：枠の残りの高さいっぱい */
-.home-achieve-body > * + * { padding-top: 12px; border-top: 1px solid var(--border); }
-.home-achieve-all { display: flex; align-items: center; gap: 14px; }
-.home-achieve-count { display: flex; flex-direction: column; }
-.home-achieve-count strong { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.home-achieve-count span { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
-.home-achieve-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-
-/* ゴールド・シルバー・ブロンズごとの数：名前・バー・数 を 1 行に */
-.home-rarity { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.home-rarity-row { display: grid; grid-template-columns: 68px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
-.home-rarity-name { font-size: 13px; font-weight: 800; color: var(--rarity-text); }
-.home-rarity-bar { display: block; height: 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
-.home-rarity-fill { display: block; height: 100%; border-radius: 99px; background: var(--rarity-line); }
-.home-rarity-count { font-size: 12.5px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
-.home-rarity-count b { font-size: 14px; color: var(--text); }
-.home-ring { position: relative; width: 76px; height: 76px; flex: none; }
-.home-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.home-ring-track { fill: none; stroke: var(--sky-soft); stroke-width: 10; }
-.home-ring-fill { fill: none; stroke: var(--primary); stroke-width: 10; stroke-linecap: round; }
-.home-ring-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; }
-.home-ring-pct small { font-size: .6em; color: var(--text-2); }
-
-.home-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.home-ach { display: flex; align-items: center; gap: 10px; }
-.home-ach-badge {
-  display: grid; place-items: center; width: 34px; height: 34px; padding: 8px; flex: none; border-radius: 10px;
-  color: #fff; background: linear-gradient(150deg, var(--sky), var(--primary) 80%);
-}
-.home-ach-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.home-ach-text strong { font-size: 13px; }
-.home-ach-text > span { font-size: 12px; font-weight: 600; color: var(--text-2); }
-.home-empty { font-size: 13px; color: var(--text-2); }
-/* 最近手に入れたもの：残りの高さいっぱいに見えるだけ出して、入りきらない分はスクロール（いちばん低くても 2 つ分。js/main.js の fitRecent） */
-#recent { flex: 1 1 0; overflow-y: auto; }
-.home-list.is-scroll { padding-right: 6px; }
 
 /* ふきだし（共通）：うすい水色の角丸。::after が三角のしっぽ */
 .home-bubble {
@@ -119,31 +71,7 @@ body { padding: 4px 24px 14px; }
   border: inherit; border-width: 0 1.5px 1.5px 0; border-style: solid;
 }
 
-/* ───────── 2. アプリを開くカード（アイコン・名前・ひとこと。横に 5 枚、せまいときは 3 枚・2 枚） ───────── */
-.home-apps { flex: none; }
-.home-apps-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
-.home-app {
-  display: flex; align-items: center; gap: 12px; min-width: 0; padding: 14px 14px 14px 16px;
-  font: inherit; color: var(--text); text-align: left; cursor: pointer;
-  transition: transform .15s var(--ease, ease), box-shadow .15s, border-color .15s;
-}
-.home-app:hover, .home-app:focus-visible {
-  transform: translateY(-2px); border-color: color-mix(in srgb, var(--app) 45%, var(--border));
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--app) 18%, transparent);
-}
-.home-app-icon {
-  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px;
-  color: #fff; background: linear-gradient(150deg, color-mix(in srgb, var(--app) 70%, #fff), var(--app) 85%);
-}
-.home-app-icon .home-icon { width: 24px; height: 24px; }
-.home-app-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.home-app-name { font-size: 14.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.home-app-desc { font-size: 11.5px; font-weight: 700; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.home-app-go { flex: none; font-size: 22px; font-weight: 800; line-height: 1; color: var(--text-3); transition: color .15s, transform .15s; }
-.home-app:hover .home-app-go { color: var(--app); transform: translateX(2px); }
-
-/* ───────── 4. 記録へのカード（左下。上に空と丘とスタッピー、下に時間と「記録を見る」） ───────── */
-.home-records-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+/* ───────── 1. 広場（画面いっぱい。空と丘とスタッピー・フレンド） ───────── */
 /* 上：空と丘の上のスタッピー（ぴょんぴょん はねる。なでられる）とふきだし。のこりの高さいっぱい
    空 … 上から下へのグラデーション。色は時間帯（data-time：morning 朝／day 昼／evening 夕方／night 夜）で変わる
    太陽・月 … .home-sky-sun、星 … .home-stars（夜だけ）、雲 … .home-cloud（ゆっくり流れる）
@@ -157,9 +85,9 @@ body { padding: 4px 24px 14px; }
   --hill-back: color-mix(in srgb, #5fbf7f 16%, var(--surface));
   --grass: color-mix(in srgb, #3f9d5f 55%, var(--surface));
   --sun: #ffd54a; --sun-glow: rgb(255 213 74 / .45);
-  position: relative; isolation: isolate; overflow: hidden; flex: 1 1 0; min-height: 170px; container-type: size;
+  position: absolute; inset: 0; isolation: isolate; overflow: clip; container-type: size;   /* 画面いっぱい。clip … はみ出しを切る（hidden とちがい、中が勝手にスクロールしない） */
   display: flex; align-items: flex-end; justify-content: flex-start;
-  padding: 0 16px 14px 9%; border-radius: 16px; color: var(--text);
+  padding: 0 16px 92px 18%; color: var(--text);   /* 下は、左下の札の分あける（スタッピーが かくれないように） */
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   transition: background .8s;
 }
@@ -183,11 +111,11 @@ body { padding: 4px 24px 14px; }
   --grass: color-mix(in srgb, #2f6f5a 85%, var(--surface));
 }
 .home-records-chara::before {   /* 手前の丘 */
-  content: ""; position: absolute; z-index: -1; left: -20%; right: -20%; bottom: -60%; height: 85%; border-radius: 50%;
+  content: ""; position: absolute; z-index: -1; left: -30%; right: -30%; bottom: -45%; height: 95%; border-radius: 50%;   /* 広場の地面：画面の下 4 割くらい（はしでも 4 割近く） */
   background: var(--hill); transition: background .8s;
 }
 .home-hill-back {   /* 奥の丘（右うしろ） */
-  position: absolute; z-index: -2; right: -25%; bottom: -35%; width: 90%; height: 75%; border-radius: 50%;
+  position: absolute; z-index: -2; right: -20%; bottom: -10%; width: 80%; height: 85%; border-radius: 50%;
   background: var(--hill-back); transition: background .8s;
 }
 /* 太陽（夜は月）：右上。朝と夕方は少し低いところ */
@@ -263,7 +191,8 @@ body { padding: 4px 24px 14px; }
   scale: calc(1 - var(--depth, 0) * .25);
   transition: translate .5s ease-out, scale .42s ease-in-out;
 }
-.home-records-owl .chara-img { height: clamp(90px, 68cqh, 220px); }   /* 空の枠の高さに合わせる */
+.home-records-owl .chara-img { height: clamp(80px, 50cqh, 170px); }   /* 空の枠の高さに合わせる（フレンドも歩けるように、少し小さめ） */
+.home-records-walker { z-index: 9; }   /* スタッピーとふきだしは、いつもフレンド（3〜8）より前 */
 /* ふきだし：スタッピーの右上。しっぽは左（スタッピーのほう）。右に寄ったら（is-left）、左がわに出して しっぽは右 */
 .home-records-bubble {
   position: absolute; left: calc(100% - 14px - var(--depth, 0) * 12%); top: calc(14% + var(--depth, 0) * 22%); z-index: 2;
@@ -275,6 +204,15 @@ body { padding: 4px 24px 14px; }
 .home-records-bubble.is-left { left: auto; right: calc(100% - 14px - var(--depth, 0) * 12%); }
 .home-records-bubble.is-left::after { left: auto; right: -6.5px; transform: translateY(-50%) rotate(-45deg); }
 .home-records-bubble.is-away { opacity: 0; pointer-events: none; }   /* スタッピーがおさんぽ中は かくす */
+/* ───────── 3. 左下に重ねる札：今日・今週・これまでの時間と「記録を見る」を横に 1 列 ───────── */
+.home-records-foot {
+  position: absolute; z-index: 30; left: 16px; bottom: 14px;
+  display: flex; align-items: center; gap: 16px; padding: 10px 12px 10px 4px; border-radius: 18px;
+}
+/* 3 つの数字は同じ幅（「1時間47分」が入る広さ）。左右に すき間をとって、線で区切る */
+.home-records-foot .home-records-nums li { flex: 0 0 auto; width: 118px; padding: 0 12px; gap: 3px; }
+.home-records-foot .home-records-nums b { font-size: 19px; }
+.home-records-foot .home-records-btn { flex: none; padding: 0 22px; margin-left: 4px; }
 /* 下：今日・今週・これまで（横に 3 つ。線で区切る。数字を大きく） */
 .home-records-nums { flex: none; list-style: none; margin: 0; padding: 0; display: flex; }
 .home-records-nums li {
@@ -292,47 +230,89 @@ body { padding: 4px 24px 14px; }
 .home-records-btn::after { content: "›"; font-size: 18px; line-height: 1; }
 .home-records-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
-/* 少し低いウィンドウのとき：少し詰める */
-@media (max-height: 840px) {
-  .home { gap: 10px; }
-  .home-hero { padding: 10px 18px; }
-  .home-avatar { width: 40px; height: 40px; font-size: 17px; }
-  .home-card { padding: 10px 18px; gap: 8px; }
-  .home-app { padding: 10px 12px 10px 14px; }
-  .home-app-icon { width: 38px; height: 38px; border-radius: 11px; }
-  .home-apps-grid { gap: 10px; }
-  .home-ring { width: 64px; height: 64px; }
-  .home-ach { gap: 8px; }
-  .home-list { gap: 4px; }
-  .home-achieve-body { gap: 8px; }
-  .home-achieve-body > * + * { padding-top: 8px; }
-  .home-bottom { gap: 10px; }
-  .home-records-body { gap: 8px; }
-  .home-records-nums b { font-size: 18px; }
-}
-/* もっと低いウィンドウのとき（1280×720 など）：さらに少し詰める */
+/* 少し低いウィンドウのとき：帯と札を少し小さく */
 @media (max-height: 740px) {
-  .home { gap: 8px; }
-  .home-hero { padding: 7px 18px; }
-  .home-card { padding: 8px 16px; gap: 6px; }
-  .home-ring { width: 56px; height: 56px; }
-  .home-ring-pct { font-size: 15px; }
+  .home-hero { padding: 8px 18px; }
+  .home-avatar { width: 40px; height: 40px; font-size: 17px; }
+  .home-records-nums b { font-size: 18px; }
   .home-records-btn { height: 38px; }
 }
-
 /* せまいウィンドウのとき */
 @media (max-width: 1000px) {
-  .home-bottom { grid-template-columns: 1fr; }   /* アチーブの下に、記録 */
-  .home-apps-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* アプリのカードは 3 枚ずつ */
   .home-hero-login { font-size: 12.5px; gap: 10px; }
   .home-hero-login b { font-size: 19px; }
 }
 @media (max-width: 640px) {
   .home-hero { grid-template-columns: 1fr; justify-items: center; }
   .home-user, .home-hero-login, .home-hero-guest { grid-column: 1; justify-self: center; }
-  .home-apps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-records-foot .home-records-nums li { width: 92px; padding: 0 6px; }
+  .home-records-foot .home-records-nums b { font-size: 16px; }
 }
 
 /* ふきだしの言葉が変わったときに、ぽんと出す */
 .home-bubble.is-pop { animation: home-pop .3s ease-out; }
 @keyframes home-pop { 0% { transform: scale(.9); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+/* ═════════ 広場（フレンドが歩きまわる。js/plaza.js。★ 今は見た目のイメージだけ） ═════════ */
+.home-plaza-label {   /* 帯の下の札：広場 フレンド 〇人・オンライン 〇人 ［イメージ］ */
+  display: inline-flex; align-items: center; gap: 10px; padding: 6px 8px 6px 14px; border-radius: 99px;
+  font-size: 12.5px; font-weight: 700; color: var(--text-2);
+}
+.home-plaza-label b { font-size: 14px; font-weight: 800; color: var(--text); }
+.home-plaza-tag {
+  padding: 2px 9px; border-radius: 99px; background: var(--surface-2); border: 1px dashed var(--border-strong);
+  font-size: 11px; font-weight: 800; color: var(--text-3);
+}
+.home-friends { position: absolute; inset: 0; pointer-events: none; }   /* 広場いっぱいの入れもの（フレンドだけ押せる） */
+/* フレンド 1 人（人の形 ＋ 頭の上の名前 ＋ 足もとのかげ）。left・bottom は plaza.js が決める（歩くときは なめらかに） */
+.home-friend {
+  --depth: 0; --face: 1;
+  position: absolute; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  width: clamp(34px, 14cqh, 70px); padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto;
+  translate: -50% 0; scale: calc(1 - var(--depth) * .3); transform-origin: 50% 100%;
+  transition-property: left, bottom, scale; transition-timing-function: linear; transition-duration: 1s;
+  font: inherit; color: var(--text);
+}
+.home-friend-body { width: 100%; height: auto; display: block; fill: var(--c); filter: drop-shadow(0 3px 4px rgb(15 30 60 / .18)); scale: var(--face) 1; transition: scale .3s; }
+.home-friend-shadow { width: 70%; height: 6px; margin-top: -5px; border-radius: 50%; background: rgb(15 30 60 / .18); }
+/* 歩いているあいだは、ぴょこぴょこ上下にゆれる */
+.home-friend.is-walking .home-friend-body { animation: home-friend-step .42s ease-in-out infinite; }
+@keyframes home-friend-step { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+.home-friend:hover .home-friend-body, .home-friend.is-open .home-friend-body { filter: drop-shadow(0 0 0 #fff) drop-shadow(0 3px 6px color-mix(in srgb, var(--c) 50%, transparent)); }
+.home-friend:focus-visible { outline: 2px solid var(--c); outline-offset: 3px; border-radius: 8px; }
+/* 頭の上の名前（オンラインなら緑の点） */
+.home-friend-name {
+  display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; white-space: nowrap;
+  background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--c) 45%, transparent);
+  font-size: 11px; font-weight: 800; line-height: 1.5; box-shadow: 0 2px 6px rgb(15 30 60 / .1);
+}
+.home-friend-name i, .home-friend-online i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px rgb(34 197 94 / .25); }
+/* 押したときの小さなカード（名前とアイコン・オンライン or 最後のログイン・アチーブの取得率） */
+.home-friend-card {
+  position: absolute; z-index: 20; width: 230px; padding: 12px 14px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 10px 28px rgb(15 30 60 / .22);
+  display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--text);
+  animation: home-pop .25s ease-out;
+}
+.home-friend-card[hidden] { display: none; }
+.home-friend-close {
+  position: absolute; right: 6px; top: 6px; width: 24px; height: 24px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--text-3); font: inherit; font-size: 15px; line-height: 1;
+}
+.home-friend-close:hover { background: var(--surface-2); color: var(--text); }
+.home-friend-top { display: flex; align-items: center; gap: 10px; padding-right: 20px; }
+.home-friend-avatar {
+  flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--c); color: #fff; font-size: 15px; font-weight: 800;
+}
+.home-friend-who { min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.home-friend-who b { font-size: 14px; font-weight: 800; }
+.home-friend-who small { font-size: 11px; color: var(--text-3); }
+.home-friend-row { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.home-friend-row b { margin-left: auto; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.home-friend-label { flex: none; font-size: 11px; font-weight: 700; color: var(--text-2); }
+.home-friend-online { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #15803d; }
+:root[data-theme="dark"] .home-friend-online { color: #4ade80; }
+.home-friend-bar { flex: 1; height: 7px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.home-friend-bar i { display: block; height: 100%; border-radius: inherit; background: var(--c); }
+.reduce-motion .home-friend { transition: none; }

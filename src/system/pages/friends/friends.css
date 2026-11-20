@@ -1,0 +1,71 @@
+/* ═════════ フレンド（main.jsx。形は core/components/settings-layout.css。★ 今は見た目のイメージだけ） ═════════ */
+
+/* 「今は見た目のイメージです」のお知らせ */
+.fr-sample {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 8px 14px; border-radius: 10px;
+  background: color-mix(in srgb, #f59e0b 10%, var(--surface)); border: 1px dashed color-mix(in srgb, #f59e0b 45%, var(--border));
+  font-size: 12.5px; font-weight: 700; color: var(--text-2);
+}
+.fr-sample .icon { flex: none; width: 16px; height: 16px; color: #d97706; }
+
+.fr-card { padding: 4px 0; }
+.fr-card + .fr-card { margin-top: 14px; }
+.fr-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px 10px; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.fr-card-head strong { font-size: 14px; color: var(--text); }
+.fr-none { padding: 14px 20px 18px; font-size: 13px; color: var(--text-3); }
+
+/* 一覧の 1 行：アイコン ｜ 名前・ID ｜ オンライン or 最後のログイン ｜ アチーブ（バーと %） */
+.fr-list { list-style: none; margin: 0; padding: 0; }
+.fr-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) 150px minmax(160px, 220px); align-items: center; gap: 16px;
+  padding: 12px 20px; border-top: 1px solid var(--border);
+}
+.fr-avatar {
+  position: relative; flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+  background: var(--c); color: #fff; font-size: 17px; font-weight: 800;
+}
+.fr-avatar i { position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px; border-radius: 50%; background: #22c55e; border: 2.5px solid var(--surface); }
+.fr-avatar.is-small { width: 30px; height: 30px; font-size: 13px; }
+.fr-avatar.is-small i { width: 10px; height: 10px; border-width: 2px; }
+.fr-who { min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.fr-who b { font-size: 14.5px; font-weight: 800; }
+.fr-who small { font-size: 12px; color: var(--text-3); }
+.fr-status { display: flex; flex-direction: column; line-height: 1.35; }
+.fr-status small, .fr-achieve small { font-size: 11px; font-weight: 700; color: var(--text-3); }
+.fr-status b { font-size: 13.5px; font-weight: 800; }
+.fr-online { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 800; color: #15803d; }
+.fr-online i { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgb(34 197 94 / .22); }
+:root[data-theme="dark"] .fr-online { color: #4ade80; }
+.fr-achieve { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 10px; }
+.fr-achieve small { grid-column: 1 / -1; }
+.fr-bar { height: 8px; border-radius: 99px; background: var(--sky-soft); overflow: hidden; }
+.fr-bar i { display: block; height: 100%; border-radius: inherit; background: var(--c); }
+.fr-achieve b { font-size: 13.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* フレンドを追加 */
+.fr-add { padding: 0; }
+.fr-add-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 20px; }
+.fr-add-row + .fr-add-row { border-top: 1px solid var(--border); }
+.fr-add-row strong { font-size: 14px; font-weight: 800; }
+.fr-add-row p { margin-top: 3px; font-size: 12.5px; color: var(--text-2); }
+.fr-my-id {
+  flex: none; padding: 6px 14px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border-strong);
+  font: 800 15px/1.4 Consolas, "Cascadia Mono", monospace; color: var(--text); user-select: all;
+}
+.fr-add-form { flex: none; display: flex; align-items: center; gap: 8px; }
+.fr-add-form .input { width: 220px; height: 38px; }
+.fr-add-form .btn { display: inline-flex; align-items: center; gap: 6px; height: 38px; }
+.fr-add-form .btn .icon { width: 16px; height: 16px; }
+
+/* 右はしの「おまけ」：オンラインのフレンド */
+.fr-aside-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.fr-aside-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.fr-aside-list b { flex: 1; min-width: 0; font-weight: 800; }
+.fr-aside-list small { font-size: 12px; font-weight: 700; color: var(--text-3); }
+
+/* せまいとき：アチーブは下の行へ */
+@media (max-width: 1200px) {
+  .fr-row { grid-template-columns: auto minmax(0, 1fr) 130px; }
+  .fr-achieve { grid-column: 2 / -1; }
+  .fr-add-row { flex-direction: column; align-items: flex-start; }
+}
