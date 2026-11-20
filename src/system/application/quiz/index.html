@@ -530,9 +530,43 @@
             color: #075985;
         }
 
-        /* Deck management: keep the problem editor in a stable position even with many decks. */
+        /* Deck management: separate list and detail screens. */
+        #manage-deck-detail-view:not(.hidden) {
+            animation: manageDeckScreenIn 180ms ease-out;
+        }
+        @keyframes manageDeckScreenIn {
+            from { opacity: 0; transform: translateX(8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #manage-deck-detail-view:not(.hidden) { animation: none; }
+        }
+
+        /* Deck management: let the deck list occupy the remaining viewport height. */
+        #tab-decks:not(.hidden) {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 96px);
+            height: calc(100dvh - 96px);
+            min-height: 360px;
+        }
+        #tab-decks:not(.hidden) > .border-b {
+            flex: 0 0 auto;
+        }
+        #manage-deck-list-view:not(.hidden) {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+        }
+        #manage-deck-list-view > .flex {
+            flex: 0 0 auto;
+        }
         #manage-deck-selector-grid {
-            max-height: 232px;
+            flex: 1 1 auto;
+            min-height: 160px;
+            max-height: none;
+            height: auto;
             overflow-y: auto;
             overflow-x: hidden;
             align-content: start;
@@ -562,6 +596,18 @@
         }
         html:not(.dark) #manage-deck-selector-grid::-webkit-scrollbar-thumb {
             background: #94a3b8;
+        }
+        @media (min-width: 640px) {
+            #tab-decks:not(.hidden) {
+                height: calc(100vh - 112px);
+                height: calc(100dvh - 112px);
+            }
+        }
+        @media (min-width: 1024px) {
+            #tab-decks:not(.hidden) {
+                height: calc(100vh - 128px);
+                height: calc(100dvh - 128px);
+            }
         }
 
     </style>
@@ -778,43 +824,54 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cyber-border pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-wide">デッキ管理</h2>
-                        <p class="text-xs text-slate-400">デッキを選んで中の問題を確認・編集・削除できます</p>
+                        <p class="text-xs text-slate-400">デッキを選択すると、そのデッキ専用の管理画面に切り替わります</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openDeckModal()" class="px-3.5 py-2 bg-cyber-surface hover:bg-cyber-border border border-cyber-border text-white text-xs font-semibold rounded-lg flex items-center gap-2">
-                            <i data-lucide="folder-plus" class="w-4 h-4 text-cyber-cyan"></i> 新規デッキ作成
-                        </button>
-                        <button onclick="openQuestionModal(null, selectedDeckIdForManage)" class="px-4 py-2 bg-cyber-cyan hover:bg-cyan-400 text-black text-xs font-bold rounded-lg flex items-center gap-2 shadow-lg shadow-cyan-500/20">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i> 問題を追加
-                        </button>
-                    </div>
+                    <button onclick="openDeckModal()" class="px-3.5 py-2 bg-cyber-surface hover:bg-cyber-border border border-cyber-border text-white text-xs font-semibold rounded-lg flex items-center gap-2">
+                        <i data-lucide="folder-plus" class="w-4 h-4 text-cyber-cyan"></i> 新規デッキ作成
+                    </button>
                 </div>
 
-                <!-- デッキ検索：検索結果からデッキ選択・問題追加へ進めます -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-cyber-surface border border-cyber-border rounded-xl p-3">
-                    <div class="relative flex-1 min-w-0 sm:max-w-md">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
-                        <input
-                            type="search"
-                            id="manage-deck-search-input"
-                            oninput="renderManageDeckSelector()"
-                            placeholder="デッキ名・説明で検索..."
-                            aria-label="デッキ名・説明で検索"
-                            class="w-full bg-cyber-bg border border-cyber-border rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan"
-                        >
-                    </div>
-                    <div id="manage-deck-search-count" class="text-[11px] text-slate-400 font-mono whitespace-nowrap" aria-live="polite"></div>
-                </div>
-                <div id="manage-deck-selector-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
-                <div class="flex flex-wrap items-center justify-between gap-3 bg-cyber-surface p-3.5 rounded-xl border border-cyber-border text-xs">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-slate-400 font-mono">選択デッキ:</span>
-                            <select id="crud-deck-filter" onchange="onManageDeckSelectChange(this.value)" class="bg-cyber-bg border border-cyber-border rounded-lg px-3 py-1.5 text-white font-semibold focus:outline-none focus:border-cyber-cyan"></select>
+                <!-- デッキ一覧画面 -->
+                <div id="manage-deck-list-view" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-cyber-surface border border-cyber-border rounded-xl p-3">
+                        <div class="relative flex-1 min-w-0 sm:max-w-md">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                            <input
+                                type="search"
+                                id="manage-deck-search-input"
+                                oninput="renderManageDeckSelector()"
+                                placeholder="デッキ名・説明で検索..."
+                                aria-label="デッキ名・説明で検索"
+                                class="w-full bg-cyber-bg border border-cyber-border rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan"
+                            >
                         </div>
+                        <div id="manage-deck-search-count" class="text-[11px] text-slate-400 font-mono whitespace-nowrap" aria-live="polite"></div>
+                    </div>
+                    <div id="manage-deck-selector-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+
+                <!-- 選択したデッキの詳細画面 -->
+                <div id="manage-deck-detail-view" class="space-y-5 hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-cyber-border bg-cyber-surface p-4">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <button type="button" onclick="backToManageDeckList()" title="デッキ一覧へ戻る" class="shrink-0 p-2 rounded-lg border border-cyber-border bg-cyber-bg hover:bg-cyber-card text-slate-300 transition-colors">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-mono text-cyber-cyan mb-1">DECK DETAIL</div>
+                                <h3 id="manage-selected-deck-title" class="text-lg font-bold text-white truncate">デッキ名</h3>
+                                <p id="manage-selected-deck-description" class="text-xs text-slate-400 mt-0.5">デッキの説明</p>
+                                <p id="manage-selected-deck-count" class="text-[11px] text-slate-400 font-mono mt-1">0 問</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="openQuestionModal(null, selectedDeckIdForManage)" class="shrink-0 px-4 py-2.5 bg-cyber-cyan hover:bg-cyan-400 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> このデッキに問題を追加
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-cyber-surface p-3.5 rounded-xl border border-cyber-border text-xs">
                         <div class="flex items-center gap-2">
-                            <span class="text-slate-400 font-mono">形式:</span>
+                            <span class="text-slate-400 font-mono">問題形式:</span>
                             <select id="crud-type-filter" onchange="renderCrudQuestionList()" class="bg-cyber-bg border border-cyber-border rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-cyber-cyan">
                                 <option value="ALL">全ての形式</option>
                                 <option value="CARD">🎴 カード形式</option>
@@ -822,24 +879,24 @@
                                 <option value="QUIZ_TEXT">📝 問題形式 (文字入力)</option>
                             </select>
                         </div>
+                        <div id="manage-selected-deck-summary" class="font-mono text-[11px] text-cyber-cyan"></div>
                     </div>
-                    <div id="manage-selected-deck-summary" class="font-mono text-[11px] text-cyber-cyan"></div>
-                </div>
 
-                <div class="glass-panel rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-cyber-surface text-slate-400 font-mono border-b border-cyber-border">
-                                <tr>
-                                    <th class="p-3">形式</th>
-                                    <th class="p-3">表面 / 問題文</th>
-                                    <th class="p-3">裏面 / 正解</th>
-                                    <th class="p-3">段階</th>
-                                    <th class="p-3 text-right">編集 / 削除</th>
-                                </tr>
-                            </thead>
-                            <tbody id="crud-questions-table-body" class="divide-y divide-cyber-border/40 text-slate-300"></tbody>
-                        </table>
+                    <div class="glass-panel rounded-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-cyber-surface text-slate-400 font-mono border-b border-cyber-border">
+                                    <tr>
+                                        <th class="p-3">形式</th>
+                                        <th class="p-3">表面 / 問題文</th>
+                                        <th class="p-3">裏面 / 正解</th>
+                                        <th class="p-3">段階</th>
+                                        <th class="p-3 text-right">編集 / 削除</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="crud-questions-table-body" class="divide-y divide-cyber-border/40 text-slate-300"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1262,6 +1319,7 @@
         let modalQuestionMode = 'CARD';
         let editingQuestionId = null;
         let selectedDeckIdForManage = null;
+        let manageDeckScreen = 'list'; // 'list' or 'detail'
         let currentCombo = 0;
         let audioSoundEnabled = true;
         let audioCtx = null;
@@ -1708,35 +1766,17 @@
         }
 
         function renderCrudTab() {
-            const deckSelect = document.getElementById('crud-deck-filter');
             const decks = Array.isArray(state.decks) ? state.decks : [];
-            if (!deckSelect) return;
 
-            deckSelect.innerHTML = '';
             if (decks.length === 0) {
                 selectedDeckIdForManage = null;
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'デッキがありません';
-                deckSelect.appendChild(option);
-                renderManageDeckSelector();
-                renderCrudQuestionList();
-                return;
-            }
-
-            if (!selectedDeckIdForManage || !decks.some(d => d.id === selectedDeckIdForManage)) {
+                manageDeckScreen = 'list';
+            } else if (!selectedDeckIdForManage || !decks.some(deck => deck.id === selectedDeckIdForManage)) {
                 selectedDeckIdForManage = decks[0].id;
             }
 
-            decks.forEach(deck => {
-                const option = document.createElement('option');
-                option.value = deck.id;
-                option.textContent = deck.name || '名称未設定';
-                option.selected = deck.id === selectedDeckIdForManage;
-                deckSelect.appendChild(option);
-            });
-
             renderManageDeckSelector();
+            renderManageDeckScreen();
             renderCrudQuestionList();
         }
 
@@ -1753,7 +1793,7 @@
             if (decks.length === 0) {
                 if (searchCount) searchCount.textContent = '0 / 0 デッキ';
                 const empty = document.createElement('div');
-                empty.className = 'text-xs text-slate-400 p-4 rounded-xl border border-dashed border-cyber-border';
+                empty.className = 'col-span-full text-xs text-slate-400 p-6 text-center rounded-xl border border-dashed border-cyber-border';
                 empty.textContent = 'デッキがありません。「新規デッキ作成」から作成してください。';
                 grid.appendChild(empty);
                 return;
@@ -1776,27 +1816,17 @@
 
             visibleDecks.forEach(deck => {
                 const qCount = (state.questions || []).filter(q => q.deckId === deck.id).length;
-                const isSelected = deck.id === selectedDeckIdForManage;
-                const activeCls = isSelected
-                    ? 'glass-panel-glow border-2 border-cyber-cyan'
-                    : 'glass-panel border border-cyber-border hover:border-cyber-cyan/50';
-
-                // カード全体を1つのbuttonにせず、選択と追加を独立した操作にする。
-                const card = document.createElement('div');
-                card.className = 'manage-deck-card min-w-0 rounded-xl flex flex-col gap-2';
-
-                const selectButton = document.createElement('button');
-                selectButton.type = 'button';
-                selectButton.className = `manage-deck-select-button w-full text-left p-4 rounded-xl transition-all flex flex-col justify-between space-y-2 ${activeCls}`;
-                selectButton.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-                selectButton.setAttribute('aria-label', `${deck.name || '名称未設定'}を選択`);
-                selectButton.addEventListener('click', () => selectManageDeck(deck.id));
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'manage-deck-select-button glass-panel w-full min-w-0 text-left p-4 rounded-xl transition-all flex flex-col justify-between gap-3';
+                card.setAttribute('aria-label', `${deck.name || '名称未設定'}の管理画面を開く`);
+                card.addEventListener('click', () => openManageDeck(deck.id));
 
                 const top = document.createElement('div');
                 top.className = 'flex items-center justify-between w-full gap-2';
                 const status = document.createElement('span');
-                status.className = `text-[10px] font-mono px-2 py-0.5 rounded ${isSelected ? 'bg-cyber-cyan text-black font-bold' : 'bg-cyber-surface text-cyber-cyan border border-cyber-cyan/30'}`;
-                status.textContent = isSelected ? '選択中' : 'DECK';
+                status.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-surface text-cyber-cyan border border-cyber-cyan/30';
+                status.textContent = 'DECK';
                 const count = document.createElement('span');
                 count.className = 'text-[11px] font-mono text-slate-400';
                 count.textContent = `${qCount} 問`;
@@ -1811,42 +1841,79 @@
                 desc.className = 'text-[11px] text-slate-400 truncate mt-0.5';
                 desc.textContent = deck.desc || '説明なし';
                 details.append(name, desc);
-                selectButton.append(top, details);
 
-                const addButton = document.createElement('button');
-                addButton.type = 'button';
-                addButton.className = 'w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-cyber-cyan/40 bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan text-[11px] font-bold transition-colors';
-                addButton.innerHTML = '<i data-lucide="plus-circle" class="w-3.5 h-3.5"></i><span>このデッキに問題を追加</span>';
-                addButton.setAttribute('aria-label', `${deck.name || '名称未設定'}に問題を追加`);
-                addButton.addEventListener('click', () => addQuestionToDeck(deck.id));
+                const footer = document.createElement('div');
+                footer.className = 'flex items-center justify-between text-[11px] text-cyber-cyan font-semibold';
+                const openLabel = document.createElement('span');
+                openLabel.textContent = 'デッキを開く';
+                const arrow = document.createElement('i');
+                arrow.setAttribute('data-lucide', 'arrow-up-right');
+                arrow.className = 'w-4 h-4';
+                footer.append(openLabel, arrow);
 
-                card.append(selectButton, addButton);
+                card.append(top, details, footer);
                 grid.appendChild(card);
             });
             if (window.lucide) lucide.createIcons();
         }
 
+        function renderManageDeckScreen() {
+            const listView = document.getElementById('manage-deck-list-view');
+            const detailView = document.getElementById('manage-deck-detail-view');
+            const decks = Array.isArray(state.decks) ? state.decks : [];
+            const selectedDeck = decks.find(deck => deck.id === selectedDeckIdForManage);
+
+            if (!selectedDeck) manageDeckScreen = 'list';
+            const showDetail = manageDeckScreen === 'detail' && !!selectedDeck;
+            if (listView) listView.classList.toggle('hidden', showDetail);
+            if (detailView) detailView.classList.toggle('hidden', !showDetail);
+
+            if (showDetail) {
+                const questions = (state.questions || []).filter(q => q.deckId === selectedDeck.id);
+                const title = document.getElementById('manage-selected-deck-title');
+                const description = document.getElementById('manage-selected-deck-description');
+                const count = document.getElementById('manage-selected-deck-count');
+                if (title) title.textContent = selectedDeck.name || '名称未設定';
+                if (description) description.textContent = selectedDeck.desc || '説明なし';
+                if (count) count.textContent = `${questions.length} 問登録済み`;
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openManageDeck(deckId) {
+            if (!(state.decks || []).some(deck => deck.id === deckId)) return;
+            selectedDeckIdForManage = deckId;
+            manageDeckScreen = 'detail';
+            const typeSelect = document.getElementById('crud-type-filter');
+            if (typeSelect) typeSelect.value = 'ALL';
+            renderManageDeckScreen();
+            renderCrudQuestionList();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToManageDeckList() {
+            manageDeckScreen = 'list';
+            renderManageDeckScreen();
+            renderManageDeckSelector();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 既存の呼び出しとの互換性を保つための別名。
+        function selectManageDeck(deckId) {
+            openManageDeck(deckId);
+        }
+
         function addQuestionToDeck(deckId) {
-            const exists = (state.decks || []).some(deck => deck.id === deckId);
-            if (!exists) {
+            if (!(state.decks || []).some(deck => deck.id === deckId)) {
                 alert('追加先のデッキが見つかりません。');
                 return;
             }
-            selectManageDeck(deckId);
+            openManageDeck(deckId);
             openQuestionModal(null, deckId);
         }
 
-        function selectManageDeck(deckId) {
-            if (!(state.decks || []).some(deck => deck.id === deckId)) return;
-            selectedDeckIdForManage = deckId;
-            const deckSelect = document.getElementById('crud-deck-filter');
-            if (deckSelect) deckSelect.value = deckId;
-            renderManageDeckSelector();
-            renderCrudQuestionList();
-        }
-
         function onManageDeckSelectChange(deckId) {
-            selectManageDeck(deckId);
+            openManageDeck(deckId);
         }
 
         function renderCrudQuestionList() {
@@ -1857,8 +1924,7 @@
 
             const decks = Array.isArray(state.decks) ? state.decks : [];
             const questions = Array.isArray(state.questions) ? state.questions : [];
-            const deckSelect = document.getElementById('crud-deck-filter');
-            const selectedDeck = selectedDeckIdForManage || (deckSelect ? deckSelect.value : '');
+            const selectedDeck = selectedDeckIdForManage || '';
             const typeSelect = document.getElementById('crud-type-filter');
             const selectedType = typeSelect ? typeSelect.value : 'ALL';
             const deckObj = decks.find(deck => deck.id === selectedDeck);
