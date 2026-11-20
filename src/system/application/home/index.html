@@ -17,8 +17,11 @@
     1. 広場（画面いっぱい）… スタッピーとフレンドが歩く。空の色は時間帯（朝・昼・夕方・夜）で変わる
                    スタッピーは丘の上をとことこ歩いたり、ホームの画面の中をおさんぽしたりする
                    フレンド（★ 今は仮の見た目だけ）は js/plaza.js。押すと、名前・オンライン（最後のログイン）・アチーブの取得率が出る
+                   まん中に噴水（水が上がって池に落ちる）。フレンドとスタッピーは、噴水の上で立ち止まらないように よけて歩く
     2. いちばん上の帯（重ねる）… 左にアイコンと名前、右にログイン日数・連続日数。その下に「広場 フレンド 〇人・オンライン 〇人」
-    3. 左下の札（重ねる）…… 今日・今週・これまでの時間と「記録を見る」（くわしいグラフは記録のページ src/system/pages/records）
+    4. 左下のポスト …… フレンドから届いたもの（手紙・問題・フレンド申請・応援）を受け取る（js/mailbox.js。★ 今は仮のデータで見た目だけ）
+                   押すと、ポストの上に「受け取り箱」が開く。まだ見ていないものがあると、旗が上がって手紙が顔を出す
+    3. 右下の札（重ねる）…… 今日・今週・これまでの時間と「記録を見る」（くわしいグラフは記録のページ src/system/pages/records）
   スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）
   ここには入れる場所（id="chara-records"）だけ置き、js/main.js の mountCharacter で中身を作る
 -->
@@ -47,8 +50,58 @@
       <svg class="home-flower f1" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
       <svg class="home-flower f2" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
       <svg class="home-flower f3" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+      <!-- 噴水（広場のまん中。見た目は css/style.css の「噴水」。フレンドは js/plaza.js で、これを よけて歩く）
+           中は SVG の絵：池（前の面・ふち・水・波の輪）→ 柱と上のお皿 → お皿からあふれる水 → まん中から上がる水としぶき -->
+      <div class="home-fountain" id="plaza-fountain" aria-hidden="true">
+        <svg viewBox="0 0 200 160">
+          <path class="ft-wall" d="M10 124 V142 A90 18 0 0 0 190 142 V124 Z"/>      <!-- 池のふちの前の面 -->
+          <ellipse class="ft-rim" id="fountain-rim" cx="100" cy="124" rx="90" ry="18"/>   <!-- 池のふちの上（この丸の広さを、フレンドが よける） -->
+          <ellipse class="ft-water" cx="100" cy="125" rx="80" ry="13"/>               <!-- 池の水 -->
+          <g class="ft-ripples">                                                         <!-- 水に広がる波の輪 -->
+            <ellipse cx="100" cy="126" rx="18" ry="4"/><ellipse cx="100" cy="126" rx="18" ry="4"/>
+            <ellipse cx="62" cy="123" rx="9" ry="2.2"/><ellipse cx="138" cy="123" rx="9" ry="2.2"/>
+          </g>
+          <path class="ft-stone" d="M92 126 V74 H108 V126 Z"/>                           <!-- 柱 -->
+          <ellipse class="ft-stone-dark" cx="100" cy="126" rx="13" ry="3.4"/>           <!-- 柱の足もと -->
+          <path class="ft-stone" d="M70 68 Q100 92 130 68 Z"/>                           <!-- 上のお皿（下がわ） -->
+          <ellipse class="ft-rim" cx="100" cy="68" rx="30" ry="6"/>                     <!-- 上のお皿のふち -->
+          <ellipse class="ft-water" cx="100" cy="68.5" rx="25" ry="4"/>                 <!-- 上のお皿の水 -->
+          <path class="ft-fall" d="M72 69 Q64 88 62 122"/>                               <!-- お皿からあふれて落ちる水（左） -->
+          <path class="ft-fall" d="M128 69 Q136 88 138 122"/>                            <!-- 　　　　〃　　　　　　（右） -->
+          <path class="ft-jet" d="M100 67 V14"/>                                          <!-- まん中から上がる水 -->
+          <path class="ft-spray" d="M100 16 Q87 4 78 67"/>                                <!-- てっぺんから左右に落ちる水 -->
+          <path class="ft-spray" d="M100 16 Q113 4 122 67"/>
+          <g class="ft-drops"><circle cx="86" cy="18" r="1.8"/><circle cx="114" cy="20" r="1.6"/><circle cx="93" cy="10" r="1.4"/><circle cx="108" cy="9" r="1.5"/></g>   <!-- しぶき -->
+        </svg>
+      </div>
       <!-- フレンド（広場を歩きまわる。中身は js/plaza.js が作る） -->
       <div class="home-friends" id="plaza-friends"></div>
+      <!-- 4. ポスト（左下。上が丸い「かまぼこ型」で、右ななめ前を向いている。押すと受け取り箱が開く：js/mailbox.js。見た目は css/style.css の「ポスト」）
+           中は SVG の絵：柱 → 箱の横の面（青。左がわ）と丸い上の面 → 前の面（白。右がわ）・とびら・入れ口 → 旗。
+           has-mail（まだ見ていないものがある）のとき、旗が上がって、手紙（.mb-letter）が入れ口から顔を出す -->
+      <button type="button" class="home-mailbox" id="mailbox-post" aria-label="ポスト">
+        <svg viewBox="0 0 160 200" aria-hidden="true">
+          <ellipse class="mb-shadow" cx="76" cy="195" rx="40" ry="4.5"/>                       <!-- 足もとのかげ -->
+          <path class="mb-pole" d="M66 100 H80 V195 H66 Z"/>                                     <!-- 柱（前の面） -->
+          <path class="mb-pole-side" d="M80 100 L86 97 V193 L80 195 Z"/>                        <!-- 柱（横の面） -->
+          <path class="mb-side" d="M22 62 L108 66 V108 L22 100 Z"/>                              <!-- 箱の横の面（青） -->
+          <path class="mb-top" d="M22 62 C22 46 28 38 38 37 L122 36 C114 37 108 46 108 66 Z"/>   <!-- 丸い上の面 -->
+          <path class="mb-shine" d="M36 44 L112 41.5"/>                                          <!-- 上の面の光 -->
+          <path class="mb-stripe" d="M22 91 L108 98"/>                                           <!-- 横の白い線 -->
+          <path class="mb-front" d="M108 108 V66 C108 46 114 36 122 36 C131 36 138 44 138 60 V102 Z"/>   <!-- 前の面（白） -->
+          <path class="mb-door" d="M112.5 103 V67 C112.5 52 116.5 43 122 43 C128.5 43 133.5 50 133.5 62 V98.5 Z"/>   <!-- とびら -->
+          <rect class="mb-handle" x="119" y="88" width="9" height="4" rx="2"/>                   <!-- とびらの取っ手 -->
+          <g class="mb-letter"><rect x="114" y="46" width="17" height="12" rx="1.5"/><path d="M114.5 46.5 L122.5 53 L130.5 46.5"/><circle cx="122.5" cy="53.5" r="1.8"/></g>   <!-- 顔を出す手紙 -->
+          <rect class="mb-slot" x="114" y="56" width="17" height="3" rx="1.5"/>                  <!-- 入れ口 -->
+          <g class="mb-flag">                                                                    <!-- 旗（横の面の うしろのほう） -->
+            <rect class="mb-flag-arm" x="30" y="52" width="4" height="36" rx="2"/>
+            <path class="mb-flag-cloth" d="M32 52 H50 V64 H32 Z"/>
+            <circle class="mb-knob" cx="32" cy="86" r="2.6"/>
+          </g>
+          <path class="mb-grass" d="M58 195 Q56 185 50 179 M62 195 Q63 183 67 177 M88 195 Q90 185 96 181 M92 195 Q93 187 90 181"/>   <!-- 草 -->
+        </svg>
+        <span class="home-mailbox-badge" id="mailbox-badge" hidden>0</span>   <!-- まだ見ていないものの数 -->
+      </button>
       <!-- スタッピーとふきだし（いっしょに丘の上を左右に歩く。ふきだしは、右に寄ったら左がわに出る） -->
       <div class="home-records-walker" id="records-walker">
         <!-- スタッピー（なでられる。中身は src/system/character/character.js が作る） -->
@@ -84,7 +137,10 @@
       </div>
     </div>
 
-    <!-- 3. 左下に重ねる：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
+    <!-- 4. ポストの受け取り箱（ポストを押すと、ポストの上に開く。中身は js/mailbox.js が作る） -->
+    <section class="mailbox" id="mailbox" role="dialog" aria-label="ポスト（フレンドから届いたもの）" hidden></section>
+
+    <!-- 3. 右下に重ねる：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
     <div class="home-records-foot">
       <ul class="home-records-nums" id="records-nums">
         <li><span>今日</span><b id="rec-today">0分</b></li>
