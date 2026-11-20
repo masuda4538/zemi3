@@ -1,15 +1,5 @@
 /* ═════════ アチーブ（左に項目・右に一覧。形は core/components/settings-layout.css） ═════════ */
 
-/* 左上 */
-.ach-head { display: flex; align-items: center; gap: 12px; }
-.ach-head-icon {
-  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
-  background: linear-gradient(150deg, #fcd34d, #f59e0b 75%); color: #fff;
-}
-.ach-head-icon .icon { width: 24px; height: 24px; }
-.ach-head-text strong { display: block; font-size: 16px; font-weight: 800; }
-.ach-head-text span { font-size: 12px; color: var(--text-3); }
-
 /* 進み具合（円グラフ） */
 .ach-overview { display: flex; align-items: center; gap: 28px; padding: 20px 24px; flex-wrap: wrap; }
 .ach-main-ring { display: flex; align-items: center; gap: 20px; }

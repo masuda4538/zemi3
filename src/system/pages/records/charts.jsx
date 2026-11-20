@@ -66,12 +66,14 @@ export function Donut({ parts, total, size = 160, thick = 13, children, label })
   const R = 50 - thick / 2 - 3;             // 乗せたときに太くする分、少し内側に描く
   const LEN = 2 * Math.PI * R;
   let start = 0;
-  const arcs = total > 0 ? parts.filter((p) => p.value > 0).map((p) => {
-    const len = (Math.min(p.value, total) / total) * LEN;
+  // 0 の部分も長さ 0 で残す（期間を切りかえたとき、同じ部分がのび縮みして、なめらかに変わるように）
+  const arcs = parts.map((p) => {
+    const len = total > 0 ? (Math.min(p.value, total) / total) * LEN : 0;
     const arc = { ...p, len, start };
     start += len;
     return arc;
-  }) : [];
+  });
+  const drawn = arcs.filter((a) => a.len > 0).length;   // 見えている部分の数
   const pct = (v) => (total > 0 ? Math.round((v / total) * 100) : 0);
   return (
     <div className={`rec-donut${size === "fluid" ? " is-fluid" : ""}`} style={size === "fluid" ? undefined : { width: size, height: size }} role="img" aria-label={label}>
@@ -79,12 +81,12 @@ export function Donut({ parts, total, size = 160, thick = 13, children, label })
         <circle className="rec-donut-track" cx="50" cy="50" r={R} strokeWidth={thick} />
         {arcs.map((a, i) => (
           <circle
-            key={i} cx="50" cy="50" r={R} strokeWidth={hover === i ? thick + 4 : thick}
+            key={a.name ?? i} cx="50" cy="50" r={R} strokeWidth={hover === i ? thick + 4 : thick}
             className={hover >= 0 && hover !== i ? "is-dim" : ""}
             stroke={a.color}
             strokeDasharray={`${a.len} ${LEN - a.len}`}
             strokeDashoffset={-a.start}
-            strokeLinecap={arcs.length === 1 && a.len < LEN ? "round" : "butt"}
+            strokeLinecap={drawn === 1 && a.len > 0 && a.len < LEN ? "round" : "butt"}
             onMouseMove={(e) => { setHover(i); show(e, <TipBody title={a.name ?? a.label} rows={[{ color: a.color, name: `${pct(a.value)}%`, text: timeText(a.value) }]} />); }}
             onMouseLeave={() => { setHover(-1); hide(); }}
           />
@@ -118,7 +120,7 @@ export function chartRange(span, shift = 0) {
   if (span === "week") {   // 月曜日から日曜日まで
     const mon = new Date(t.getFullYear(), t.getMonth(), t.getDate() - ((t.getDay() + 6) % 7) + shift * 7);
     const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
-    return { from: dayKey(mon), to: dayKey(sun), label: `${yr(mon)}${md(mon)} 〜 ${md(sun)}` };
+    return { from: dayKey(mon), to: dayKey(sun), label: `${yr(mon)}${md(mon)}　～　${md(sun)}` };   // 「～」の前後は全角のすき間
   }
   if (span === "month") {
     const first = new Date(t.getFullYear(), t.getMonth() + shift, 1);

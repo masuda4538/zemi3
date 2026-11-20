@@ -80,6 +80,7 @@ function AccountSettings({ user, onUserChange, onLogout, confirm, onOpenPage }) 
 
   return (
     <SettingsLayout
+      bar={{ icon: "account", page: "アカウント" }}
       head={<WhoAmI user={user} />}
       items={SECTIONS.map((x) => ({ ...x, dirty: !!dirty[x.id] }))}
       current={current}

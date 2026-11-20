@@ -1,15 +1,5 @@
 /* ═════════ 設定画面（左に項目・右に中身。形は core/components/settings-layout.css） ═════════ */
 
-/* 左上：「設定」 */
-.set-head { display: flex; align-items: center; gap: 12px; }
-.set-head-icon {
-  display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
-  background: linear-gradient(150deg, var(--sky), var(--primary) 70%); color: #fff;
-}
-.set-head-icon .icon { width: 24px; height: 24px; }
-.set-head-text strong { display: block; font-size: 16px; font-weight: 800; }
-.set-head-text span { font-size: 12px; color: var(--text-3); }
-
 /* 右：中身の枠 */
 .settings-card .set-row { padding: 14px 20px; }
 .settings-card .set-row:first-child { border-top: 0; }   /* 枠の上に線を出さない */

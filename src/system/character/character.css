@@ -1,11 +1,13 @@
 /* ═════════ キャラクター「スタッピー」の見た目と動き（character.js が作る形） ═════════
    .chara（ボタン）
-     .chara-act    … 反応・自分から動く（is-petted なでた／is-jump 押した／is-look きょろきょろ／is-hop／is-spin／is-wiggle）
-       .chara-breath … ふわふわ呼吸（いつも）
-         .chara-base … いつもの動き（is-sway ゆらゆら／is-hop ぴょんぴょん）
-           .chara-img（絵）・.chara-cheek（ほっぺ）・.chara-lid（まばたきのまぶた）
-     .chara-shadow（足もとのかげ）・.chara-zzz（いねむりの Zzz）
-   .chara の状態：is-blink（まばたき）／is-blush（ほっぺが赤い）／is-sleeping（いねむり）
+     .chara-lean   … 向き（--face：1 右 ／ -1 左）と かたむき（--lean。マウスのほうへ）
+       .chara-act    … 反応・自分から動く（is-petted なでた／is-jump 押した／is-step 1 歩／is-look きょろきょろ／is-hop／is-spin／is-wiggle
+                        ／is-flap 羽ばたき／is-bow おじぎ／is-dance ダンス／is-joy よろこびジャンプ）
+         .chara-breath … ふわふわ呼吸（いつも）
+           .chara-base … いつもの動き（is-sway ゆらゆら／is-hop ぴょんぴょん）
+             .chara-img（絵）・.chara-cheek（ほっぺ）・.chara-lid（まばたきのまぶた）
+     .chara-shadow（足もとのかげ）・.chara-zzz（いねむりの Zzz）・.chara-say（おさんぽ中の小さなふきだし）
+   .chara の状態：is-blink（まばたき）／is-blush（ほっぺが赤い）／is-sleeping（いねむり）／is-roaming（おさんぽ中）
    大きさは、使うところで .chara-img の height を決める（例：#chara-greet .chara-img { height: 74px; }） */
 
 .chara {
@@ -15,8 +17,15 @@
 }
 .chara:active { cursor: grabbing; }
 .chara:focus-visible { outline: 2px solid var(--primary, #2563eb); outline-offset: 4px; border-radius: 16px; }
-.chara-act, .chara-breath, .chara-base { display: block; position: relative; }
-.chara-img { display: block; width: auto; pointer-events: none; }
+.chara-lean, .chara-act, .chara-breath, .chara-base { display: block; position: relative; }
+/* 向き・かたむき（マウスを追う・歩く向き）。足もとを中心に、ふわっと変わる */
+.chara-lean {   /* 立体の回転（--rx 上下・--ry 左右）→ 向き（--face）→ 画面の中のかたむき（--lean）。回ったがわは少し暗く（--shade） */
+  transform-origin: 50% 100%;
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scaleX(var(--face, 1)) rotate(var(--lean, 0deg));
+  filter: brightness(var(--shade, 1));
+  transition: transform .45s cubic-bezier(.3, 1.4, .5, 1), filter .45s;
+}
+.chara-img { display: block; width: auto; pointer-events: none; transition: height .35s ease; }   /* おさんぽで小さくなる・もどるとき、ふわっと */
 
 /* ── いつも：ふわふわ呼吸（下を中心に、少しふくらんで しぼむ） ── */
 .chara-breath { transform-origin: 50% 100%; animation: chara-breath 3.2s ease-in-out infinite; }
@@ -60,12 +69,14 @@
   75% { transform: rotate(7deg) scale(1.04, .97); }
 }
 /* ── 押した：ぴょんと大きく跳ねる ── */
-.chara-act.is-jump { animation: chara-jump .6s cubic-bezier(.3, 1.6, .5, 1); }
-@keyframes chara-jump {
-  0%, 100% { transform: translateY(0) scale(1); }
-  20% { transform: translateY(0) scale(1.08, .9); }
-  50% { transform: translateY(-22px) scale(.96, 1.06); }
-  80% { transform: translateY(0) scale(1.05, .95); }
+.chara-act.is-jump { transform-origin: 50% 100%; animation: chara-jump .75s linear; }
+@keyframes chara-jump {   /* ため → 上がる（だんだん ゆっくり）→ てっぺん → 落ちる（だんだん速く）→ 着地で つぶれる */
+  0% { transform: translateY(0) scale(1); }
+  15% { transform: translateY(0) scale(1.1, .88); animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+  50% { transform: translateY(-26px) scale(.96, 1.06); animation-timing-function: cubic-bezier(.6, 0, .8, .4); }
+  78% { transform: translateY(0) scale(1.12, .86); animation-timing-function: ease-out; }
+  90% { transform: translateY(0) scale(.97, 1.03); }
+  100% { transform: translateY(0) scale(1); }
 }
 /* ── 自分から：きょろきょろ（左右を向く）／小さくジャンプ／くるっと回る／もじもじ ── */
 .chara-act.is-look { animation: chara-look 1.6s ease-in-out; }
@@ -73,7 +84,12 @@
 .chara-act.is-hop { animation: chara-mini-hop .9s ease-in-out; }
 @keyframes chara-mini-hop { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-10px); } 50% { transform: translateY(0); } 70% { transform: translateY(-5px); } }
 .chara-act.is-spin { animation: chara-spin .9s ease-in-out; }
-@keyframes chara-spin { 0% { transform: rotateY(0); } 100% { transform: rotateY(360deg); } }
+@keyframes chara-spin {   /* 立体的にくるっと：横を向くところで少し暗くして、厚みがあるように見せる */
+  0% { transform: perspective(500px) rotateY(0); filter: brightness(1); }
+  25%, 75% { filter: brightness(.78); }
+  50% { filter: brightness(1.06); }
+  100% { transform: perspective(500px) rotateY(360deg); filter: brightness(1); }
+}
 .chara-act.is-wiggle { animation: chara-wiggle .8s ease-in-out; }
 @keyframes chara-wiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-5deg); } 40% { transform: rotate(5deg); } 60% { transform: rotate(-3deg); } 80% { transform: rotate(3deg); } }
 
@@ -100,4 +116,82 @@
   0% { opacity: 0; transform: translate(0, 0) scale(.4); }
   20% { opacity: 1; transform: translate(var(--dx, 0), -10px) scale(1.1); }
   100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 2), -64px) scale(.8) rotate(12deg); }
+}
+
+/* ── 自分から（ふえた動き）：羽ばたき／おじぎ／ダンス／よろこびジャンプ ── */
+.chara-act.is-flap { animation: chara-flap .9s ease-in-out; }
+@keyframes chara-flap {
+  0%, 100% { transform: translateY(0) scale(1); }
+  15% { transform: translateY(-8px) scale(1.06, .95); }
+  30% { transform: translateY(-3px) scale(.96, 1.04); }
+  45% { transform: translateY(-10px) scale(1.06, .95); }
+  60% { transform: translateY(-4px) scale(.96, 1.04); }
+  75% { transform: translateY(-8px) scale(1.04, .97); }
+}
+.chara-act.is-bow { transform-origin: 50% 100%; animation: chara-bow 1.3s ease-in-out; }
+@keyframes chara-bow {   /* 上の方を手前にたおして、ぺこり */
+  0%, 100% { transform: none; }
+  25%, 60% { transform: perspective(320px) rotateX(-24deg) scaleY(.94); }
+}
+.chara-act.is-dance { animation: chara-dance 1.5s ease-in-out; }
+@keyframes chara-dance {
+  0%, 25%, 50%, 75%, 100% { transform: translate(0, 0) rotate(0); }
+  12%, 62% { transform: translate(-6px, -6px) rotate(-10deg); }
+  37%, 87% { transform: translate(6px, -6px) rotate(10deg); }
+}
+.chara-act.is-joy { animation: chara-joy .9s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes chara-joy {
+  0%, 100% { transform: translateY(0) scale(1); }
+  15% { transform: translateY(0) scale(1.06, .92); }
+  30% { transform: translateY(-18px) scale(.96, 1.05); }
+  45% { transform: translateY(0) scale(1.05, .94); }
+  62% { transform: translateY(-11px) scale(.98, 1.03); }
+  80% { transform: translateY(0) scale(1.03, .97); }
+}
+/* 歩く 1 歩（character.js の STEP_MS と同じ長さ） */
+.chara-act.is-step { animation: chara-step .42s ease-in-out; }
+@keyframes chara-step {
+  0%, 100% { transform: translateY(0) scale(1); }
+  20% { transform: translateY(0) scale(1.05, .93); }
+  50% { transform: translateY(-12px) scale(.97, 1.04); }
+  85% { transform: translateY(0) scale(1.03, .97); }
+}
+
+/* ── おさんぽ中：画面のいちばん上に出て、ぴょんぴょん移動する（left・top は character.js が決める） ── */
+.chara.is-roaming {
+  position: fixed; z-index: 45; margin: 0;
+  transition: left .42s ease-in-out, top .42s ease-in-out;
+  filter: drop-shadow(0 6px 8px rgb(15 30 60 / .2));
+}
+/* おさんぽ中の小さなふきだし（頭の上） */
+.chara-say {
+  position: absolute; left: 50%; bottom: calc(100% + 2px); transform: translateX(-50%);
+  width: max-content; max-width: 220px; padding: 6px 12px; border-radius: 12px; pointer-events: none;
+  background: var(--surface, #fff); border: 1.5px solid color-mix(in srgb, var(--primary, #2563eb) 22%, var(--border, #dbe3ef));
+  font-size: 12.5px; font-weight: 800; line-height: 1.4; color: var(--text, #0f172a); white-space: normal; text-align: center;
+  opacity: 0; visibility: hidden;
+}
+.chara-say::after {   /* 下のしっぽ（スタッピーのほう） */
+  content: ""; position: absolute; left: 50%; bottom: -6px; width: 9px; height: 9px; background: inherit;
+  border: inherit; border-width: 0 1.5px 1.5px 0; transform: translateX(-50%) rotate(45deg);
+}
+.chara-say.is-on { opacity: 1; visibility: visible; animation: chara-say-in .25s ease-out; }
+@keyframes chara-say-in { from { opacity: 0; transform: translate(-50%, 4px); } }
+
+/* ── その場の近くを歩く（stroll）：動かす要素（mover）。1 歩ずつ なめらかに ── */
+.chara-mover { transition: translate .42s ease-in-out; }
+
+/* ── つかんで投げる（grab）：つかんでいる・飛んでいるあいだは、left・top を すぐ動かす（なめらかにしない） ── */
+.chara.is-grabbed, .chara.is-flying { transition: none; }
+.chara.is-grabbed { cursor: grabbing; }
+.chara.is-grabbed .chara-lean { transition: transform .12s; }   /* ぶらんと かたむくのは すばやく */
+/* 落ちる速さで たてに のびる・横に ちぢむ（--sx・--sy は character.js が決める） */
+.chara.is-flying .chara-act:not(.is-land), .chara.is-grabbed .chara-act { transform-origin: 50% 100%; transform: scale(var(--sx, 1), var(--sy, 1)); }
+/* 地面に着いて ぽよん（つぶれて もどる） */
+.chara-act.is-land { transform-origin: 50% 100%; animation: chara-land .38s ease-out; }
+@keyframes chara-land {
+  0% { transform: scale(1.28, .72); }
+  45% { transform: scale(.9, 1.1); }
+  75% { transform: scale(1.04, .96); }
+  100% { transform: scale(1); }
 }

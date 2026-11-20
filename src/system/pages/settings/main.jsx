@@ -50,7 +50,7 @@ export default function Settings({ settings, onSettings, onResetSettings, confir
 
   return (
     <SettingsLayout
-      head={<div className="set-head"><span className="set-head-icon"><Icon name="settings" /></span><div className="set-head-text"><strong>設定</strong><span>変えるとすぐ反映されます</span></div></div>}
+      bar={{ icon: "settings", page: "設定", note: "変えるとすぐ反映されます" }}
       items={SECTIONS}
       current={current}
       onSelect={setCurrent}

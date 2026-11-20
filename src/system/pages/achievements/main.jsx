@@ -68,12 +68,7 @@ export default function Achieve({ settings, onSettings }) {
 
   return (
     <SettingsLayout
-      head={
-        <div className="ach-head">
-          <span className="ach-head-icon"><Icon name="trophy" /></span>
-          <div className="ach-head-text"><strong>アチーブ</strong><span>{allGot} / {ALL.length} こ 手に入れた</span></div>
-        </div>
-      }
+      bar={{ icon: "trophy", page: "アチーブ", note: `${allGot} / ${ALL.length} こ 手に入れた` }}
       items={items}
       current={current}
       onSelect={setCurrent}

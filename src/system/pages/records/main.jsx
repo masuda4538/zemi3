@@ -2,36 +2,41 @@
 //  記録：画面（見た目）　［このフォルダーの入口：main.jsx］
 //  合計の時間や、アプリごとの記録を見るページ（左のサイドバーの「記録」。アチーブの上）
 //  ※ アチーブは、ここには出さない（アチーブのページで見る）
-//  いちばん上の段：左に「記録」と期間、右はしに期間の切りかえ（今日／今週／今月／すべて）。今週は月曜日から日曜日まで（ホームと同じ）
+//  いちばん上のバー（PageBar）：「記録 › 今のタブ」、右はしにダーク／ホワイトの切り替え
+//  見出しの右に、期間の切りかえ（今日／今週／今月／すべて）。今週は月曜日から日曜日まで（ホームと同じ）
+//    切りかえても画面は作り直さない … 数字はカウントするように（Tween）、円グラフ・棒グラフはのび縮みして変わる
 //  左：たてに並んだタブ（すべて ＋ 各アプリ）。押すか ↑ ↓（← →）キーで切りかえる。選んだタブはアプリの色でぬる
 //  右：選んだタブの中身（せまい画面では、タブは上に横に並ぶ）
-//  とても広い画面では、右はしに「がんばりポイント」を出す（RecordsAside。records.css の 1800px 以上。左のタブの幅 ＋ 左のサイドバーの幅。中身がウィンドウのまん中に来る）
-//  棒グラフは、見出しの右で 日・週・月・年 を切りかえ、‹ › で前後へ（上の期間とは別に動く。UsageChart）
+//  とても広い画面では、右はしに「がんばりポイント」を出す（RecordsAside。records.css の 1760px 以上。左のタブの幅 ＋ 左のサイドバーの幅。中身がウィンドウのまん中に来る）
+//    その下に「最近手に入れたアチーブ」（期間に関係なく新しい順に 4 つ。各アプリのタブでは、そのアプリのアチーブだけ）
+//  各アプリのタブでは「〇〇を開く」ボタン（押すとそのアプリへ。OpenButton）
+//    おまけが出る広い画面 … おまけの列のいちばん下（画面の右下）／ それより せまい画面 … 左のタブの下（画面の左下）
+//  棒グラフは、上の期間に合わせる（今日 → 時間ごと／今週 → 曜日ごと／今月 → 日ごと／すべて → 月ごと）。‹ › で前後へ（UsageChart）
 //  数字のカードには、前の期間とのくらべ（例：先週より ▲ 20分）を出す（Delta。すべて のときは出さない）
 //    くらべるのは「同じところまで」… 今週なら 先週の月曜〜同じ曜日、今月なら 先月の 1 日〜同じ日（今日はきのう 1 日分）
-//  いちばん上の段に、スタッピー（キャラクター）が記録に合わせてひとこと（Buddy・talkOf）。なでられる（Stappy → src/system/character）
+//  ※ キャラクター（スタッピー）は、あとで追加する予定（今は出していない）
 //  円グラフ・棒グラフにマウスを乗せると、ふきだしで くわしい時間が出る（charts.jsx）
+//  中身のいちばん上に、アチーブ・設定と同じ形の見出し（「すべての記録」「プログラム学習の記録」＋ 説明。Title）
 //  中身は画面に収まるように並べる（ダッシュボード型。入りきらない一覧だけ、枠の中でスクロール）
-//    すべて   … 数字（勉強した時間・1 日の平均・ログイン日数）
-//                ／ アプリごとの時間（大きな円グラフ ＋ 内訳）｜ 棒グラフ（日・週・月・年）と 日ごとの履歴
-//    各アプリ … そのアプリの数字 ／ 学習の内訳（円グラフ）・大事な数 ｜ 棒グラフ ／ 日ごとの履歴
+//    すべて   … 左：数字のまとめ（勉強した時間・1 日の平均・ログイン日数）／ アプリごとの時間（大きな円グラフ ＋ 内訳）
+//                右：棒グラフ（日・週・月・年）／ 日ごとの履歴
+//    各アプリ … 左：そのアプリの数字のまとめ ／ 総時間（棒グラフに出ている期間の合計）　　右：棒グラフ ／ 日ごとの履歴（すべて と同じ並び）
 //  画面が低い・せまいときは、たてに並べて、ページ全体をスクロールする（records.css）
 //
 //  ★ このページでは記録を「読むだけ」です（書きかえない）。読んでいるところ
 //    使った時間       … core/storage/usage.js の getUsage（日ごと・アプリごとの秒）
-//    学習の内訳・大事な数 … core/storage/stats.js の getAllStats（今までの合計だけ。日付は持っていない）
 //    ログイン日数     … core/storage/logins.js の getLoginDays
 //  グラフ（円グラフ・棒グラフ）は charts.jsx、見た目は records.css
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useRef, useState } from "react";
 import Icon from "../../core/components/Icon";
+import PageBar from "../../core/components/PageBar";
 import { PAGES } from "../../core/page-list";
 import { getUsage, onUsageChange } from "../../core/storage/usage.js";
-import { getAllStats, onStatsChange } from "../../core/storage/stats.js";
 import { getLoginDays, onLoginsChange, dayKey } from "../../core/storage/logins.js";
+import { getUnlocked, onAchievementsChange } from "../../core/storage/achievements.js";
+import { ALL as ALL_ACHIEVEMENTS } from "../achievements/achievement-list.js";   // アチーブの一覧（名前・レア度・アプリ）
 import { Donut, BarChart, columnsOf, chartRange, timeText } from "./charts.jsx";
-import { mountCharacter } from "../../character/character.js";   // スタッピー（src/system/character）
-import { unlockAchievement, addProgress } from "../../core/storage/achievements.js";
 import "./records.css";
 
 /** 記録を出すアプリ（左のサイドバーの上の段。ホームは時間を計らないのでのぞく） */
@@ -47,7 +52,7 @@ const APP_COLORS = {
 };
 const colorOf = (id) => APP_COLORS[id] ?? "#94a3b8";   // ここにないアプリは灰色
 
-/** 期間の切りかえ */
+/** 期間の切りかえ（見出しの右） */
 const SPANS = [
   { id: "day", name: "今日" },
   { id: "week", name: "今週" },
@@ -59,6 +64,12 @@ const SPANS = [
 const HISTORY_STEP = 10;
 
 const WEEK = ["日", "月", "火", "水", "木", "金", "土"];
+
+/** "2026-11-17" → "11月17日"（曜日なし。数字のまとめのせまいところ用） */
+function shortDate(key) {
+  const [, m, d] = key.split("-").map(Number);
+  return `${m}月${d}日`;
+}
 
 /** "2026-11-18" → 「11月18日（水）」（今年でなければ年も付ける） */
 function dateText(key) {
@@ -124,7 +135,6 @@ function readRecords(span) {
     loginDays: logins.days.filter((d) => d >= period.from && d <= period.to).length,
     streak: logins.streak,
     best: logins.best,
-    stats: getAllStats(),
   };
 }
 
@@ -137,7 +147,7 @@ export default function Records({ onOpenPage }) {
   // 記録が増えた・変わったら描き直す
   useEffect(() => {
     const redraw = () => setTick((n) => n + 1);
-    const offs = [onUsageChange(redraw), onStatsChange(redraw), onLoginsChange(redraw)];
+    const offs = [onUsageChange(redraw), onLoginsChange(redraw), onAchievementsChange(redraw)];
     return () => offs.forEach((off) => off());
   }, []);
 
@@ -158,27 +168,8 @@ export default function Records({ onOpenPage }) {
 
   return (
     <div className={`rec${rec ? " is-fit" : ""}`}>
-      {/* いちばん上の段：左に「記録」と期間、右に期間の切りかえ（各アプリのときは「〇〇を開く」も） */}
-      <header className="rec-top">
-        <span className="rec-head-icon"><Icon name="records" /></span>
-        <div className="rec-head-text">
-          <h1>{app ? `${app.name}の記録` : "記録"}</h1>
-          <span>{periodOf(span).label}</span>
-        </div>
-        {rec && <Buddy text={talkOf(rec, app, span)} />}
-        {app && onOpenPage && (
-          <button type="button" className="rec-open" style={{ "--app": colorOf(app.id) }} onClick={() => onOpenPage(app.id)}>
-            <Icon name={app.icon} />{app.name}を開く
-          </button>
-        )}
-        <div className="rec-seg" role="group" aria-label="期間">
-          {SPANS.map((s) => (
-            <button key={s.id} type="button" aria-pressed={span === s.id} className={span === s.id ? "is-on" : ""} onClick={() => setSpan(s.id)}>
-              {s.name}
-            </button>
-          ))}
-        </div>
-      </header>
+      {/* いちばん上のバー：「記録 › 今のタブ」、右はしにダーク／ホワイトの切り替え（core/components/PageBar.jsx） */}
+      <PageBar icon="records" page="記録" item={app ? app.name : "すべて"} />
 
       {/* 左にタブ、右に中身 */}
       <div className="rec-main">
@@ -196,11 +187,15 @@ export default function Records({ onOpenPage }) {
               >
                 <Icon name={t.icon} />
                 <span className="rec-tab-name">{t.name}</span>
-                {sec != null && <span className="rec-tab-time">{timeText(sec)}</span>}
+                {sec != null && <span className="rec-tab-time"><Tween value={sec} format={timeText} /></span>}
               </button>
             );
           })}
         </nav>
+
+        {/* 各アプリのタブのとき：左のタブの下（画面の左下）に、そのアプリを開くボタン
+            （おまけが出る広い画面では、こちらは隠して、おまけの列のいちばん下に出す。records.css） */}
+        <OpenButton app={app} onOpenPage={onOpenPage} />
 
         {!rec ? (
           <div className="panel rec-empty">
@@ -208,39 +203,63 @@ export default function Records({ onOpenPage }) {
             <p>ゲストで使っているときは、記録をとっていません。<br />ログインすると、使った時間や学習の記録が見られるようになります。</p>
           </div>
         ) : (
-          /* key … タブ・期間を切りかえるたびに作り直して、ふわっと出す */
-          <div className="rec-body" key={`${current}-${span}`}>
+          /* key … タブを切りかえるたびに作り直して、ふわっと出す（期間の切りかえでは作り直さない。数字・グラフがなめらかに変わる） */
+          <div className="rec-body" key={current}>
+            <Title app={app} span={span} onSpan={setSpan} />
             {app ? <AppView app={app} rec={rec} span={span} /> : <AllView rec={rec} span={span} onSelect={setCurrent} />}
           </div>
         )}
-        {rec && <RecordsAside key={`aside-${current}-${span}`} rec={rec} app={app} span={span} />}
+        {rec && <RecordsAside key={`aside-${current}`} rec={rec} app={app} span={span} onOpenPage={onOpenPage} />}
       </div>
     </div>
   );
 }
 
+// ───────── 見出し（アチーブ・設定・アカウントの「すべてのアチーブ」などと同じ形） ─────────
+//  左：大きな文字（例：「すべての記録」）の下に、ページの説明　　右：期間の切りかえ（今日／今週／今月／すべて）
+function Title({ app, span, onSpan }) {
+  return (
+    <header className="rec-title">
+      <div className="rec-title-text">
+        <h1>{app ? `${app.name}の記録` : "すべての記録"}</h1>
+        <p>{app ? `${app.name}で学習した時間の記録です。` : "各アプリで学習した時間や、ログインした日の記録です。"}</p>
+      </div>
+      <div className="rec-seg" role="group" aria-label="期間">
+        {SPANS.map((s) => (
+          <button key={s.id} type="button" aria-pressed={span === s.id} className={span === s.id ? "is-on" : ""} onClick={() => onSpan(s.id)}>
+            {s.name}
+          </button>
+        ))}
+      </div>
+    </header>
+  );
+}
+
 // ───────── すべて ─────────
-//  [数字 3 つ]
-//  [アプリごとの時間          ][棒グラフ    ]
+//  [すべて（数字 3 つ）       ][棒グラフ    ]
+//  [アプリごとの時間          ][            ]
 //  [（大きな円グラフ ＋ 内訳）][日ごとの履歴]
-//  ※ 学習の内訳・大事な数は、各アプリのタブだけに出す
 function AllView({ rec, span, onSelect }) {
   const { usage, prev } = rec;
+  const [shift, setShift] = useChartShift(span);   // 棒グラフで、いくつ前を見ているか
   const apps = APPS.map((p) => ({ ...p, color: colorOf(p.id), sec: usage.apps[p.id] ?? 0 }));
 
   return (
     <>
-      <div className="rec-cards">
-        <Card icon="timer" label="勉強した時間" value={timeText(usage.total)} sub={`${usage.days} 日 使った`} main
-          delta={prev && <Delta now={usage.total} before={prev.usage.total} word={prev.word} />} />
-        <Card icon="records" label="1 日の平均" value={timeText(avg(usage.total, usage.days))} sub="使った日だけで計算"
-          delta={prev && <Delta now={avg(usage.total, usage.days)} before={avg(prev.usage.total, prev.usage.days)} word={prev.word} />} />
-        <Card icon="check" label="ログインした日" value={`${rec.loginDays} 日`} sub={`連続 ${rec.streak} 日・最高 ${rec.best} 日`}
-          delta={prev && <Delta now={rec.loginDays} before={prev.loginDays} word={prev.word} unit="day" />} />
-      </div>
-
       <div className="rec-row is-all">
-        {/* アプリごとの時間（左。上下 2 段ぶんの高さ）：上に大きな円グラフ、その下にアプリごとの内訳（押すとそのアプリのタブへ） */}
+        {/* 左の列（上下 2 段ぶんの高さ）：上に数字のまとめ、その下にアプリごとの時間 */}
+        <div className="rec-stack">
+        {/* 数字のまとめ（見出しは「すべて」） */}
+        <Summary title="すべて" span={span} prev={prev} items={[
+          { icon: "timer", label: "勉強した時間", value: timeText(usage.total), num: usage.total, fmt: timeText, sub: `${usage.days} 日 使った`,
+            delta: prev && <Delta now={usage.total} before={prev.usage.total} word={prev.word} /> },
+          { icon: "records", label: "1 日の平均", value: timeText(avg(usage.total, usage.days)), num: avg(usage.total, usage.days), fmt: timeText, sub: "使った日だけで計算",
+            delta: prev && <Delta now={avg(usage.total, usage.days)} before={avg(prev.usage.total, prev.usage.days)} word={prev.word} /> },
+          { icon: "check", label: "ログインした日", value: `${rec.loginDays} 日`, num: rec.loginDays, fmt: dayCount, sub: `連続 ${rec.streak} 日・最高 ${rec.best} 日`,
+            delta: prev && <Delta now={rec.loginDays} before={prev.loginDays} word={prev.word} unit="day" /> },
+        ]} />
+
+        {/* アプリごとの時間：上に大きな円グラフ、その下にアプリごとの内訳（押すとそのアプリのタブへ） */}
         <Section title="アプリごとの時間" note={usage.total ? "押すと、そのアプリのタブへ" : ""} className="is-apps">
           <div className="rec-apps-tall">
             <Donut
@@ -250,7 +269,7 @@ function AllView({ rec, span, onSelect }) {
               label={`合計 ${timeText(usage.total)}`}
             >
               <small>合計</small>
-              <strong>{timeText(usage.total)}</strong>
+              <strong><Tween value={usage.total} format={timeText} /></strong>
             </Donut>
             <ul className="rec-apps">
               {apps.map((a) => {
@@ -262,7 +281,7 @@ function AllView({ rec, span, onSelect }) {
                       <i className="rec-dot" />
                       <span className="rec-app-icon"><Icon name={a.icon} /></span>
                       <b className="rec-app-name">{a.name}</b>
-                      <span className="rec-app-time">{a.sec ? timeText(a.sec) : "—"}<small>{percent(a.sec, usage.total)}%</small></span>
+                      <span className="rec-app-time"><Tween value={a.sec} format={timeOrDash} /><small><Tween value={percent(a.sec, usage.total)} format={pctText} /></small></span>
                     </button>
                   </li>
                 );
@@ -270,33 +289,43 @@ function AllView({ rec, span, onSelect }) {
             </ul>
           </div>
         </Section>
+        </div>
 
         {/* 右の上：棒グラフ（日・週・月・年）、右の下：日ごとの履歴 */}
-        <UsageChart start={span} apps={apps} />
+        <UsageChart start={span} apps={apps} shift={shift} onShift={setShift} />
         <History byDay={usage.byDay} />
       </div>
     </>
   );
 }
 
-// ───────── 棒グラフ（日・週・月・年で切りかえ、‹ › で前後へ。上の期間の切りかえとは別に動く） ─────────
-const CHART_SPANS = [
-  { id: "day", name: "日", title: "時間ごと", now: "今日" },
-  { id: "week", name: "週", title: "曜日ごと", now: "今週" },
-  { id: "month", name: "月", title: "日ごと", now: "今月" },
-  { id: "year", name: "年", title: "月ごと", now: "今年" },
-];
-/** はじめに出す長さ（上の期間に合わせる。すべて → 年） */
-const START_CHART = { day: "day", week: "week", month: "month", all: "year" };
+// ───────── 棒グラフ（上の期間に合わせた長さ。‹ › で前後へ） ─────────
+//  今日 → 時間ごと（24 本）／今週 → 曜日ごと（7 本）／今月 → 日ごと／すべて → 月ごと（今年の 12 本）
+const CHART_OF = {
+  day: { id: "day", title: "時間ごと", now: "今日" },
+  week: { id: "week", title: "曜日ごと", now: "今週" },
+  month: { id: "month", title: "日ごと", now: "今月" },
+  all: { id: "year", title: "月ごと", now: "今年" },
+};
 
-/** start … 上の期間（day／week／month／all）、apps … 積むアプリ [{ id, name, color }] */
-function UsageChart({ start, apps, legend }) {
-  const [cspan, setCspan] = useState(START_CHART[start] ?? "week");
-  const [shift, setShift] = useState(0);   // 0 ＝ 今、-1 ＝ 1 つ前 …
-  const info = CHART_SPANS.find((c) => c.id === cspan);
+const chartOf = (start) => CHART_OF[start] ?? CHART_OF.week;
+
+/** 棒グラフで、いくつ前を見ているか [shift, setShift]（0 ＝ 今、-1 ＝ 1 つ前 …）
+ *  上の期間（start）を切りかえたら、今にもどす。AllView・AppView が持って、棒グラフと総時間で同じ期間を使う */
+function useChartShift(start) {
+  const [moved, setMoved] = useState({ start, n: 0 });
+  const shift = moved.start === start ? moved.n : 0;
+  const setShift = (f) => setMoved({ start, n: typeof f === "function" ? f(shift) : f });
+  return [shift, setShift];
+}
+
+/** start … 上の期間（day／week／month／all）、apps … 積むアプリ [{ id, name, color }]
+ *  shift・onShift … いくつ前を見ているかと、それを変える関数（useChartShift） */
+function UsageChart({ start, apps, legend, shift, onShift: setShift }) {
+  const info = chartOf(start);
+  const cspan = info.id;
   const range = chartRange(cspan, shift);
   const usage = getUsage(range.from, range.to) ?? { byDay: {}, byHour: Array.from({ length: 24 }, () => ({ total: 0, apps: {} })) };
-  const choose = (id) => { setCspan(id); setShift(0); };
 
   return (
     <Section
@@ -304,17 +333,14 @@ function UsageChart({ start, apps, legend }) {
       className="is-chart"
       tools={
         <>
+          {/* ‹ 期間 › … 棒が並んでいる部分のまん中に置く（records.css） */}
           <span className="rec-nav">
             <button type="button" className="rec-nav-btn" onClick={() => setShift((n) => n - 1)} aria-label="前へ" title="前へ">‹</button>
             <span className="rec-nav-label">{range.label}</span>
             <button type="button" className="rec-nav-btn" onClick={() => setShift((n) => Math.min(0, n + 1))} disabled={shift >= 0} aria-label="次へ" title="次へ">›</button>
-            {shift < 0 && <button type="button" className="rec-nav-now" onClick={() => setShift(0)}>{info.now}</button>}
           </span>
-          <span className="rec-seg is-small" role="group" aria-label="グラフの長さ">
-            {CHART_SPANS.map((c) => (
-              <button key={c.id} type="button" aria-pressed={cspan === c.id} className={cspan === c.id ? "is-on" : ""} onClick={() => choose(c.id)}>{c.name}</button>
-            ))}
-          </span>
+          {/* 前にもどっているときだけ、今へもどるボタン（枠の右はし。まん中がずれないように、‹ › とは別に置く） */}
+          {shift < 0 && <button type="button" className="rec-nav-now" onClick={() => setShift(0)}>{info.now}</button>}
         </>
       }
     >
@@ -323,17 +349,19 @@ function UsageChart({ start, apps, legend }) {
   );
 }
 
-// ───────── 各アプリ ─────────
-//  [数字 3 つ]
-//  [総時間（円グラフ）][学習の内訳・大事な数][日ごとの履歴]
-//  [棒グラフ（横いっぱい）                              ]
+// ───────── 各アプリ（すべて と同じ並び） ─────────
+//  [アプリの名前（数字 3 つ）][棒グラフ    ]
+//  [総時間（円グラフ）       ][            ]
+//  [                         ][日ごとの履歴]
 function AppView({ app, rec, span }) {
   const { usage } = rec;
   const color = colorOf(app.id);
   const sec = usage.apps[app.id] ?? 0;
   const days = Object.values(usage.byDay).filter((d) => (d.apps[app.id] ?? 0) > 0).length;
   const last = rec.lastUsed(app.id);
-  const stats = rec.stats.find((s) => s.app.id === app.id);
+  // 棒グラフで見ている期間（‹ › で前後に動かせる）。総時間も、この期間の合計にする
+  const [shift, setShift] = useChartShift(span);
+  const range = chartRange(chartOf(span).id, shift);
 
   // 前の期間のこのアプリ（くらべる用）
   const prev = rec.prev;
@@ -349,62 +377,55 @@ function AppView({ app, rec, span }) {
 
   return (
     <>
-      <div className="rec-cards is-app" style={{ "--app": color }}>
-        <Card icon={app.icon} label="使った時間" value={timeText(sec)} sub={`全体の ${percent(sec, usage.total)}%`} main
-          delta={prev && <Delta now={sec} before={prevSec} word={prev.word} />} />
-        <Card icon="records" label="1 日の平均" value={timeText(avg(sec, days))} sub={`${days} 日 使った`}
-          delta={prev && <Delta now={avg(sec, days)} before={avg(prevSec, prevDays)} word={prev.word} />} />
-        <Card icon="check" label="最後に使った日" value={last ? dateText(last) : "—"} sub={last ? "期間に関係なく" : "まだ使っていません"} />
-      </div>
+      <div className="rec-row is-all" style={{ "--app": color }}>
+        {/* 左の列：上に数字のまとめ（見出しはアプリの名前）、その下に総時間 */}
+        <div className="rec-stack">
+          <Summary title={app.name} span={span} prev={prev} items={[
+            { icon: app.icon, label: "使った時間", value: timeText(sec), num: sec, fmt: timeText, sub: `全体の ${percent(sec, usage.total)}%`,
+              delta: prev && <Delta now={sec} before={prevSec} word={prev.word} /> },
+            { icon: "records", label: "1 日の平均", value: timeText(avg(sec, days)), num: avg(sec, days), fmt: timeText, sub: `${days} 日 使った`,
+              delta: prev && <Delta now={avg(sec, days)} before={avg(prevSec, prevDays)} word={prev.word} /> },
+            { icon: "check", label: "最後に使った日", value: last ? shortDate(last) : "—", sub: last ? "期間に関係なく" : "まだ使っていません", tip: last ? dateText(last) : "" },
+          ]} />
+          <TotalCard app={app} color={color} range={range} />
+        </div>
 
-      <div className="rec-row is-three" style={{ "--app": color }}>
-        <TotalCard app={app} color={color} allUsage={rec.allUsage} />
-
-        {/* 学習の内訳・大事な数：左に内訳の円グラフ、右に一覧と大事な数 */}
-        <Section title="学習の内訳・大事な数" note="今までの合計" className="is-scroll is-study-one">
-          {stats ? (
-            <div className="rec-study-body">
-              {stats.time.length > 0 && <StudyDonut stats={stats} />}
-              {stats.stats.length > 0 && <Nums stats={stats.stats} />}
-            </div>
-          ) : (
-            <Empty>このアプリには、まだ内訳と大事な数がありません。</Empty>
-          )}
-        </Section>
-
+        {/* 右の上：棒グラフ（このアプリだけ）、右の下：日ごとの履歴 */}
+        <UsageChart start={span} apps={[{ id: app.id, name: app.name, color }]} legend={false} shift={shift} onShift={setShift} />
         <History byDay={byDay} one={app.id} />
-      </div>
-
-      <div className="rec-row is-one" style={{ "--app": color }}>
-        <UsageChart start={span} apps={[{ id: app.id, name: app.name, color }]} legend={false} />
       </div>
     </>
   );
 }
 
-/** 総時間（期間に関係なく、今までにそのアプリを使った時間の合計）
- *  円グラフ … 全部のアプリの合計のうち、このアプリが何 % か（アプリの色）。まん中に総時間
- *  下に、使った日数と、はじめて使った日 */
-function TotalCard({ app, color, allUsage }) {
-  const total = allUsage.apps[app.id] ?? 0;
-  const days = Object.keys(allUsage.byDay).filter((k) => (allUsage.byDay[k].apps[app.id] ?? 0) > 0).sort();
+/** 総時間（棒グラフに出ている期間 range の、そのアプリの合計。数字のまとめの下に置く）
+ *  ‹ › で棒グラフを前後に動かすと、こちらもその期間の合計に変わる（数字・円グラフはなめらかに変わる）
+ *  まん中に円グラフ … その期間の全部のアプリの合計のうち、このアプリが何 % か（アプリの色）。まん中に総時間
+ *  下に、全体のうち何 %・使った日数・いちばん使った日（その期間の中で）
+ *  円グラフの大きさと位置は、すべて の「アプリごとの時間」とそろえる（下の一覧を、アプリの数と同じ行の高さにする。records.css） */
+function TotalCard({ app, color, range }) {
+  const usage = getUsage(range.from, range.to) ?? { total: 0, apps: {}, byDay: {} };
+  const total = usage.apps[app.id] ?? 0;
+  const secOf = (d) => d.apps[app.id] ?? 0;
+  const days = Object.entries(usage.byDay).filter(([, d]) => secOf(d) > 0);
+  const best = days.reduce((a, b) => (secOf(b[1]) > secOf(a[1]) ? b : a), days[0]);   // いちばん使った日 [日付, 記録]
+  const pct = percent(total, usage.total);
   return (
-    <Section title="総時間" note="今までの合計" className="is-total">
+    <Section title="総時間" note={`${range.label} の合計`} className="is-total">
       <div className="rec-total">
         <Donut
           size="fluid"
           thick={12}
-          total={allUsage.total}
-          parts={[{ value: total, color, name: app.name, label: `${app.name}：${timeText(total)}（全体の ${percent(total, allUsage.total)}%）` }]}
+          total={usage.total}
+          parts={[{ value: total, color, name: app.name, label: `${app.name}：${timeText(total)}（全体の ${pct}%）` }]}
           label={`${app.name}の総時間 ${timeText(total)}`}
         >
-          <small>総時間</small>
-          <strong>{timeText(total)}</strong>
-          <small className="rec-total-pct">全体の {percent(total, allUsage.total)}%</small>
+          <strong><Tween value={total} format={timeText} /></strong>
         </Donut>
-        <ul className="rec-total-info">
-          <li><span>使った日</span><b>{days.length} 日</b></li>
-          <li><span>はじめて使った日</span><b>{days.length ? dateText(days[0]) : "—"}</b></li>
+        <ul className="rec-total-info" style={{ "--rows": APPS.length }}>
+          <li><span>全体のうち</span><b><Tween value={pct} format={pctText} /></b></li>
+          <li><span>使った日</span><b><Tween value={days.length} format={dayCount} /></b></li>
+          <li><span>いちばん使った日</span><b>{best ? `${dateText(best[0])}・${timeText(secOf(best[1]))}` : "—"}</b></li>
         </ul>
       </div>
     </Section>
@@ -412,7 +433,7 @@ function TotalCard({ app, color, allUsage }) {
 }
 
 // ───────── 右はしの「がんばりポイント」（とても広い画面のときだけ出る） ─────────
-function RecordsAside({ rec, app, span }) {
+function RecordsAside({ rec, app, span, onOpenPage }) {
   const word = SPAN_WORD[span];
   const sec = (d) => (app ? d.apps[app.id] ?? 0 : d.total);
   const days = Object.entries(rec.usage.byDay).filter(([, d]) => sec(d) > 0);
@@ -437,8 +458,50 @@ function RecordsAside({ rec, app, span }) {
           ))}
         </ul>
       </section>
-      <AsideStappy />
+      <RecentAchievements app={app} />
+      {/* いちばん下（画面の右下）に、そのアプリを開くボタン */}
+      <OpenButton app={app} onOpenPage={onOpenPage} />
     </aside>
+  );
+}
+
+/** そのアプリを開くボタン（各アプリのタブのときだけ。アプリの色でぬる） */
+function OpenButton({ app, onOpenPage }) {
+  if (!app || !onOpenPage) return null;
+  return (
+    <button type="button" className="rec-open" style={{ "--app": colorOf(app.id) }} onClick={() => onOpenPage(app.id)}>
+      <Icon name={app.icon} />
+      <span>{app.name}を開く</span>
+    </button>
+  );
+}
+
+/** 最近手に入れたアチーブ（おまけのいちばん下。期間に関係なく、新しい順に 4 つ）
+ *  app を渡すと、そのアプリのアチーブだけ。名前・アプリ・手に入れた日・レア度（色は core/styles/theme.css の .rarity-〇〇） */
+function RecentAchievements({ app }) {
+  const unlocked = getUnlocked();   // { "アプリの id:アチーブの id": 手に入れた日時 }
+  const list = ALL_ACHIEVEMENTS
+    .filter((a) => unlocked[a.key] && (!app || a.key.startsWith(`${app.id}:`)))
+    .sort((a, b) => (unlocked[b.key] > unlocked[a.key] ? 1 : -1))
+    .slice(0, 4);
+  const when = (a) => String(unlocked[a.key]).slice(5, 10).replace("-", "/");   // "2026-11-18 …" → "11/18"
+  return (
+    <section className="panel rec-aside-card">
+      <h2 className="rec-aside-title is-got"><Icon name="check" />最近手に入れたアチーブ</h2>
+      {list.length === 0 ? (
+        <p className="rec-aside-none">{app ? `${app.name}のアチーブは、まだありません。` : "まだありません。アプリを使ってみましょう！"}</p>
+      ) : (
+        <ul className="rec-aside-list is-ach">
+          {list.map((a) => (
+            <li key={a.key} className={`rarity-${a.rarity}`}>
+              <Icon name={a.appIcon} />
+              <span><b>{a.name}</b><small>{a.appName}・{when(a)}</small></span>
+              <em className="rec-aside-rarity">{a.rarityName}</em>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -446,18 +509,25 @@ function RecordsAside({ rec, app, span }) {
 /** 1 日の平均（秒）。使った日が 0 なら 0 */
 const avg = (sec, days) => (days ? sec / days : 0);
 
-/** 数字のカード（main を付けると、色つきで目立たせる）：左にアイコン、まん中に名前・数字・ひとこと、右上に前とのくらべ */
-function Card({ icon, label, value, sub, main, delta }) {
+/** 数字のまとめ（3 つの数字を 1 つの枠に入れる。見出しは、開いているタブの名前（すべて／プログラム学習 など））
+ *  items … [{ icon, label, value, sub, delta, tip（マウスを乗せたときに出す言葉。なければ value）,
+ *             num・fmt（数字と、その書き方。あれば期間を切りかえたとき、カウントするように変わる） }]（いちばん前が、いちばん大事な数字。色をつけて目立たせる）
+ *  1 つの数字を 1 行にして、たてに並べる（左に名前と小さな説明、右に数字とくらべ。records.css の .rec-sum） */
+function Summary({ title, span, prev, items }) {
+  const note = `${SPAN_WORD[span]}の数字` + (prev ? `（▲▼ は${prev.word}とのくらべ）` : "");
   return (
-    <div className={`panel rec-card${main ? " is-main" : ""}`}>
-      <span className="rec-card-icon"><Icon name={icon} /></span>
-      <span className="rec-card-text">
-        <span className="rec-card-label">{label}</span>
-        <strong>{value}</strong>
-        {sub && <small>{sub}</small>}
-      </span>
-      {delta}
-    </div>
+    <Section title={title} note={note} className="is-sum">
+      <ul className="rec-sum">
+        {items.map((it, i) => (
+          <li key={it.label} className={`rec-sum-item${i === 0 ? " is-main" : ""}`}>
+            <span className="rec-sum-label"><Icon name={it.icon} />{it.label}</span>
+            <strong className="rec-sum-value" title={it.tip || it.value}>{it.fmt ? <Tween value={it.num} format={it.fmt} /> : it.value}</strong>
+            {it.delta && <span className="rec-sum-delta">{it.delta}</span>}
+            {it.sub && <small className="rec-sum-sub" title={it.sub}>{it.sub}</small>}
+          </li>
+        ))}
+      </ul>
+    </Section>
   );
 }
 
@@ -475,70 +545,46 @@ function Delta({ now, before, word, unit = "time" }) {
   );
 }
 
-/** スタッピー（キャラクター）のひとこと（いちばん上の段。せまいときは隠す） */
-function Buddy({ text }) {
-  const [said, setSaid] = useState(null);   // なでたときなどに、スタッピーが言った言葉（null ＝ いつもの言葉）
-  const shown = said ?? text;
-  return (
-    <div className="rec-buddy">
-      <Stappy className="rec-buddy-chara" pose="main" motion="sway" onSay={setSaid} onRestore={() => setSaid(null)} />
-      <p className="rec-buddy-bubble" title={shown} key={shown}><span>{shown}</span></p>
-    </div>
-  );
-}
-
-/** がんばりポイントの下のスタッピー（跳ねる姿）。なでると上に小さなふきだしが出る */
-function AsideStappy() {
-  const [said, setSaid] = useState(null);
-  return (
-    <div className="rec-aside-chara">
-      <p className={`rec-aside-say${said ? " is-on" : ""}`} key={said ?? ""}>{said ?? ""}</p>
-      <Stappy className="rec-aside-stappy" pose="jump" motion="hop" shadow onSay={setSaid} onRestore={() => setSaid(null)} />
-    </div>
-  );
-}
-
-/** スタッピー（src/system/character/character.js の mountCharacter を React で使う）
- *  なでるとホームのアチーブ（なかよし・大のなかよし）も進む */
-function Stappy({ className, pose, motion, shadow = false, onSay, onRestore }) {
-  const ref = useRef(null);
-  const cb = useRef({});
-  cb.current = { onSay, onRestore };   // いつも新しい関数を使う（作り直さずにすむように）
+/** 数字をなめらかに変える（前の数字から新しい数字へ、0.5 秒かけて少しずつ。はじめは動かさない）
+ *  設定の「動きを少なくする」（.reduce-motion）のときは、すぐ変える */
+function useTween(target, ms = 500) {
+  const [shown, setShown] = useState(target);
+  const now = useRef(target);   // 今 画面に出している数字
   useEffect(() => {
-    const stappy = mountCharacter(ref.current, {
-      pose, motion, shadow,
-      onSay: (t) => cb.current.onSay?.(t),
-      onRestore: () => cb.current.onRestore?.(),
-      onPet: () => { unlockAchievement("home", "pet-1"); addProgress("home", "pet-100"); },
-    });
-    return () => stappy.destroy();
-  }, [pose, motion, shadow]);
-  return <span ref={ref} className={className} />;
+    const from = now.current;
+    if (from === target || document.documentElement.classList.contains("reduce-motion")) {
+      now.current = target; setShown(target); return undefined;
+    }
+    const t0 = performance.now();
+    let id = 0;
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / ms);
+      const ease = 1 - (1 - k) ** 3;   // はじめ速く、だんだんゆっくり
+      now.current = from + (target - from) * ease;
+      setShown(now.current);
+      if (k < 1) id = requestAnimationFrame(step);
+    };
+    id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
+  }, [target, ms]);
+  return shown;
 }
+/** 数字をなめらかに変えて出す。format … 数字を文字にする関数（例：timeText） */
+function Tween({ value, format }) {
+  return format(Math.round(useTween(value)));
+}
+/** 数字の書き方（Tween の format に使う） */
+const dayCount = (n) => `${n} 日`;
+const timeOrDash = (sec) => (sec > 0 ? timeText(sec) : "—");
+const pctText = (n) => `${n}%`;
 
-/** スタッピーが話すことば（記録に合わせて変わる） */
+/** 期間のよび名（数字のまとめ・がんばりポイントで使う） */
 const SPAN_WORD = { day: "今日", week: "今週", month: "今月", all: "今まで" };
-function talkOf(rec, app, span) {
-  const word = SPAN_WORD[span];
-  const prev = rec.prev;
-  if (app) {
-    const sec = rec.usage.apps[app.id] ?? 0;
-    const before = prev ? prev.usage.apps[app.id] ?? 0 : 0;
-    if (sec <= 0) return `${word}はまだ${app.name}を使っていないよ。のぞいてみよう！`;
-    if (prev && sec - before >= 60) return `${app.name}を${prev.word}より ${timeText(sec - before)} 多く使ったよ。すごい！`;
-    return `${word}は${app.name}を ${timeText(sec)} 使ったね。その調子！`;
-  }
-  const total = rec.usage.total;
-  if (total <= 0) return `${word}はまだ記録がないよ。アプリを開いて、いっしょに学ぼう！`;
-  if (prev && total - prev.usage.total >= 60) return `${prev.word}より ${timeText(total - prev.usage.total)} 多く学んだね。すごい！`;
-  if (rec.streak >= 3) return `${rec.streak} 日連続でログイン中！ この調子でいこう！`;
-  const top = APPS.reduce((a, p) => ((rec.usage.apps[p.id] ?? 0) > (rec.usage.apps[a.id] ?? 0) ? p : a), APPS[0]);
-  return `${word}は${top.name}をいちばんがんばったね！`;
-}
 
 /** 見出しつきのまとまり（中身は .rec-section-body。画面に収めるときは、この中だけスクロールする）
- *  tools … 見出しの右はしに出すもの（棒グラフの切りかえなど） */
-function Section({ title, note, tools, className = "", children }) {
+ *  tools … 見出しの右はしに出すもの（棒グラフの ‹ › など）
+ *  foot  … いちばん下に出すもの（日ごとの履歴の凡例など。中身をスクロールしても、下に残る） */
+function Section({ title, note, tools, foot, className = "", children }) {
   return (
     <section className={`panel rec-section ${className}`}>
       <header className="rec-section-head">
@@ -547,6 +593,7 @@ function Section({ title, note, tools, className = "", children }) {
         {tools && <div className="rec-section-tools">{tools}</div>}
       </header>
       <div className="rec-section-body">{children}</div>
+      {foot && <div className="rec-section-foot">{foot}</div>}
     </section>
   );
 }
@@ -554,52 +601,8 @@ function Section({ title, note, tools, className = "", children }) {
 /** 何もないときの文 */
 const Empty = ({ children }) => <p className="rec-none">{children}</p>;
 
-/** 学習の内訳の色（アプリの色を、だんだんうすくする。上から順に使う。ホームと同じ） */
-const SHADES = [100, 68, 44, 26, 14];
-const shade = (i) => `color-mix(in srgb, var(--app) ${SHADES[i % SHADES.length]}%, var(--surface))`;
-
-/** 学習の内訳：円グラフ ＋ 一覧（色・名前・時間・%） */
-function StudyDonut({ stats }) {
-  const sum = stats.time.reduce((n, t) => n + t.sec, 0);
-  return (
-    <div className="rec-split is-study">
-      <Donut
-        size={132}
-        total={sum}
-        parts={stats.time.map((t, i) => ({ value: t.sec, color: shade(i), name: t.name, label: `${t.name}：${timeText(t.sec)}` }))}
-        label={`学習時間 ${timeText(sum)}`}
-      >
-        <small>合計</small>
-        <strong>{sum > 0 ? timeText(sum) : "0分"}</strong>
-      </Donut>
-      <ul className="rec-breakdown">
-        {stats.time.map((t, i) => (
-          <li key={t.id}>
-            <i style={{ background: shade(i) }} />
-            <span>{t.name}</span>
-            <b>{t.sec > 0 ? timeText(t.sec) : "—"}{sum > 0 && <small>{percent(t.sec, sum)}%</small>}</b>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/** 大事な数（数字のタイル） */
-function Nums({ stats }) {
-  return (
-    <div className="rec-nums">
-      {stats.map((x) => (
-        <div key={x.id} className="rec-num">
-          <strong>{x.value.toLocaleString()}<small>{x.unit}</small></strong>
-          <span>{x.name}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** 日ごとの履歴（新しい日が上）。one にアプリの id を渡すと、そのアプリだけの棒にする */
+/** 日ごとの履歴（新しい日が上）。one にアプリの id を渡すと、そのアプリだけの棒にする
+ *  すべて のときは、棒の下に アプリごとの時間（色の丸 ＋ 時間）、いちばん下に凡例（色の見本。棒グラフと同じ形） */
 function History({ byDay, one }) {
   const [shown, setShown] = useState(HISTORY_STEP);
   const keys = Object.keys(byDay).filter((k) => byDay[k].total > 0).sort().reverse();
@@ -607,7 +610,14 @@ function History({ byDay, one }) {
   const rest = keys.length - shown;
 
   return (
-    <Section title="日ごとの履歴" note={keys.length ? `${keys.length} 日` : ""} className="is-scroll">
+    <Section
+      title="日ごとの履歴" note={keys.length ? `${keys.length} 日` : ""} className="is-scroll"
+      foot={!one && keys.length > 0 && (
+        <ul className="rec-legend">
+          {APPS.map((p) => <li key={p.id}><i style={{ background: colorOf(p.id) }} />{p.name}</li>)}
+        </ul>
+      )}
+    >
       {keys.length === 0 ? (
         <Empty>この期間は、まだ使っていません。</Empty>
       ) : (
@@ -629,8 +639,8 @@ function History({ byDay, one }) {
                   {!one && (
                     <span className="rec-h-apps">
                       {apps.map((p) => (
-                        <span key={p.id} className="rec-h-app" style={{ "--app": colorOf(p.id) }} title={`${p.name} ${timeText(d.apps[p.id])}`}>
-                          <Icon name={p.icon} />{timeText(d.apps[p.id])}
+                        <span key={p.id} className="rec-h-app" title={`${p.name} ${timeText(d.apps[p.id])}`}>
+                          <i style={{ background: colorOf(p.id) }} />{timeText(d.apps[p.id])}
                         </span>
                       ))}
                     </span>
