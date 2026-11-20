@@ -11,9 +11,9 @@
 /* 画面のまわりの余白（上・左右・下）。下は少なめにして、ホームが画面に収まるように */
 body { padding: 4px 24px 14px; }
 
-/* 上から 名前とログイン日数 → アプリごとのカード → アチーブ → 使った時間（グラフは小さめにして、画面に収まるようにしている） */
+/* 上から 名前とあいさつ → アプリを開くカード → アチーブ・記録（画面に収まるようにしている） */
 .home {
-  min-height: calc(100vh - 18px);   /* 画面の高さいっぱい（上下の余白 4px + 14px をのぞく）→ 下のアプリのカードがのこりを使う */
+  min-height: calc(100vh - 18px);   /* 画面の高さいっぱい（上下の余白 4px + 14px をのぞく）→ いちばん下の段（アチーブ・記録）がのこりを使う */
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
@@ -26,10 +26,10 @@ body { padding: 4px 24px 14px; }
 
 .home-icon { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ───────── 1. いちばん上の帯（下のアチーブ・使った時間と同じ枠：index.html の class="panel"） ─────────
+/* ───────── 1. いちばん上の帯（下のアチーブ・記録と同じ枠：index.html の class="panel"） ─────────
    2 つに分けて、左はしにアイコンと名前・右はしにログイン日数 */
 .home-hero {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px;
   padding: 14px 20px; flex: none;
 }
 .home-user { grid-column: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -65,116 +65,10 @@ body { padding: 4px 24px 14px; }
 .home-link:hover { text-decoration: underline; }
 .home-small-title { margin-top: 0; font-size: 13px; font-weight: 800; color: var(--text); }
 
-/* ───────── 3・4. いちばん下の段：左にアチーブ、右に使った時間（幅は 2：3。高さはそろう） ───────── */
-.home-bottom { flex: none; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 14px; align-items: stretch; }
+/* ───────── 3・4. いちばん下の段：左に記録、右にアチーブ（幅は 1：1。画面の残りの高さいっぱい） ───────── */
+.home-bottom { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
 
-/* ───────── 4. 使った時間（上に円グラフとアプリごとの時間、下に棒グラフ・カレンダー） ───────── */
-.home-usage {
-  gap: 12px; padding: 14px 20px 16px;
-  /* 下のグラフの高さ。日・週・月・年のどれでも同じにする（切りかえても、まわりの大きさが動かないように） */
-  --chart-h: clamp(132px, 17vh, 190px);
-}
-/* 上の行：見出し・期間（‹ ›）・日週月年 */
-.home-usage-head { display: flex; align-items: center; gap: 18px; flex: none; }
-.home-usage-head h2 { font-size: 16px; font-weight: 800; }
-.home-usage-head .home-seg { margin-left: auto; }
-.home-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
-.home-seg button {
-  min-width: 40px; height: 30px; padding: 0 12px; border: 0; border-radius: 7px; cursor: pointer;
-  background: transparent; color: var(--text-2); font: inherit; font-size: 12.5px; font-weight: 800;
-}
-.home-seg button:hover { color: var(--text); }
-.home-seg button.is-on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgb(15 30 60 / .16); }
-.home-usage-nav { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.home-usage-nav strong { font-size: 14px; font-weight: 800; min-width: 0; white-space: nowrap; }
-.home-nav-btn {
-  width: 28px; height: 28px; flex: none; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
-  background: var(--surface); color: var(--text); font: inherit; font-size: 17px; font-weight: 800; line-height: 1; padding-bottom: 2px;
-}
-.home-nav-btn:hover:not(:disabled) { border-color: var(--text-3); }
-.home-nav-btn:disabled { opacity: .35; cursor: default; }
-
-/* 上（アプリごと）と下（グラフ）：どちらも上に小見出し。あいだに線 */
-.home-usage-main { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-/* 上：小見出し、その下に 円グラフ ｜ アプリごとの時間、いちばん下にひとこと */
-.home-usage-left {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto;
-  align-items: center; gap: 8px 20px;
-}
-.home-usage-left .home-small-title, .home-usage-left .home-usage-note { grid-column: 1 / -1; }
-.home-usage-left .home-pie { width: 124px; }
-.home-pie { position: relative; width: clamp(130px, 24vh, 210px); aspect-ratio: 1; flex: none; }
-.home-pie svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
-.home-pie circle { fill: none; stroke-width: 14; }
-.home-pie .home-pie-track { stroke: var(--surface-2); }
-.home-pie-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-.home-pie-center small { font-size: 12.5px; font-weight: 800; color: var(--text-2); }
-.home-pie-center strong { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
-
-.home-usage-list { width: 100%; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.home-usage-row {   /* 色・アイコン・名前・時間・% */
-  display: grid; grid-template-columns: 10px 22px minmax(0, 1fr) auto 42px; align-items: center; gap: 8px;
-  padding: 6px 4px; border-bottom: 1px solid var(--border);
-}
-.home-usage-row:last-child { border-bottom: 0; }
-.home-usage-dot { width: 10px; height: 10px; border-radius: 3px; }
-.home-usage-icon { display: grid; place-items: center; width: 22px; height: 22px; color: var(--text); }
-.home-usage-icon .home-icon { width: 18px; height: 18px; }
-.home-usage-name { font-size: 13.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.home-usage-time { font-size: 14px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.home-usage-pct { font-size: 12.5px; font-weight: 700; color: var(--text-2); text-align: right; font-variant-numeric: tabular-nums; }
-.home-usage-row.is-zero { opacity: .6; }
-.home-usage-note { width: 100%; font-size: 13px; font-weight: 700; color: var(--text-2); }
-
-/* 円グラフの下のグラフ */
-.home-usage-chart { min-height: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
-.home-usage-chart-body { display: flex; flex-direction: column; }
-
-/* 積み上げ棒グラフ（日：時間ごと／週：曜日ごと／年：月ごと） */
-.home-bars { display: flex; gap: 10px; height: var(--chart-h); }
-.home-bars-axis {   /* 左のめもり（上限・半分・0） */
-  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
-  width: 60px; padding-bottom: 36px; font-size: 12px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums;
-}
-.home-bars-axis span { line-height: 1; transform: translateY(-50%); }
-.home-bars-axis span:last-child { transform: translateY(50%); }
-.home-bars-plot { flex: 1; min-width: 0; display: flex; gap: 4px; }
-.home-bar { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.home-bar-area {   /* うすい横線（上・半分・下）の上に棒を立てる */
-  position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center;
-  background: linear-gradient(var(--border), var(--border)) 0 0 / 100% 1px no-repeat,
-              linear-gradient(var(--border), var(--border)) 0 50% / 100% 1px no-repeat,
-              linear-gradient(var(--border-strong), var(--border-strong)) 0 100% / 100% 1px no-repeat;
-}
-.home-bar-stack { width: min(70%, 34px); display: flex; flex-direction: column-reverse; border-radius: 5px 5px 0 0; overflow: hidden; }
-.home-bar-seg { display: block; min-height: 1px; flex-basis: 0; }
-.home-bar:hover .home-bar-area { background-color: var(--surface-2); }
-.home-bar.is-now .home-bar-area { background-color: var(--sky-soft); }   /* 今（今の時間・今日・今月） */
-.home-bar-label { height: 16px; font-size: 12.5px; font-weight: 800; color: var(--text); white-space: nowrap; }
-.home-bar-sub { margin-top: -4px; height: 14px; font-size: 11px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
-.home-bar.is-now .home-bar-label { color: var(--primary); }
-
-/* 月のカレンダー（長く使った日ほど濃い青）
-   高さは棒グラフと同じ（--chart-h）。1 行目は曜日、その下の週の行（4〜6 行）で高さを等分する */
-.home-heat {
-  height: var(--chart-h); display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
-  grid-template-rows: auto; grid-auto-rows: minmax(0, 1fr); gap: 4px;
-}
-.home-heat-week { text-align: center; font-size: 12.5px; font-weight: 800; color: var(--text); }
-.home-heat-week.is-sat { color: var(--primary); }
-.home-heat-week.is-sun { color: #e11d48; }
-.home-heat-day {
-  display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 0; padding: 0 7px; overflow: hidden; line-height: 1;   /* 日にち ｜ 時間 を 1 行に */
-  border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border);
-}
-.home-heat-day b { font-size: 12px; font-weight: 800; }
-.home-heat-day small { font-size: 11px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.home-heat-day.is-dark { color: #fff; border-color: transparent; }
-.home-heat-day.is-today { outline: 2.5px solid var(--text); outline-offset: -1px; }
-.home-heat-day.is-future { opacity: .6; }
-.home-heat-day.is-blank { visibility: hidden; }
-
-/* ───────── 3. アチーブ（左下） ───────── */
+/* ───────── 3. アチーブ（右下） ───────── */
 /* 3 つを、たてに並べる：全体の円 → レア度ごとの数 → 最近手に入れたもの（あいだに線。右の「使った時間」と高さをそろえる） */
 .home-achieve-body { flex: 1; display: flex; flex-direction: column; gap: 12px; }
 .home-achieve-body > :last-child { flex: 1 1 0; }   /* 最近手に入れたもの：枠の残りの高さいっぱい */
@@ -214,127 +108,231 @@ body { padding: 4px 24px 14px; }
 #recent { flex: 1 1 0; overflow-y: auto; }
 .home-list.is-scroll { padding-right: 6px; }
 
-/* ───────── 2. アプリごとのカード（学習時間・アチーブの円グラフ。画面の残りの高さいっぱい） ─────────
-   カードは上のアチーブ・使った時間と同じ枠（js/main.js で class="panel"）。横に 4 枚、せまいときは 2 枚ずつ
-   画面の下ののこりの高さいっぱいに広がり、円グラフはカードの大きさに合わせて大きくなる（cqh・cqw） */
-.home-apps { flex: 1 1 auto; display: flex; min-height: 0; }
-.home-apps-grid { flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-.home-app { display: flex; flex-direction: column; gap: 10px; padding: 14px 18px; min-width: 0; }
-.home-app-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* ふきだし（共通）：うすい水色の角丸。::after が三角のしっぽ */
+.home-bubble {
+  position: relative; margin: 0; padding: 8px 14px; border-radius: 14px;
+  background: var(--sky-soft); border: 1.5px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  line-height: 1.45;
+}
+.home-bubble::after {
+  content: ""; position: absolute; width: 10px; height: 10px; background: inherit;
+  border: inherit; border-width: 0 1.5px 1.5px 0; border-style: solid;
+}
+
+/* ───────── 2. アプリを開くカード（アイコン・名前・ひとこと。横に 5 枚、せまいときは 3 枚・2 枚） ───────── */
+.home-apps { flex: none; }
+.home-apps-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.home-app {
+  display: flex; align-items: center; gap: 12px; min-width: 0; padding: 14px 14px 14px 16px;
+  font: inherit; color: var(--text); text-align: left; cursor: pointer;
+  transition: transform .15s var(--ease, ease), box-shadow .15s, border-color .15s;
+}
+.home-app:hover, .home-app:focus-visible {
+  transform: translateY(-2px); border-color: color-mix(in srgb, var(--app) 45%, var(--border));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--app) 18%, transparent);
+}
 .home-app-icon {
-  flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px;
-  color: var(--app); background: color-mix(in srgb, var(--app) 12%, transparent);
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px;
+  color: #fff; background: linear-gradient(150deg, color-mix(in srgb, var(--app) 70%, #fff), var(--app) 85%);
 }
-.home-app-icon .home-icon { width: 19px; height: 19px; }
-.home-app-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-app-icon .home-icon { width: 24px; height: 24px; }
+.home-app-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.home-app-name { font-size: 14.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-app-desc { font-size: 11.5px; font-weight: 700; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-app-go { flex: none; font-size: 22px; font-weight: 800; line-height: 1; color: var(--text-3); transition: color .15s, transform .15s; }
+.home-app:hover .home-app-go { color: var(--app); transform: translateX(2px); }
 
-/* まん中：円グラフ 2 つ（学習時間の内訳 ｜ アチーブの取得率）と、学習時間の内訳
-   container-type: size … この枠の高さ・幅（cqh・cqw）に合わせて、円グラフの大きさと並べ方を決める
-     低いとき … 左に円グラフ、右に内訳（横に並べる）
-     高いとき … 上に大きな円グラフ、下に内訳（@container の中） */
-.home-app-body { flex: 1 1 auto; min-height: 76px; container-type: size; }
-.home-app-body-in { height: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; }
-.home-app-charts { display: flex; gap: 8px; justify-content: center; }
-.home-donut { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.home-donut-pie {
-  position: relative; aspect-ratio: 1;
-  /* 高さ（下の文字の分をのぞく）と、横幅（右の内訳の分をのぞいて 2 つ並ぶ）の小さいほう。50〜120px */
-  width: clamp(50px, min(calc(100cqh - 22px), calc((100cqw - 150px) / 2)), 120px);
+/* ───────── 4. 記録へのカード（左下。上に空と丘とスタッピー、下に時間と「記録を見る」） ───────── */
+.home-records-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+/* 上：空と丘の上のスタッピー（ぴょんぴょん はねる。なでられる）とふきだし。のこりの高さいっぱい
+   空 … 上から下へのグラデーション。色は時間帯（data-time：morning 朝／day 昼／evening 夕方／night 夜）で変わる
+   太陽・月 … .home-sky-sun、星 … .home-stars（夜だけ）、雲 … .home-cloud（ゆっくり流れる）
+   丘 … ::before（手前）と .home-hill-back（奥）、草 … .home-grass、花 … .home-flower（ゆらゆら）
+   スタッピーとふきだし … .home-records-walker（丘の上を左右に歩く。character.js の stroll）
+   container-type: size … この枠の大きさ（cqw・cqh）に合わせて、スタッピーの大きさなどを変える */
+.home-records-chara {
+  --sky-top: color-mix(in srgb, #7cc4f4 34%, var(--surface));     /* 昼 */
+  --sky-bottom: color-mix(in srgb, #bfe6ff 22%, var(--surface));
+  --hill: color-mix(in srgb, #5fbf7f 30%, var(--surface));
+  --hill-back: color-mix(in srgb, #5fbf7f 16%, var(--surface));
+  --grass: color-mix(in srgb, #3f9d5f 55%, var(--surface));
+  --sun: #ffd54a; --sun-glow: rgb(255 213 74 / .45);
+  position: relative; isolation: isolate; overflow: hidden; flex: 1 1 0; min-height: 170px; container-type: size;
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  padding: 0 16px 14px 9%; border-radius: 16px; color: var(--text);
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+  transition: background .8s;
 }
-.home-donut-pie svg { width: 100%; height: 100%; transform: rotate(-90deg); }   /* 12 時の位置からスタート */
-.home-donut-pie circle { fill: none; stroke-width: 12; }
-.home-donut-track { stroke: var(--surface-2); }
-.home-donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; }
-.home-donut-center b { font-size: clamp(13px, calc(100cqh * .17), 22px); font-weight: 800; font-variant-numeric: tabular-nums; }
-.home-donut-center small { font-size: 10.5px; font-weight: 700; color: var(--text-2); }   /* 単位は数の下に */
-.home-donut figcaption { font-size: 11.5px; font-weight: 700; color: var(--text-2); white-space: nowrap; }
-/* 右：学習時間の内訳（色・名前・時間） */
-.home-donut-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.home-donut-legend li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
-.home-donut-legend li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.home-donut-legend li i { width: 8px; height: 8px; border-radius: 2px; }
-.home-donut-legend li b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
-
-/* 高さがあるとき：上に大きな円グラフ、下に内訳 */
-@container (min-height: 170px) {
-  .home-app-body-in { grid-template-columns: 1fr; align-content: center; justify-items: center; gap: 10px; }
-  .home-app-charts { gap: 18px; }
-  .home-donut-pie { width: clamp(60px, min(calc(100cqh - 100px), calc((100cqw - 30px) / 2)), 128px); }
-  .home-donut-center b { font-size: 22px; }
-  .home-donut-legend { width: 100%; max-width: 260px; }
+.home-records-chara[data-time="morning"] {   /* 朝：うすいオレンジから黄色 */
+  --sky-top: color-mix(in srgb, #ffb98a 40%, var(--surface));
+  --sky-bottom: color-mix(in srgb, #ffe9a8 30%, var(--surface));
+  --sun: #ffc46b; --sun-glow: rgb(255 180 90 / .45);
 }
-
-/* いちばん下：大事な数（上の帯の「ログイン 1 日」と同じ形。名前はうすく、数だけ濃く大きく。線で区切って横に並べる） */
-.home-app-stats { list-style: none; margin: 0; padding: 8px 0 0; display: flex; border-top: 1px solid var(--border); }
-.home-app-stats li {
-  flex: 1 1 0; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 3px; padding: 0 6px;
-  font-size: 12px; font-weight: 700; color: var(--text-2); white-space: nowrap;
+.home-records-chara[data-time="evening"] {   /* 夕方：オレンジから赤むらさき */
+  --sky-top: color-mix(in srgb, #ff8a5c 46%, var(--surface));
+  --sky-bottom: color-mix(in srgb, #ffc48a 36%, var(--surface));
+  --hill: color-mix(in srgb, #4f9a68 38%, var(--surface));
+  --hill-back: color-mix(in srgb, #c27a5a 26%, var(--surface));
+  --sun: #ff8f4a; --sun-glow: rgb(255 120 60 / .45);
 }
-.home-app-stats li + li { border-left: 1px solid var(--border); }
-.home-app-stats li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; margin-right: 3px; }
-.home-app-stats li b { flex: none; font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
-.home-app-stats li small { flex: none; font-size: 11.5px; font-weight: 700; }
+.home-records-chara[data-time="night"] {   /* 夜：こい青。月と星 */
+  --sky-top: color-mix(in srgb, #0f1f45 88%, var(--surface));
+  --sky-bottom: color-mix(in srgb, #2b4a86 75%, var(--surface));
+  --hill: color-mix(in srgb, #1f4a4a 82%, var(--surface));
+  --hill-back: color-mix(in srgb, #2c3f6a 80%, var(--surface));
+  --grass: color-mix(in srgb, #2f6f5a 85%, var(--surface));
+}
+.home-records-chara::before {   /* 手前の丘 */
+  content: ""; position: absolute; z-index: -1; left: -20%; right: -20%; bottom: -60%; height: 85%; border-radius: 50%;
+  background: var(--hill); transition: background .8s;
+}
+.home-hill-back {   /* 奥の丘（右うしろ） */
+  position: absolute; z-index: -2; right: -25%; bottom: -35%; width: 90%; height: 75%; border-radius: 50%;
+  background: var(--hill-back); transition: background .8s;
+}
+/* 太陽（夜は月）：右上。朝と夕方は少し低いところ */
+.home-sky-sun {
+  position: absolute; z-index: -3; right: 11%; top: 11%; width: clamp(26px, 11cqh, 44px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fff6c8, var(--sun) 65%);
+  box-shadow: 0 0 0 6px var(--sun-glow), 0 0 24px 10px var(--sun-glow);
+  transition: top .8s, background .8s, box-shadow .8s;
+}
+.home-records-chara[data-time="morning"] .home-sky-sun, .home-records-chara[data-time="evening"] .home-sky-sun { top: 34%; }
+.home-records-chara[data-time="night"] .home-sky-sun {   /* 三日月（左がわを、空の色の丸でかくす） */
+  background: transparent; box-shadow: inset -7px 3px 0 0 #fdf3c4, 0 0 18px 2px rgb(253 243 196 / .18);
+}
+/* 星（夜だけ。ちかちか光る） */
+.home-stars { position: absolute; z-index: -3; inset: 0 0 45% 0; opacity: 0; transition: opacity .8s; pointer-events: none; }
+.home-records-chara[data-time="night"] .home-stars { opacity: 1; }
+.home-stars i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; animation: home-twinkle 2.6s ease-in-out infinite; }
+.home-stars i:nth-child(1) { left: 8%; top: 18%; }
+.home-stars i:nth-child(2) { left: 18%; top: 52%; animation-delay: -.6s; width: 2px; height: 2px; }
+.home-stars i:nth-child(3) { left: 27%; top: 12%; animation-delay: -1.2s; }
+.home-stars i:nth-child(4) { left: 38%; top: 38%; animation-delay: -1.9s; width: 2px; height: 2px; }
+.home-stars i:nth-child(5) { left: 47%; top: 8%; animation-delay: -.3s; }
+.home-stars i:nth-child(6) { left: 56%; top: 46%; animation-delay: -2.2s; width: 2px; height: 2px; }
+.home-stars i:nth-child(7) { left: 64%; top: 20%; animation-delay: -1.5s; }
+.home-stars i:nth-child(8) { left: 72%; top: 60%; animation-delay: -.9s; width: 2px; height: 2px; }
+.home-stars i:nth-child(9) { left: 92%; top: 44%; animation-delay: -2.4s; }
+.home-stars i:nth-child(10) { left: 33%; top: 70%; animation-delay: -1.7s; width: 2px; height: 2px; }
+@keyframes home-twinkle { 0%, 100% { opacity: .9; transform: scale(1); } 50% { opacity: .25; transform: scale(.6); } }
+/* 雲 */
+.home-cloud { position: absolute; z-index: -3; left: -90px; fill: #fff; opacity: .9; animation: home-cloud 30s linear infinite; }
+.home-cloud.c1 { top: 12%; width: 80px; }
+.home-cloud.c2 { top: 30%; width: 52px; animation-duration: 42s; animation-delay: -20s; opacity: .7; }
+.home-cloud.c3 { top: 6%; width: 60px; animation-duration: 36s; animation-delay: -9s; opacity: .8; }
+@keyframes home-cloud { from { transform: translateX(0); } to { transform: translateX(calc(100cqw + 110px)); } }   /* 左はしの外 → 右はしの外（cqw ＝ この枠の幅） */
+.home-records-chara[data-time="evening"] .home-cloud { fill: #ffe3d0; }
+.home-records-chara[data-time="night"] .home-cloud { opacity: .12; }
+:root[data-theme="dark"] .home-cloud { opacity: .14; }
+/* 草と花（丘の上。下を中心に、ゆらゆら） */
+.home-grass, .home-flower { position: absolute; z-index: -1; transform-origin: 50% 100%; animation: home-sway 3.4s ease-in-out infinite; }
+.home-grass { width: clamp(22px, 8cqh, 36px); }
+.home-grass path { fill: none; stroke: var(--grass); stroke-width: 2.4; stroke-linecap: round; transition: stroke .8s; }
+.home-grass.g1 { left: 4%; bottom: 6%; }
+.home-grass.g2 { left: 46%; bottom: 3%; animation-delay: -1.1s; }
+.home-grass.g3 { right: 6%; bottom: 9%; animation-delay: -2.3s; }
+.home-flower { width: clamp(12px, 5cqh, 20px); }
+.home-flower .stem { stroke: var(--grass); stroke-width: 2; }
+.home-flower .mid { fill: #ffd23f; }
+.home-flower.f1 { left: 2.5%; bottom: 10%; animation-delay: -.7s; } .home-flower.f1 .petals { fill: #ff9ec4; }
+.home-flower.f2 { left: 58%; bottom: 7%; animation-delay: -1.8s; }  .home-flower.f2 .petals { fill: #fff; }
+.home-flower.f3 { right: 16%; bottom: 13%; animation-delay: -2.9s; } .home-flower.f3 .petals { fill: #ffcf5a; } .home-flower.f3 .mid { fill: #ff8f4a; }
+@keyframes home-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+.reduce-motion .home-grass, .reduce-motion .home-flower, .reduce-motion .home-stars i, .reduce-motion .home-cloud { animation: none; }
+/* ── 奥ゆき（--px・--py：マウスの位置 -1〜1。js/main.js）：遠いものほど少し、近いものほど大きく ずらす（マウスと反対へ） ── */
+.home-sky-sun, .home-stars { translate: calc(var(--px, 0) * -4px) calc(var(--py, 0) * -3px); }
+.home-cloud { translate: calc(var(--px, 0) * -7px) calc(var(--py, 0) * -4px); }
+.home-hill-back { translate: calc(var(--px, 0) * -10px) calc(var(--py, 0) * -5px); }
+.home-records-chara::before { translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -7px); }
+.home-grass, .home-flower { translate: calc(var(--px, 0) * -24px) calc(var(--py, 0) * -9px); }
+.home-sky-sun, .home-stars, .home-cloud, .home-hill-back, .home-records-chara::before, .home-grass, .home-flower {
+  transition-property: top, background, box-shadow, opacity, translate; transition-duration: .8s, .8s, .8s, .8s, .5s; transition-timing-function: ease-out;
+}
+/* 太陽の向きで、足もとのかげが のびる（朝は右へ、夕方は左へ。夜はうすく） */
+.home-records-chara[data-time="morning"] .home-records-owl .chara-shadow { translate: 16% 0; scale: 1.3 1; }
+.home-records-chara[data-time="evening"] .home-records-owl .chara-shadow { translate: -16% 0; scale: 1.3 1; }
+.home-records-chara[data-time="night"] .home-records-owl .chara-shadow { filter: opacity(.5); }
 
-/* 少し低いウィンドウのとき：アチーブ・使った時間などを少し小さくして、アプリのカードに高さをのこす */
+/* スタッピーとふきだし（いっしょに丘の上を歩く。ずらす長さは character.js が translate で、奥ゆきは --depth（0 手前 〜 1 奥）で決める） */
+.home-records-walker { position: relative; flex: none; display: flex; align-items: flex-end; }
+/* スタッピー：手前の丘といっしょに ずれる（奥にいるほど ずれは少し）。奥にいるほど小さく */
+.home-records-owl {
+  flex: none; display: flex; transform-origin: 50% 100%;
+  translate: calc(var(--px, 0) * (-18px + var(--depth, 0) * 8px)) calc(var(--py, 0) * -7px);
+  scale: calc(1 - var(--depth, 0) * .25);
+  transition: translate .5s ease-out, scale .42s ease-in-out;
+}
+.home-records-owl .chara-img { height: clamp(90px, 68cqh, 220px); }   /* 空の枠の高さに合わせる */
+/* ふきだし：スタッピーの右上。しっぽは左（スタッピーのほう）。右に寄ったら（is-left）、左がわに出して しっぽは右 */
+.home-records-bubble {
+  position: absolute; left: calc(100% - 14px - var(--depth, 0) * 12%); top: calc(14% + var(--depth, 0) * 22%); z-index: 2;
+  width: max-content; max-width: min(250px, 40cqw); margin: 0;
+  font-size: 13.5px; font-weight: 800; color: var(--text); text-align: left; white-space: pre-line; background: var(--surface);
+  box-shadow: 0 4px 12px rgb(15 30 60 / .08); transition: opacity .25s, top .42s ease-in-out, left .42s ease-in-out, right .42s ease-in-out;
+}
+.home-records-bubble::after { left: -6.5px; top: 50%; transform: translateY(-50%) rotate(135deg); }
+.home-records-bubble.is-left { left: auto; right: calc(100% - 14px - var(--depth, 0) * 12%); }
+.home-records-bubble.is-left::after { left: auto; right: -6.5px; transform: translateY(-50%) rotate(-45deg); }
+.home-records-bubble.is-away { opacity: 0; pointer-events: none; }   /* スタッピーがおさんぽ中は かくす */
+/* 下：今日・今週・これまで（横に 3 つ。線で区切る。数字を大きく） */
+.home-records-nums { flex: none; list-style: none; margin: 0; padding: 0; display: flex; }
+.home-records-nums li {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font-size: 12px; font-weight: 700; color: var(--text-2);
+}
+.home-records-nums li + li { border-left: 1px solid var(--border); }
+.home-records-nums b { font-size: 20px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.home-records-nums li:nth-child(2) b { color: var(--primary); }   /* 今週をいちばん目立たせる */
+.home-records-btn {
+  flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; border: 0; border-radius: 12px; cursor: pointer;
+  background: linear-gradient(150deg, var(--sky), var(--primary) 80%); color: #fff; font: inherit; font-size: 14px; font-weight: 800;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent); transition: filter .15s, transform .15s;
+}
+.home-records-btn::after { content: "›"; font-size: 18px; line-height: 1; }
+.home-records-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* 少し低いウィンドウのとき：少し詰める */
 @media (max-height: 840px) {
   .home { gap: 10px; }
   .home-hero { padding: 10px 18px; }
   .home-avatar { width: 40px; height: 40px; font-size: 17px; }
   .home-card { padding: 10px 18px; gap: 8px; }
-  .home-app { padding: 10px 16px; gap: 8px; }
-  .home-app-body { min-height: 64px; }
+  .home-app { padding: 10px 12px 10px 14px; }
+  .home-app-icon { width: 38px; height: 38px; border-radius: 11px; }
   .home-apps-grid { gap: 10px; }
-  .home-app-head { gap: 8px; }
-  .home-app-icon { width: 28px; height: 28px; }
-  /* 使った時間を低くする（グラフ・カレンダー・円グラフ） */
-  .home-usage { --chart-h: 132px; }
-  .home-heat { gap: 3px; }
-  .home-usage-left .home-pie { width: 104px; }
-  .home-usage-main { min-height: 0; }
   .home-ring { width: 64px; height: 64px; }
   .home-ach { gap: 8px; }
   .home-list { gap: 4px; }
-  .home-usage-row { padding: 2px 4px; }
-  .home-usage-head { gap: 12px; }
-  .home-usage-chart { gap: 8px; padding-top: 8px; }
-  .home-usage-main { gap: 8px; }
   .home-achieve-body { gap: 8px; }
   .home-achieve-body > * + * { padding-top: 8px; }
   .home-bottom { gap: 10px; }
+  .home-records-body { gap: 8px; }
+  .home-records-nums b { font-size: 18px; }
 }
-
-/* 少しせまいウィンドウのとき：アプリのカードの余白を少しへらす */
-@media (max-width: 1250px) and (min-width: 1001px) {
-  .home-app { padding-left: 12px; padding-right: 12px; }
-  .home-app-body-in { gap: 10px; }
-  .home-app-stats li { font-size: 11.5px; padding: 0 4px; }
-  .home-app-stats li b { font-size: 16px; }
-  .home-app-charts { gap: 4px; }
-  .home-donut figcaption { font-size: 10.5px; }
-  .home-donut-legend li { font-size: 11.5px; }
-}
-
 /* もっと低いウィンドウのとき（1280×720 など）：さらに少し詰める */
 @media (max-height: 740px) {
   .home { gap: 8px; }
   .home-hero { padding: 7px 18px; }
   .home-card { padding: 8px 16px; gap: 6px; }
-  .home-app { padding: 8px 14px; gap: 6px; }
   .home-ring { width: 56px; height: 56px; }
   .home-ring-pct { font-size: 15px; }
-  .home-usage-row { padding: 1px 4px; }
-  .home-usage-left .home-pie { width: 96px; }
-  .home-usage { --chart-h: 128px; }
+  .home-records-btn { height: 38px; }
 }
 
-/* せまいウィンドウのときは、たてに並べる */
+/* せまいウィンドウのとき */
 @media (max-width: 1000px) {
-  .home-apps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .home-bottom { grid-template-columns: 1fr; }   /* アチーブの下に、使った時間 */
+  .home-bottom { grid-template-columns: 1fr; }   /* アチーブの下に、記録 */
+  .home-apps-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* アプリのカードは 3 枚ずつ */
   .home-hero-login { font-size: 12.5px; gap: 10px; }
   .home-hero-login b { font-size: 19px; }
 }
 @media (max-width: 640px) {
   .home-hero { grid-template-columns: 1fr; justify-items: center; }
   .home-user, .home-hero-login, .home-hero-guest { grid-column: 1; justify-self: center; }
+  .home-apps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ふきだしの言葉が変わったときに、ぽんと出す */
+.home-bubble.is-pop { animation: home-pop .3s ease-out; }
+@keyframes home-pop { 0% { transform: scale(.9); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }

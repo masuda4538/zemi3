@@ -1,7 +1,7 @@
 // 起動の入口（ふだんは触らなくて大丈夫です）
 //   1. 設定（settings.json）・アチーブ（achievements.json）・ログインしている人（session.json）・ログインした日（logins.json）・使った時間（usage.json）・アプリごとの学習時間（stats.json）のファイルを読む
 //   2. 画面（system/core/App.jsx）を出す
-//   3. スタート画面（青いロード画面。src/system/start-end/）を、起動して少したったら消す
+//   3. スタート画面（青いロード画面。src/system/start-end/）に「Enter キーを押してはじめる」を出す（Enter キーで消える）
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./system/core/App";

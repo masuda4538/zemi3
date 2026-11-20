@@ -3,8 +3,7 @@
   ホーム：画面の入口 ★ このフォルダーの中は、全部自由に書きかえてよい
   ・このファイル（index.html）と rust/main.rs だけは、名前と場所を変えない（入口）
   ・CSS・JS は下の <link> <script> でつないでいる（ファイルを増やしたら、ここに足す）
-  ・中身（名前・ログイン日数・アチーブ・使った時間）は js/main.js が入れる。ここは「枠」だけ
-
+  ・中身（名前・ログイン日数・アチーブ・時間）は js/main.js が入れる。ここは「枠」だけ
   フォルダーの中（いちばん外は index.html だけ。ほかは種類ごとのフォルダーに入れる）
     index.html                     画面の入口（このファイル）
     css/style.css                 見た目
@@ -14,20 +13,16 @@
     rust/main.rs                  Rust の窓口：JS から呼べる関数を登録する
     rust/logic.rs                 Rust の処理（rust/main.rs から呼ぶ）
     ※ アチーブは、このフォルダーの外の src/system/achieve_setting/home.js に書く
-
   ホームに出しているもの（上から）
-    1. いちばん上の帯 … 左にアイコンとログインしている人の名前、右はしにログイン日数・連続日数・累計勉強時間（下の枠と同じ見た目）
-    2. アプリごとのカード … 学習時間の内訳（円グラフ）・アチーブの取得率（円グラフ）・大事な数と「開く」ボタン（画面の残りの高さいっぱい）
-                   学習時間の内訳と大事な数は src/system/home_setting/<アプリの id>.js に書く（各アプリの担当者が決める。今は例）
-                   時間は各アプリの JS で app.startStudy("id") / app.stopStudy()、数は app.addStat("id") と入れる
-    3. アチーブ（左下）…… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（2 つ分の高さ。残りはスクロール）
-                   （「すべて見る」でアチーブのページへ）
-    ※ グラフは小さめにして、画面に収まるように並べている（せまいときは、たてに並ぶ）
-    4. 使った時間（右下）… アプリごとの円グラフ ＋ 日：何時に／週：何曜日に／月：カレンダー／年：何月に 使ったかのグラフ
-                   日・週・月・年で切りかえ、‹ › で前後へ
-                   （計っているのは core/storage/usage.js。プログラム学習〜問題作成を右に出しているあいだ。ホームは計らない）
+    1. いちばん上の帯 … 左にアイコンと名前、右にログイン日数・連続日数
+    2. アプリを開くカード … アイコン・名前・ひとこと（押すとそのアプリを開く）
+    3. アチーブ（右下）…… 全体の進み具合の円、ゴールド・シルバー・ブロンズごとの数（バー）、最近手に入れたもの（「すべて見る」でアチーブのページへ）
+    4. 記録（左下）…… 空と丘の上のスタッピー（あいさつ・ひとこと）と、今日・今週・これまでの時間。「記録を見る」で記録のページへ
+                   空の色は時間帯（朝・昼・夕方・夜）で変わる。スタッピーは丘の上をとことこ歩いたり、ホームの画面の中をおさんぽしたりする
+                   （くわしいグラフは記録のページ src/system/pages/records。時間を計っているのは core/storage/usage.js）
+  スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）
+  ここには入れる場所（id="chara-records"）だけ置き、js/main.js の mountCharacter で中身を作る
 -->
-                   
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -37,8 +32,7 @@
 </head>
 <body>
   <div class="home">
-
-    <!-- 1. いちばん上の帯（下のアチーブ・使った時間と同じ枠）：左にアイコンと名前、右はしにログイン日数 -->
+    <!-- 1. いちばん上の帯：左にアイコンと名前、右にログイン日数 -->
     <section class="panel home-hero" aria-label="ログインしている人">
       <!-- 左はし：アイコン（画像がなければ名前の 1 文字）と、ログイン ID（上）・名前（下） -->
       <div class="home-user">
@@ -48,27 +42,62 @@
           <strong class="home-user-name" id="user-name">ゲスト</strong>           <!-- 下：名前 -->
         </div>
       </div>
-      <!-- 右はし：ログイン日数（ゲストのときは「ログインすると記録されます」） -->
+      <!-- 右：ログイン日数（ゲストのときは「ログインすると記録されます」） -->
       <div class="home-hero-login" id="login-stats">
         <span>ログイン <b id="login-total">0</b> 日</span>
         <span class="home-hero-sep" aria-hidden="true"></span>
         <span>連続 <b id="login-streak">0</b> 日</span>
-        <span class="home-hero-sep" aria-hidden="true"></span>
-        <!-- 累計勉強時間：アプリ（プログラム学習〜タイマー）を開いていた時間の合計（「使った時間」と同じ記録） -->
-        <span id="study-total-box">累計勉強時間 <span id="study-total"><b>0</b>分</span></span>
       </div>
       <button type="button" class="home-link home-hero-guest" id="go-login" hidden>ログインすると記録されます ›</button>
     </section>
 
-    <!-- 2. アプリごとのカード（学習時間・アチーブの円グラフ・大事な数と「開く」ボタン。画面の残りの高さいっぱい。中身は js/main.js の drawApps） -->
-    <section class="home-apps" aria-label="アプリごとの学習時間とアチーブ">
+    <!-- 2. アプリを開くカード（中身は js/main.js の drawApps） -->
+    <section class="home-apps" aria-label="アプリを開く">
       <div class="home-apps-grid" id="app-cards"></div>
     </section>
 
-    <!-- 3・4. いちばん下の段：左にアチーブ、右に使った時間（横に並べる。せまいときは、たてに並ぶ） -->
+    <!-- 3・4. いちばん下の段：左に記録へのカード、右にアチーブ（横に並べる。せまいときは、たてに並ぶ） -->
     <div class="home-bottom">
+    <!-- 4. 記録へのカード（左。上にスタッピーのひとこと、下に今日／今週／これまでの時間と「記録を見る」。中身は js/main.js の drawRecords） -->
+    <section class="panel home-card home-records">
+      <div class="home-card-head">
+        <h2>記録</h2>
+      </div>
+      <div class="home-records-body">
+        <!-- 上：空と丘の上のスタッピーと、ふきだし。スタッピーはなでられる。雲はゆっくり流れる
+             data-time … 時間帯（morning 朝／day 昼／evening 夕方／night 夜）。空の色・太陽と月・星が変わる（js/main.js の drawScene） -->
+        <div class="home-records-chara" id="records-chara" data-time="day">
+          <span class="home-sky-sun" aria-hidden="true"></span>   <!-- 太陽（夜は月） -->
+          <span class="home-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>   <!-- 星（夜だけ） -->
+          <svg class="home-cloud c1" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+          <svg class="home-cloud c2" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+          <svg class="home-cloud c3" viewBox="0 0 240 110" aria-hidden="true"><path d="M30 96 C6 96 4 64 30 60 C30 34 62 26 80 42 C90 14 136 10 150 38 C170 22 204 32 204 58 C230 58 238 96 206 96 Z"/></svg>
+          <span class="home-hill-back" aria-hidden="true"></span>   <!-- 奥の丘 -->
+          <!-- 丘の上の草と花（ゆらゆらゆれる） -->
+          <svg class="home-grass g1" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
+          <svg class="home-grass g2" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
+          <svg class="home-grass g3" viewBox="0 0 40 30" aria-hidden="true"><path d="M8 30 Q6 16 2 8 Q10 16 13 30 M17 30 Q18 12 20 2 Q22 14 23 30 M27 30 Q30 16 38 8 Q32 18 32 30"/></svg>
+          <svg class="home-flower f1" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+          <svg class="home-flower f2" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+          <svg class="home-flower f3" viewBox="0 0 24 36" aria-hidden="true"><path class="stem" d="M12 36 V16"/><g class="petals"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="11" r="4.5"/><circle cx="6" cy="11" r="4.5"/><circle cx="9" cy="17" r="4.5"/><circle cx="15" cy="17" r="4.5"/></g><circle class="mid" cx="12" cy="12" r="3.5"/></svg>
+          <!-- スタッピーとふきだし（いっしょに丘の上を左右に歩く。ふきだしは、右に寄ったら左がわに出る） -->
+          <div class="home-records-walker" id="records-walker">
+            <!-- スタッピー（なでられる。中身は src/system/character/character.js が作る） -->
+            <span class="home-records-owl" id="chara-records"></span>
+            <p class="home-bubble home-records-bubble" id="records-bubble">今週もがんばろう！</p>
+          </div>
+        </div>
+        <!-- 下：今日・今週・これまでの時間（ゲストのときは隠す）と、記録のページへのボタン -->
+        <ul class="home-records-nums" id="records-nums">
+          <li><span>今日</span><b id="rec-today">0分</b></li>
+          <li><span>今週</span><b id="rec-week">0分</b></li>
+          <li><span>これまで</span><b id="rec-all">0分</b></li>
+        </ul>
+        <button type="button" class="home-records-btn" id="open-records">記録を見る</button>
+      </div>
+    </section>
 
-    <!-- 3. アチーブ（左。上から 全体の円 → レア度ごとの数 → 最近手に入れたもの） -->
+    <!-- 3. アチーブ（右。上から 全体の円 → レア度ごとの数 → 最近手に入れたもの） -->
     <section class="panel home-card home-achieve">
       <div class="home-card-head">
         <h2>アチーブ</h2>
@@ -94,47 +123,6 @@
         </div>
       </div>
     </section>
-
-    <!-- 4. 使った時間（右。上に円グラフとアプリごとの時間、下に棒グラフ・カレンダー。中身は js/main.js） -->
-    <section class="panel home-card home-usage">
-      <div class="home-usage-head">
-        <h2>使った時間</h2>
-        <!-- 見ている期間（‹ › で前後へ） -->
-        <div class="home-usage-nav">
-          <button type="button" class="home-nav-btn" id="usage-prev" aria-label="前へ" title="前へ">‹</button>
-          <strong id="usage-title">2026年1月1日（木）</strong>
-          <button type="button" class="home-nav-btn" id="usage-next" aria-label="次へ" title="次へ">›</button>
-          <button type="button" class="home-link" id="usage-now" hidden>今日</button>
-        </div>
-        <div class="home-seg" id="usage-tabs" role="group" aria-label="期間">
-          <button type="button" data-span="day">日</button>
-          <button type="button" data-span="week">週</button>
-          <button type="button" data-span="month">月</button>
-          <button type="button" data-span="year">年</button>
-        </div>
-      </div>
-      <!-- ログインしているとき -->
-      <div class="home-usage-main" id="usage-body">
-        <!-- 上：円グラフと、アプリごとの時間 -->
-        <div class="home-usage-left">
-          <h3 class="home-small-title">アプリごと</h3>
-          <div class="home-pie" id="usage-pie" role="img"></div>
-          <ul class="home-usage-list" id="usage-list"></ul>
-          <p class="home-usage-note" id="usage-note"></p>
-        </div>
-        <!-- 下：円グラフだけでは分からないこと（日 → 何時に／週 → 何曜日に／月 → カレンダー／年 → 何月に） -->
-        <div class="home-usage-chart" id="usage-chart-box">
-          <h3 class="home-small-title" id="usage-chart-title">時間ごと</h3>
-          <div class="home-usage-chart-body" id="usage-chart"></div>
-        </div>
-      </div>
-      <!-- ゲストのとき -->
-      <div class="home-guest" id="usage-guest" hidden>
-        <p>ログインすると、アプリを開いている時間が記録されます。</p>
-        <button type="button" class="btn btn-primary" id="usage-login">ログインする</button>
-      </div>
-    </section>
-
     </div>
   </div>
 </body>

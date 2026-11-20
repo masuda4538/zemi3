@@ -19,8 +19,8 @@
 //    app.loginDays()                 … ログインした日 { days: ["2026-11-10", …], total, streak, best }（ゲストなら null）
 //    app.onLoginDaysChange(関数)     … ログインした日・ログインしている人が変わったら呼ぶ
 //    app.startStudy("id") / app.stopStudy() / app.addStudyTime("id", 秒) … 学習時間の内訳（home_setting/<id>.js の time）
-//    app.addStat("id") / app.setStat("id", 数) / app.stat("id") … このアプリの大事な数（ホームのカードの下に出る。home_setting/<id>.js の stats）
-//    app.stats()                     … 全部のアプリの学習時間・大事な数・アチーブの数（ホームで使う）
+//    app.addStat("id") / app.setStat("id", 数) / app.stat("id") … このアプリの大事な数（記録のページに出る。home_setting/<id>.js の stats）
+//    app.stats()                     … 全部のアプリの学習時間・大事な数・アチーブの数
 //                                      [{ app: { id, name, icon }, time: [{ id, name, sec }], stats: [{ id, name, unit, value }],
 //                                         openSec（開いていた時間の合計）, achieve: { got, total } }]
 //    app.onStatsChange(関数)         … 学習時間・大事な数が変わったら呼ぶ

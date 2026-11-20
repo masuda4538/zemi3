@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-//  アプリごとの学習時間の内訳と大事な数（ホームのいちばん下のカード）
+//  アプリごとの学習時間の内訳と大事な数（記録のページ src/system/pages/records に出す）
 //
 //  内訳の名前は time、大事な数の名前と単位は stats に書きます（src/system/home_setting/<アプリの id>.js）。
 //  大事な数は、各アプリの JS から入れます
@@ -7,7 +7,7 @@
 //  時間は、各アプリの JS から計ります（core/frame/bridge.js が app に付ける）
 //    app.startStudy("solve") … 計りはじめる / app.stopStudy() … やめる（ページを閉じても止まる）
 //    app.addStudyTime("solve", 秒) … 自分で計った時間を足す
-//  ホームは app.stats() で全部のアプリの時間を読み、app.onStatsChange で変わったら描き直します。
+//  記録のページは getAllStats() で全部のアプリの時間を読み、onStatsChange で変わったら描き直します（窓の中からは app.stats()）。
 //  home_setting にない id の時間は入りません。開発中はコンソールに警告が出ます（書きまちがいに気づけるように）。
 //
 //  ★ 保存先：PC の中のファイル（設定の settings.json と同じフォルダーの stats.json）
@@ -112,7 +112,7 @@ export function setStat(appId, statId, value) {
 /** 大事な数を amount だけ増やす。増えたあとの数が返る */
 export const addStat = (appId, statId, amount = 1) => setStat(appId, statId, getStat(appId, statId) + amount);
 
-/** ホームのカード用：アプリごとの学習時間の内訳と大事な数（左のサイドバーと同じ順。home_setting があるアプリだけ）
+/** 記録のページ用：アプリごとの学習時間の内訳と大事な数（左のサイドバーと同じ順。home_setting があるアプリだけ）
  *  [{ app: { id, name, icon }, time: [{ id, name, sec }], stats: [{ id, name, unit, value }] }] */
 export function getAllStats() {
   const mine = users[currentUserId()] ?? {};

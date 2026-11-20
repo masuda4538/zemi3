@@ -2,7 +2,7 @@
 
 Tauri 2 + React（JavaScript）+ Rust で作るデスクトップアプリです。
 起動すると、スタート画面のあとにログインの画面が出ます（ログインか新規登録をすると使えます。ゲストでは使えません）。
-左のサイドバーで「ホーム・プログラム学習・情報収集・デジタル図鑑・問題作成」、左下で「アチーブ・設定・アカウント」を切り替えます。
+左のサイドバーで「ホーム・プログラム学習・情報収集・デジタル図鑑・問題作成」、左下で「記録・アチーブ・設定・アカウント」を切り替えます。
 一度ログインしたら、ログアウトするまで覚えています（次の起動からはすぐホームが開く）。最後に使ってから 3 か月以上たったときは、もう一度ログインします。
 
 ## 起動する
@@ -57,15 +57,16 @@ tauri-app/
 ├─ vite.config.js
 ├─ vite-apps.js            … 各アプリのページを普通の Web ページとして動かす設定（さわらなくてよい）
 ├─ public/                  … そのまま使うファイル
-│  └─ images/               … アプリ全体で使う画像を置く（今は空。各アプリの画像は、そのアプリのフォルダーに置く）
+│  └─ images/               … アプリ全体で使う画像を置く（各アプリの画像は、そのアプリのフォルダーに置く）
 ├─ src/                     … 画面側（React）
 │  ├─ main.jsx              … 起動の入口（さわらなくてよい）
 │  └─ system/
 │     ├─ start-end/         … ★ スタート画面と終了画面
 │     │  ├─ loading-screen.html  起動したときの青いロード画面（見た目。HTML と CSS）
-│     │  ├─ loading-screen.js    ロード画面を消す（出しておく時間）
+│     │  ├─ loading-screen.js    ロード画面を消す（出しておく時間・Enter キーで始める）
 │     │  └─ exit-confirm.js      × で閉じるときの「アプリを閉じますか？」（文）
 │     ├─ log_in/            … ★ ログインの処理（ログイン・新規登録・ログアウト）
+│     ├─ character/         … キャラクター「スタッピー」（images/ に絵、character.js に動き・なでる、lines.js にことば）
 │     │  ├─ LoginScreen.jsx      起動したときのログインの画面（login-screen.css が見た目）
 │     │  ├─ LoginForm.jsx        ログイン／新規登録の入力（login-form.css が見た目）
 │     │  ├─ register.js          新規登録のステップと入力チェック
@@ -84,12 +85,13 @@ tauri-app/
 │     │  │                     usage.js：使った時間／stats.js：アプリごとの学習時間と大事な数／account.js：プロフィールの変更。今は仮）
 │     │  ├─ effects/        … mouse-effects.js（クリックの波紋・軌跡）・scrollbar.js（細いスクロールバー）
 │     │  └─ utils/          … notify.js（右上のお知らせ）・validate.js（入力チェック）
-│     ├─ pages/             … アチーブ・設定・アカウントの画面（React。さわらない）
+│     ├─ pages/             … 記録・アチーブ・設定・アカウントの画面（React。さわらない）
+│     │  ├─ records/        main.jsx・charts.jsx・records.css … 記録（合計の時間・円グラフ・棒グラフ・学習の内訳・アチーブ・日ごとの履歴）
 │     │  ├─ achievements/   main.jsx・achievement-list.js・achievements.css・Ring.jsx … アチーブ
 │     │  ├─ settings/       main.jsx・settings.js・settings.css・ShortcutEditor.jsx … 設定（PC の中に保存）
 │     │  └─ account/        main.jsx・account.js・account.css … アカウント（プロフィールの変更）
 │     ├─ sidebar/           … 左のサイドバー（普通の HTML・CSS・JS。窓の中に出す）
-│     ├─ home_setting/      … ★ ホームのカードに出す学習時間の内訳と大事な数（1 アプリ 1 ファイル。自分の担当のファイルだけ書きかえる）
+│     ├─ home_setting/      … ★ 記録のページに出す学習時間の内訳と大事な数（1 アプリ 1 ファイル。自分の担当のファイルだけ書きかえる）
 │     │                        programming.js  research.js  zukan.js  quiz.js（今は例。時間は app.startStudy("id")、数は app.addStat("id")）
 │     ├─ achieve_setting/   … ★ 各ページのアチーブ（1 ページ 1 ファイル。自分の担当のファイルだけ書きかえる）
 │     │  ├─ home.js  programming.js  research.js  zukan.js  quiz.js   … 各アプリ
@@ -118,7 +120,7 @@ tauri-app/
 - **core** … アプリの土台です。ログイン・画面の組み立て・みんなで使う部品が入っています。
   みんなに影響するので、変えるときは声をかけてから変えます。
 - **application** … 各アプリの画面です。自分の担当のフォルダーの中だけを変えます。
-- アチーブ・設定・アカウントは React で作っていて、`src/system/pages/` の中にあります。入口は `main.jsx` です（`core/page-list.js` がここを読み込みます）。
+- 記録・アチーブ・設定・アカウントは React で作っていて、`src/system/pages/` の中にあります。入口は `main.jsx` です（`core/page-list.js` がここを読み込みます）。
 - `main.jsx` … 画面（見た目）。大きくなったら、部品を別の `.jsx` に分けて `main.jsx` から import します。
 - `〇〇.js` … 処理（プログラム）。計算・データの読み書き・DB や Rust の呼び出しなどを書きます。
   `export function 名前() { … }` と書くと、`.jsx` で `import { 名前 } from "./〇〇.js";` として使えます。

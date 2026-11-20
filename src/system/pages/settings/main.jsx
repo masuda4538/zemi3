@@ -4,10 +4,12 @@
 //    表示 / マウス / 操作 / キーボード（ショートカットの登録。ShortcutEditor.jsx）/ 起動 / 情報 / リセット（下の SECTIONS）
 //  変えるとすぐ反映され、その PC の中のファイル（AppData の settings.json）に保存されます（データベースには入れません）。
 //  core/App.jsx から settings（今の設定）、onSettings（変更）、onResetSettings、confirm を受け取ります。
+//  とても広い画面では、右はしに「ショートカット」の一覧を出す（ShortcutAside。押すとキーボードの項目へ）
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
-import SettingsLayout from "../../core/components/SettingsLayout";
+import SettingsLayout, { AsideCard } from "../../core/components/SettingsLayout";
+import { ACTIONS, formatCombo } from "../../core/shortcuts.js";
 import Icon from "../../core/components/Icon";
 import { Switch } from "../../core/components/Form";
 import { APP_TITLE } from "../../core/config";
@@ -48,12 +50,13 @@ export default function Settings({ settings, onSettings, onResetSettings, confir
 
   return (
     <SettingsLayout
-      head={<div className="set-head"><span className="set-head-icon"><Icon name="settings" /></span><div className="set-head-text"><strong>設定</strong><span>変えるとすぐ反映されます</span></div></div>}
+      bar={{ icon: "settings", page: "設定", note: "変えるとすぐ反映されます" }}
       items={SECTIONS}
       current={current}
       onSelect={setCurrent}
       title={section.name}
       desc={section.desc}
+      aside={<ShortcutAside shortcuts={settings.shortcuts} onEdit={() => setCurrent("keyboard")} />}
     >
       {current === "display" && (
         <Card>
@@ -218,5 +221,23 @@ function Segment({ options, value, onChange, disabled = false }) {
         </button>
       ))}
     </div>
+  );
+}
+
+// ───────── 右はしの「おまけ」：ショートカットの一覧（とても広い画面のときだけ出る） ─────────
+function ShortcutAside({ shortcuts, onEdit }) {
+  const list = ACTIONS.filter((a) => shortcuts?.[a.id] ?? a.initial);   // キーが決まっているものだけ
+  return (
+    <AsideCard icon="keyboard" title="ショートカット">
+      <ul className="set-aside-keys">
+        {list.map((a) => (
+          <li key={a.id}>
+            <span>{a.name}</span>
+            <kbd>{formatCombo(shortcuts?.[a.id] ?? a.initial)}</kbd>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="set-aside-btn" onClick={onEdit}>キーを変える ›</button>
+    </AsideCard>
   );
 }

@@ -4,7 +4,7 @@
 //    新規登録 … ステップごとに進む：① アカウント → ② プロフィール → ③ 言語・試験（任意）→ ④ 確認して登録
 //               （ステップの名前と項目は register.js の STEPS）
 //    いちばん下の「新規登録」「ログイン」で切りかえる（横にすべって入れかわり、枠の高さもなめらかに変わる）
-//    ログイン・登録できたら onLogin(ログインした人) を呼ぶ → core/App.jsx が覚える（ログアウトするまで）
+//    ログイン・登録できたら onLogin(ログインした人, "login" か "register") を呼ぶ → LoginScreen.jsx がようこそ画面を出す
 //    使っているところ：起動したときのログインの画面（LoginScreen.jsx）
 //      initialId … ログイン ID の欄に、はじめから入れておく文字（3 か月使わずにログインし直すとき）
 //      notice    … カードの上に出すお知らせ（3 か月たったので、もう一度ログインしてください など）
@@ -170,7 +170,7 @@ function RegisterForm({ onLogin, onSwitch }) {
     if (bad !== -1) { goForward(bad + 1); return; }
     setBusy(true); setError("");
     try {
-      onLogin(await register(toRegisterInput(form)));
+      onLogin(await register(toRegisterInput(form)), "register");
     } catch (err) {
       setError(String(err));
       setBusy(false);

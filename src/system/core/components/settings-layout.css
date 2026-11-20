@@ -1,36 +1,43 @@
-/* ═════════ 左に項目・右に中身（SettingsLayout.jsx。アカウント・設定で共通） ═════════ */
-/* 3 列：[左の項目][右の中身][左と同じ幅のあき]。右の中身が、いつも画面の左右まん中に来る */
+/* ═════════ 左に項目・右に中身（SettingsLayout.jsx。アチーブ・設定・アカウントで共通。記録のページと同じ形） ═════════ */
+/* ★ 幅・すき間・タブの高さは、記録のページと同じ値を使う（core/components/page-bar.css の --pl-〇〇）
+   3 列：[左の項目（左はし）][右の中身（いちばん広くて --pl-main）][右のあき]
+   左と右の列を同じ幅にして、中身を画面のまん中に置く。幅がたりないときは右のあきから先に小さくなる（0 まで）
+   とても広い画面（1760px 以上）で aside があるときは、右のあきに「おまけ」の列を出す（いちばん下）
+   そのときは 左の項目 と 右のおまけ を同じ幅（--pl-side）にして、
+   さらに おまけの列を、左のメインのサイドバーと同じ幅（--mirror-w）だけ広げて、ウィンドウ全体で中身がまん中に来るようにする */
 .sl {
   padding-bottom: 12px;
-  display: grid; grid-template-columns: minmax(236px, 1fr) minmax(0, 820px) minmax(236px, 1fr); gap: 32px; align-items: start;
+  display: grid; grid-template-columns: minmax(var(--pl-side), 1fr) minmax(0, var(--pl-main)) minmax(0, 1fr); gap: var(--pl-gap); align-items: start;
 }
-.sl-side { justify-self: end; width: 236px; }
+.sl-side { justify-self: start; width: var(--pl-side); }
 
 /* ── 左 ── */
 .sl-side { position: sticky; top: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.sl-head { padding: 4px 4px 2px; }
-.sl-nav { display: flex; flex-direction: column; gap: 2px; }
+.sl-head { padding: 12px 4px 2px; border-top: 1px solid var(--border); }   /* 項目の下（アカウントの名前とアイコン） */
+/* 項目：丸いボタンをたてに並べる（記録のページのタブと同じ形）。選んでいる項目は青くぬる */
+.sl-nav { display: flex; flex-direction: column; gap: 6px; padding: 2px; }
 .sl-item {
-  position: relative; display: flex; align-items: center; gap: 10px;
-  height: 38px; padding: 0 12px; border: 0; border-radius: 8px; cursor: pointer;
-  background: transparent; color: var(--text-2); font: inherit; font-size: 13.5px; font-weight: 700; text-align: left;
-  transition: background .12s, color .12s;
+  position: relative; display: flex; align-items: center; gap: 9px;
+  height: var(--pl-tab-h); padding: 0 10px 0 14px; border: 1px solid var(--border); border-radius: 99px; cursor: pointer;
+  background: var(--surface); color: var(--text-2); font: inherit; font-size: 13.5px; font-weight: 800; text-align: left;
+  transition: background .18s, color .18s, border-color .18s, box-shadow .18s, transform .18s;
 }
-.sl-item .icon { width: 17px; height: 17px; color: var(--text-3); }
-.sl-item:hover { background: var(--hover); color: var(--text); }
-.sl-item.active { background: var(--sky-soft); color: var(--text); font-weight: 800; }
-.sl-item.active .icon { color: var(--primary); }
-.sl-item.active::before {   /* 選んでいる項目の左の青い線（GitHub と同じ） */
-  content: ""; position: absolute; left: -8px; top: 7px; bottom: 7px; width: 4px; border-radius: 4px;
-  background: var(--primary);
+.sl-item .icon { width: 17px; height: 17px; color: var(--primary); transition: color .18s; }
+.sl-item:hover { border-color: color-mix(in srgb, var(--primary) 50%, var(--border)); color: var(--text); transform: translateX(2px); }
+.sl-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-item.active {
+  background: var(--primary); border-color: transparent; color: #fff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 35%, transparent);
 }
+.sl-item.active .icon { color: #fff; }
 .sl-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sl-badge {
-  flex: none; padding: 1px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border);
-  font-size: 11px; font-weight: 800; color: var(--text-3);
+  flex: none; padding: 2px 8px; border-radius: 99px; background: var(--surface-2);
+  font-size: 11px; font-weight: 800; color: var(--text-3); font-variant-numeric: tabular-nums;
 }
-.sl-item.active .sl-badge { background: var(--surface); color: var(--primary); }
+.sl-item.active .sl-badge { background: rgb(255 255 255 / .22); color: #fff; }
 .sl-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 3px var(--sky-soft); }
+.sl-item.active .sl-dot { background: #fff; box-shadow: 0 0 0 3px rgb(255 255 255 / .3); }
 .sl-foot { padding-top: 12px; border-top: 1px solid var(--border); }
 
 /* ── 右 ── */
@@ -41,16 +48,26 @@
 .sl-body { display: flex; flex-direction: column; gap: 16px; animation: sl-in .18s var(--ease); }
 @keyframes sl-in { from { opacity: 0; transform: translateY(4px); } }
 
-/* 少しせまいとき：まん中にそろえるのはやめて、左の項目と右の中身の 2 列にする */
-@media (max-width: 1300px) {
-  .sl { max-width: 1100px; margin: 0 auto; grid-template-columns: 236px minmax(0, 1fr); }
-  .sl-side { justify-self: stretch; }
+/* ── 右はしの「おまけ」の列（ふだんは隠す） ── */
+.sl-aside { display: none; }
+.sl-aside-card { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.sl-aside-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+.sl-aside-title .icon { width: 17px; height: 17px; color: var(--primary); }
+@media (min-width: 1760px) {
+  /* [左の項目 --pl-side][中身（列のまん中。いちばん広くて --pl-main）][おまけ --pl-side ＋ サイドバーと同じ幅（右はしまで広げる）] */
+  .sl:has(> .sl-aside) { --mirror-w: var(--side-w, 100px); grid-template-columns: var(--pl-side) minmax(0, 1fr) calc(var(--pl-side) + var(--mirror-w)); }
+  .shell.is-side-hidden .sl { --mirror-w: 0px; }   /* サイドバーを隠しているときは、広げない */
+  .sl:has(> .sl-aside) > .sl-main { width: 100%; max-width: var(--pl-main); justify-self: center; }
+  .sl-aside { position: sticky; top: 0; display: flex; flex-direction: column; gap: 12px; min-width: 0; animation: sl-in .25s var(--ease); }
 }
+
 /* とてもせまいとき：左の一覧を上に横並びにする */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {   /* 記録のページと同じ幅で切りかえる */
   .sl { grid-template-columns: 1fr; gap: 16px; }
   .sl-side { position: static; width: auto; }
-  .sl-nav { flex-direction: row; overflow-x: auto; }
+  .sl-nav { flex-direction: row; overflow-x: auto; padding-bottom: 8px; margin-bottom: -6px; }
   .sl-item { flex: none; }
-  .sl-item.active::before { left: 10px; right: 10px; top: auto; bottom: -2px; width: auto; height: 3px; }
 }
+
+/* ── いちばん上のバー（PageBar）があるとき：左の項目・おまけは、バーの下にくっつける ── */
+.sl-wrap .sl-side, .sl-wrap .sl-aside { top: calc(54px + var(--pl-top)); }   /* バーの高さ（58px）− .stage の上のすき間（4px）＋ バーの下のすき間 */
