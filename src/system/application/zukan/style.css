@@ -26,11 +26,13 @@ nav a:hover{background:var(--soft)}
 nav a.on{background:var(--br);color:#fff}nav a.on .n{color:#dbeafe}
 main{flex:1;overflow:auto;padding:24px 32px;min-width:0}
 .ptitle,.screen{max-width:1100px;margin:0 auto}
+.ptitle.wide,.screen.wide{max-width:1400px}
 .ptitle{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .ptitle h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
 .count{font-size:12px;font-weight:700;background:var(--soft);color:var(--tx);padding:3px 10px;border-radius:8px}
 .bar{display:flex;gap:8px;align-items:center;position:relative}
 .bar .field{flex:1;position:relative}
+.search-bar .field{flex:0 1 38%}
 input[type=text]{width:100%;font:inherit;padding:9px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--pn);color:var(--tx)}
 .field .filter{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;padding:4px 6px;color:var(--br)}
 .pri{background:var(--br);color:#fff;border-color:var(--br)}.pri:hover{background:#1d4ed8}
@@ -46,7 +48,7 @@ input[type=text]{width:100%;font:inherit;padding:9px 12px;border:1px solid var(-
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chip{background:var(--chip);color:var(--sub);border:1px solid var(--bd);border-radius:6px;padding:0 8px;font-size:11px;font-weight:700;display:inline-flex;gap:4px;align-items:center}
 .chip button{border:0;background:none;padding:0 0 0 2px;color:var(--sub);line-height:1;font-size:11px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:16px;margin-top:20px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;cursor:pointer;text-align:left;display:block;width:100%;font-weight:400;transition:transform .2s,box-shadow .2s}
 .card:hover{transform:translateY(-2px);box-shadow:0 10px 20px -8px rgba(15,23,42,.18);background:var(--card)}
 .card h2{margin:0 0 4px;font-size:16px;font-weight:800;color:var(--ttl)}
