@@ -25,6 +25,7 @@
   background: linear-gradient(150deg, var(--sky), var(--primary) 75%); color: #fff;
 }
 .page-bar-icon .icon { width: 20px; height: 20px; }
+.page-bar-icon.is-friends { background: linear-gradient(150deg, #34d399, #10b981 75%); }   /* フレンドは緑 */
 .page-bar-icon.is-trophy { background: linear-gradient(150deg, #fcd34d, #f59e0b 75%); }   /* アチーブは金色 */
 /* 「ページ名 › 項目」 */
 .page-bar-crumbs { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 17px; white-space: nowrap; }

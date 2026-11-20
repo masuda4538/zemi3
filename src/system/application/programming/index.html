@@ -1,42 +1,701 @@
 <!DOCTYPE html>
-<!--
-  プログラム学習：画面の入口 ★ このフォルダーの中は、全部自由に作ってよい
-  ・左のアイコン「プログラム学習」を押すと、このファイルが右側の窓の中に開きます
-  ・このファイル（index.html）の名前と場所だけは変えない（入口）
-  ・普通の Web ページと同じように作れます。ファイルを増やしたら、パスを書いてつなぐ（パスはこのファイルから見た場所）
-      CSS   … css/style.css を作って  <link rel="stylesheet" href="./css/style.css">
-      JS    … js/main.js を作って     <script type="module" src="./js/main.js"></script>
-      画像  … images/cat.png を置いて  <img src="./images/cat.png" alt="">
-  ・Rust を使うとき … rust/main.rs を作る（自動で読み込まれる。書き方はホームの rust/ が見本）
-  ・アチーブ … src/system/achieve_setting/programming.js に書く（このフォルダーの外。programming.js だけは自分で書きかえてよい）
-  ・何も書かなくても使えるもの
-      共通の見た目 … 色 var(--primary) など（ダークモードにも合う）、btn btn-primary btn-ghost（ボタン）、panel（枠）、input（入力欄）
-      app          … JS で app.notify(…)（お知らせ）、app.unlock(…)（アチーブ）、await app.invoke(…)（Rust）など
--->
-<html lang="ja">
+<html lang="ja" class="h-full select-none">
 <head>
-  <meta charset="UTF-8">
-  <title>プログラム学習</title>
-  <!-- 今は見た目をここに書いています。CSS のファイルを作ったら、この <style> は消して <link> にしてよい -->
-  <style>
-    .intro { min-height: 80vh; display: grid; place-content: center; gap: 10px; text-align: center; }
-    .intro h1 { font-size: 30px; font-weight: 800; letter-spacing: .04em; }
-    .intro p { font-size: 14px; color: var(--text-2); }
-  </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プログラミングアプリ - CodeLab</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'monospace']
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <main class="intro">
-    <h1>プログラム学習</h1>
-    <p>プログラムの書き方を学ぶアプリです。ここにプログラム学習を作っていきます。</p>
-  </main>
+<body class="h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-150">
 
-  <!-- アチーブの例（achieve_setting/programming.js に書いたもの）。使わなければ、この <script> と achieve_setting/programming.js の例を消してよい -->
-  <script>
-    app.unlock("first-open");     // はじめて開いた
-    app.addProgress("open-10");   // 開いた回数を 1 つ増やす（10 回で手に入る）
-    // ホームのカードに出す学習時間（src/system/home_setting/programming.js に書いたもの。今は例）。計りたいところで呼ぶ
-    // app.startStudy("solve");            // 学習をはじめた（app.stopStudy() でやめる。ページを閉じても止まる）
-    // app.addStat("solved");                  // 問題を解いたとき（ホームのカードの下の数。home_setting/programming.js の stats）
-  </script>
+    <div id="app" class="flex flex-col h-full w-full overflow-hidden">
+        
+        <!-- TOP HEADER -->
+        <header class="glass-header sticky top-0 border-b border-slate-200/80 dark:border-slate-800/80 shrink-0 z-20 shadow-xs flex flex-col">
+            <div class="px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3">
+                
+                <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                    <button onclick="toggleSidebar()" aria-label="サイドバーの切り替え" class="focus-ring p-2 rounded-lg bg-slate-200/60 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors border border-slate-300/50 dark:border-slate-700/50 flex items-center gap-1.5 text-xs font-semibold" title="サイドバーの切り替え (Ctrl+B)">
+                        <i data-lucide="panel-left" class="w-4 h-4"></i>
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
+                            <i data-lucide="code-2" class="w-4 h-4"></i>
+                        </div>
+                        <h1 class="font-extrabold text-sm text-slate-900 dark:text-white tracking-tight hidden sm:block">
+                            CodeLab - AI誤り分析アシスタント
+                        </h1>
+                    </div>
+
+                    <!-- エディタ操作ボタン群 -->
+                    <div id="editorHeaderControls" class="hidden flex items-center space-x-1.5 pl-2 border-l border-slate-200 dark:border-slate-800">
+                        <button id="headerFileBtn" onclick="openFileAction()" class="px-2 py-1 bg-slate-200/60 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 rounded text-xs font-bold transition-all text-slate-700 dark:text-slate-300">
+                            ファイル
+                        </button>
+                        <button id="tour-run-btn" onclick="runCode()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition-all shadow-xs flex items-center gap-1">
+                            <i data-lucide="play" class="w-3.5 h-3.5 fill-white"></i>うごかす！
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Header Controls -->
+                <div class="flex items-center space-x-2 shrink-0">
+                    <div id="headerLangSelector" class="flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-300/60 dark:border-slate-700">
+                        <button onclick="changeGlobalLanguage('python')" id="langBtn-python" class="px-2 py-1 rounded text-[11px] font-bold bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-300 shadow-xs transition-all">
+                            Python
+                        </button>
+                        <button onclick="changeGlobalLanguage('javascript')" id="langBtn-javascript" class="px-2 py-1 rounded text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                            JS
+                        </button>
+                        <button onclick="changeGlobalLanguage('c')" id="langBtn-c" class="px-2 py-1 rounded text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                            C言語
+                        </button>
+                    </div>
+
+                    <span id="currentModeBadge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                        🎯 課題演習：問題選択
+                    </span>
+
+                    <button onclick="toggleDetailPanel()" id="headerAiPanelBtn" class="focus-ring p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1 text-xs font-bold" title="AIサポート & 辞書">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">AI・辞書パネル</span>
+                    </button>
+
+                    <div class="w-7 h-7 rounded bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                        ゲ
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="flex-1 flex overflow-hidden relative">
+            
+            <!-- LEFT SIDEBAR -->
+            <aside id="desktopSidebar" class="fixed md:static inset-y-0 left-0 z-30 w-60 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shrink-0 flex flex-col transition-all duration-200">
+                <div class="p-3 space-y-4 overflow-y-auto flex-1">
+                    <div>
+                        <p class="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">メニュー</p>
+                        <nav class="space-y-1">
+                            <button onclick="switchView('tasks')" id="nav-tasks" class="focus-ring w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-extrabold bg-brand-500 text-white shadow-xs transition-all">
+                                <span class="flex items-center space-x-2">
+                                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                                    <span>課題演習</span>
+                                </span>
+                                <span class="text-[10px] bg-brand-700 px-1.5 py-0.5 rounded font-bold">8</span>
+                            </button>
+                            <button onclick="switchView('projects')" id="nav-projects" class="focus-ring w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all">
+                                <span class="flex items-center space-x-2">
+                                    <i data-lucide="folder" class="w-4 h-4"></i>
+                                    <span>自由制作</span>
+                                </span>
+                            </button>
+                            <button onclick="switchView('history')" id="nav-history" class="focus-ring w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all">
+                                <span class="flex items-center space-x-2">
+                                    <i data-lucide="history" class="w-4 h-4 text-amber-500"></i>
+                                    <span>学習履歴</span>
+                                </span>
+                            </button>
+                            <button onclick="switchView('dict-view')" id="nav-dict" class="focus-ring w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all">
+                                <span class="flex items-center space-x-2">
+                                    <i data-lucide="book-open" class="w-4 h-4 text-indigo-500"></i>
+                                    <span>構文辞書</span>
+                                </span>
+                                <span class="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded font-bold">多言語</span>
+                            </button>
+                            <button onclick="switchView('settings')" id="nav-settings" class="focus-ring w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all">
+                                <span class="flex items-center space-x-2">
+                                    <i data-lucide="settings" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                                    <span>設定</span>
+                                </span>
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div id="taskCategoryNavSection" class="pt-3 border-t border-slate-200 dark:border-slate-800">
+                        <p class="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">問題カテゴリ</p>
+                        <div class="space-y-0.5">
+                            <button onclick="setCategory('all')" id="cat-all" class="cat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-200/80 dark:bg-slate-800 text-brand-600 dark:text-brand-400"><span>すべて</span><span class="text-[10px] font-mono text-slate-400">8</span></button>
+                            <button onclick="setCategory('output')" id="cat-output" class="cat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>基本出力 (print)</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                            <button onclick="setCategory('calc')" id="cat-calc" class="cat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>変数・計算</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                            <button onclick="setCategory('branch')" id="cat-branch" class="cat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>条件分岐 (if)</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                            <button onclick="setCategory('loop')" id="cat-loop" class="cat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>リスト・ループ</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                        </div>
+                    </div>
+
+                    <div id="dictCategoryNavSection" class="hidden pt-3 border-t border-slate-200 dark:border-slate-800">
+                        <p class="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">辞書カテゴリ</p>
+                        <div class="space-y-0.5">
+                            <button onclick="setDictCategory('all')" id="dictcat-all" class="dictcat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"><span>すべて</span><span class="text-[10px] font-mono text-slate-400">6</span></button>
+                            <button onclick="setDictCategory('io')" id="dictcat-io" class="dictcat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>出力・入力</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                            <button onclick="setDictCategory('types')" id="dictcat-types" class="dictcat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>型・データ変換</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                            <button onclick="setDictCategory('syntax')" id="dictcat-syntax" class="dictcat-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800"><span>制御構文 (if/for)</span><span class="text-[10px] font-mono text-slate-400">2</span></button>
+                        </div>
+                    </div>
+
+                    <div id="fileTreeSection" class="hidden pt-3 border-t border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between px-2 mb-1.5">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500" id="currentProjectTreeLabel">FILES</p>
+                            <button onclick="promptNewFile()" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-500" title="新規ファイル作成">
+                                <i data-lucide="file-plus" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-1" id="fileTreeItems"></div>
+                    </div>
+                </div>
+
+                <div class="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/80 flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <div class="w-7 h-7 rounded bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">ゲ</div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold truncate text-slate-800 dark:text-slate-200 leading-none">ゲストユーザー</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">ローカル学習モード</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN WORKSPACE -->
+            <main class="flex-1 flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 p-3 sm:p-4 gap-3">
+                
+                <!-- VIEW 1: 課題演習 -->
+                <div id="view-tasks-container" class="flex-1 overflow-y-auto space-y-4">
+                    <div id="resumeTaskSection" class="bg-gradient-to-r from-amber-500/10 via-brand-500/10 to-indigo-500/10 border-2 border-amber-500/40 dark:border-amber-400/40 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded uppercase tracking-wider flex items-center gap-1">
+                                    <i data-lucide="play-circle" class="w-3.5 h-3.5"></i> 前回のつづきから
+                                </span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 font-mono" id="resumeLastAccess">最終学習: 2026/11/16 10:10</span>
+                            </div>
+                            <h3 class="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2" id="resumeTaskTitle">
+                                課題03: 年齢を表示しよう
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-300" id="resumeTaskDesc">
+                                変数と数値を組み合わせて「ねんれいは 10さいです」と出力します。
+                            </p>
+                        </div>
+                        <button onclick="resumeLastTask()" class="focus-ring px-4 py-2.5 bg-gradient-to-r from-amber-500 to-brand-600 hover:from-amber-600 hover:to-brand-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 shrink-0 transition-transform active:scale-95">
+                            <i data-lucide="corner-down-right" class="w-4 h-4"></i>
+                            <span>続きを再開する</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h2 class="text-base font-extrabold" id="categoryTitle">🎯 すべての課題</h2>
+                                <p class="text-xs text-slate-500">挑戦したい課題カードを選んでエディタを起動しましょう。（課題中は問題に集中するためファイル構成は隠れます）</p>
+                            </div>
+                            <span id="matchCountBadge" class="text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md">
+                                該当 8 件
+                            </span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+                            <span class="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1">
+                                <i data-lucide="filter" class="w-3.5 h-3.5"></i>難易度:
+                            </span>
+                            <button onclick="setDifficulty('all')" id="diff-all" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-brand-600 text-white shadow-xs">すべて</button>
+                            <button onclick="setDifficulty('easy')" id="diff-easy" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">初級 (★☆☆)</button>
+                            <button onclick="setDifficulty('medium')" id="diff-medium" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">中級 (★★☆)</button>
+                            <button onclick="setDifficulty('hard')" id="diff-hard" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">上級 (★★★)</button>
+                        </div>
+                    </div>
+
+                    <div id="taskGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+                    <div id="emptyNotice" class="hidden text-center py-12 text-slate-400 text-xs">
+                        条件に一致する課題が見つかりませんでした。
+                    </div>
+                </div>
+
+                <!-- VIEW 2: 自由制作 プロジェクト選択 -->
+                <div id="view-projects-container" class="hidden flex-1 overflow-y-auto space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-base font-extrabold text-slate-900 dark:text-white">📁 自由制作：プロジェクトを選択</h2>
+                            <p class="text-xs text-slate-500">制作したい作品のフォルダを選ぶか、あたらしいフォルダを作成してください。</p>
+                        </div>
+                        <button onclick="promptNewFolder()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold shadow-xs flex items-center gap-1.5">
+                            <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>新規プロジェクト作成
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="projectCardGrid"></div>
+                </div>
+
+                <!-- VIEW 3: 構文辞書カードビュー -->
+                <div id="view-dict-container" class="hidden flex-1 overflow-y-auto space-y-4">
+                    <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-3">
+                                <button onclick="goBackFromDict()" class="focus-ring px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-colors" title="直前の画面に戻る (Escキー)">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                    <span id="dictBackBtnLabel">戻る</span>
+                                    <span class="text-[10px] text-slate-400 font-mono hidden sm:inline"><kbd class="px-1 py-0.5 bg-slate-200 dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700">Esc</kbd></span>
+                                </button>
+                                <div>
+                                    <h2 class="text-base font-extrabold flex items-center gap-2">
+                                        <i data-lucide="book-open" class="w-5 h-5 text-indigo-500"></i>
+                                        <span>多言語対応・かんたん構文辞書カード</span>
+                                    </h2>
+                                    <p class="text-xs text-slate-500">Pythonの構文がJavaScriptやC言語ではどう書くのかをカード内でタブ切り替えして比較できます。</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <div class="relative">
+                                    <input type="text" id="dictSearchInput" oninput="handleDictSearch()" placeholder="キーワード検索 (例: print, str)..." class="w-56 pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg outline-none focus:border-brand-500">
+                                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+                                </div>
+                                <button onclick="toggleDictFavoritesOnly()" id="dictFavFilterBtn" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                                    <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
+                                    <span>お気に入りのみ</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dictCardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"></div>
+
+                    <div id="dictEmptyNotice" class="hidden text-center py-12 text-slate-400 text-xs">
+                        該当する用語が見つかりませんでした。別の言葉で検索してみてください。
+                    </div>
+                </div>
+
+                <!-- VIEW 4: コーディング・エディタ画面 -->
+                <div id="view-editor-container" class="hidden flex-1 flex flex-col gap-3 overflow-hidden">
+                    
+                    <!-- ★ お題バナー（修正：右側をflex items-centerで固定し、複数行でも上下崩れを防止） ★ -->
+                    <div id="taskBanner" class="hidden bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 shadow-xs">
+                        <!-- 左：タイトル -->
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded shrink-0">演習課題</span>
+                            <span id="taskBannerTitle" class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">タイトル</span>
+                        </div>
+                        <!-- 右：期待値 ＆ 戻るボタン（上下中央整列） -->
+                        <div class="flex items-center gap-3 shrink-0">
+                            <div class="flex items-center gap-1.5 text-xs font-mono">
+                                <span class="text-slate-500 dark:text-slate-400 whitespace-nowrap">期待される出力:</span>
+                                <code id="taskBannerExpected" class="bg-slate-900 text-emerald-400 rounded border border-slate-700/80 font-bold">出力例</code>
+                            </div>
+                            <button onclick="switchView('tasks')" class="px-2.5 py-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded text-[11px] font-bold transition-all whitespace-nowrap border border-blue-500/30">
+                                ← 課題一覧へ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 自由制作エディタ用 ナビゲーションバナー -->
+                    <div id="projectNavBanner" class="hidden bg-slate-200/60 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 rounded-xl px-3 py-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
+                            <i data-lucide="folder-open" class="w-4 h-4 text-brand-500"></i>
+                            <span id="activeProjectBreadcrumb">my_project /</span>
+                        </div>
+                        <button onclick="switchView('projects')" class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded text-[11px] font-bold flex items-center gap-1">
+                            <i data-lucide="arrow-left" class="w-3 h-3"></i>プロジェクト一覧へ
+                        </button>
+                    </div>
+
+                    <!-- エディタ＆コンソールパネル -->
+                    <div class="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-xs">
+                        <div class="px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span id="currentEditorFileName" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> main.py
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="formatCode()" class="px-2 py-1 bg-slate-200/60 dark:bg-slate-700 hover:bg-slate-300 text-[11px] font-bold rounded text-slate-700 dark:text-slate-200">
+                                    ✨ 整形
+                                </button>
+                                <button onclick="insertSnippet('print')" class="px-2 py-1 bg-slate-200/60 dark:bg-slate-700 hover:bg-slate-300 text-[11px] font-bold rounded text-slate-700 dark:text-slate-200">
+                                    ＋ print
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ★ 行番号エリアとコードエディタ（修正：完全な高さ・パディング同期構造） ★ -->
+                        <div class="flex-1 flex bg-slate-900 overflow-hidden editor-container-inner">
+                            <div id="editorLineNumbers" class="line-numbers code-font">1</div>
+                            <textarea id="codeEditor" class="flex-1 code-font text-xs text-slate-100 resize-none outline-none leading-relaxed" spellcheck="false"></textarea>
+                        </div>
+
+                        <!-- 下部コンソール＆AI分析エリア -->
+                        <div class="h-44 border-t border-slate-200 dark:border-slate-800 flex flex-col bg-slate-950">
+                            <div class="flex items-center justify-between px-3 py-1.5 bg-slate-900 border-b border-slate-800">
+                                <div class="flex space-x-2">
+                                    <button onclick="switchConsoleTab('output')" id="tabBtnOutput" class="text-xs font-bold text-white border-b-2 border-brand-500 pb-0.5">
+                                        💻 出力結果
+                                    </button>
+                                    <button onclick="switchConsoleTab('diff')" id="tabBtnDiff" class="text-xs font-bold text-slate-400 hover:text-white pb-0.5">
+                                        ⚖️ 期待値との差分(Diff)
+                                    </button>
+                                    <button onclick="switchConsoleTab('ai')" id="tabBtnAi" class="hidden text-xs font-bold text-indigo-400 hover:text-white pb-0.5 flex items-center gap-1">
+                                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AIエラー分析
+                                    </button>
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-mono" id="engineVersionLabel">Python 3.10 Engine</span>
+                            </div>
+
+                            <div id="consoleBody" class="flex-1 p-3 font-mono text-xs overflow-y-auto text-slate-300 leading-relaxed">
+                                <span class="text-slate-500">「うごかす！」ボタンを押すと実行結果がここに表示されます。</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: 学習履歴画面 -->
+                <div id="view-history-container" class="hidden flex-1 overflow-y-auto space-y-4">
+                    <h2 class="text-base font-extrabold text-slate-900 dark:text-white">📊 学習カルテ・履歴</h2>
+                    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400">
+                                    <th class="pb-2">日時</th>
+                                    <th class="pb-2">課題名</th>
+                                    <th class="pb-2">結果</th>
+                                    <th class="pb-2">エラー傾向 / AIメモ</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                                <tr>
+                                    <td class="py-2.5">2026/11/16 10:10</td>
+                                    <td>課題03: 年齢を表示しよう</td>
+                                    <td><span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">論理エラー</span></td>
+                                    <td>10+5の計算で期待値(10)と乖離</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5">2026/11/16 09:45</td>
+                                    <td>課題01: helloを出力</td>
+                                    <td><span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">合格</span></td>
+                                    <td>print文を正常に利用</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW 6: 設定画面 -->
+                <div id="view-settings-container" class="hidden flex-1 overflow-y-auto space-y-4">
+                    <div class="flex items-center justify-between max-w-2xl">
+                        <h2 class="text-base font-extrabold text-slate-900 dark:text-white">⚙️ 環境設定・レイアウトカスタマイズ</h2>
+                        <button onclick="resetAllSettingsToDefault()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition-colors" title="すべての設定を初期状態に戻します">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            <span>初期設定にリセット</span>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                        <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-5">
+                            
+                            <!-- 表示モード・ルビ設定 -->
+                            <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-3">
+                                <div>
+                                    <h3 class="font-extrabold text-xs text-brand-600 dark:text-brand-400 uppercase tracking-wider">表示モード（ふりがな・表記のやさしさ）</h3>
+                                    <p class="text-[11px] text-slate-500">漢字にルビを振る「こどもモード」と、通常の「大人モード」を切り替えます。</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="setAudienceMode(true)" id="audienceSelectKidBtn" class="flex-1 py-2 px-3 rounded-lg border-2 border-brand-500 bg-white text-slate-900 font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all">
+                                        <i data-lucide="smile" class="w-4 h-4 text-emerald-500"></i>
+                                        <span>こどもモード (ルビあり)</span>
+                                    </button>
+                                    <button onclick="setAudienceMode(false)" id="audienceSelectAdultBtn" class="flex-1 py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+                                        <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                                        <span>大人モード (標準表記)</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-800">
+
+                            <!-- テーマ切り替え -->
+                            <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-3">
+                                <div>
+                                    <h3 class="font-extrabold text-xs text-brand-600 dark:text-brand-400 uppercase tracking-wider">画面テーマ（カラーモード）</h3>
+                                    <p class="text-[11px] text-slate-500">アプリ全体の見た目をライト／ダークに切り替えます。</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="setThemeMode('light')" id="themeSelectLightBtn" class="flex-1 py-2 px-3 rounded-lg border-2 border-brand-500 bg-white text-slate-900 font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all">
+                                        <i data-lucide="sun" class="w-4 h-4 text-amber-500"></i>
+                                        <span>ライトモード（明るい）</span>
+                                    </button>
+                                    <button onclick="setThemeMode('dark')" id="themeSelectDarkBtn" class="flex-1 py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+                                        <i data-lucide="moon" class="w-4 h-4 text-indigo-400"></i>
+                                        <span>ダークモード（暗い）</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-800">
+
+                            <!-- エディタ表示設定（行番号・フォントサイズ） -->
+                            <div class="space-y-4">
+                                <h3 class="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">エディタ表示設定</h3>
+
+                                <!-- 行番号の表示／非表示切替 -->
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-xs">行番号の表示</h4>
+                                        <p class="text-[11px] text-slate-500">コードエディタ左側の行番号を表示するかどうか</p>
+                                    </div>
+                                    <select id="settingShowLineNumbers" onchange="updateLineNumberSetting()" class="px-2.5 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg outline-none font-bold">
+                                        <option value="true" selected>表示する (推奨)</option>
+                                        <option value="false">非表示にする</option>
+                                    </select>
+                                </div>
+
+                                <!-- 文字の大きさ -->
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-xs">エディタの文字の大きさ</h4>
+                                        <p class="text-[11px] text-slate-500">コード入力エリアのフォントサイズを変更します</p>
+                                    </div>
+                                    <select id="settingFontSize" onchange="updateEditorFontSize()" class="px-2.5 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg outline-none font-bold">
+                                        <option value="small">小 (12px)</option>
+                                        <option value="medium" selected>中 (標準 14px)</option>
+                                        <option value="large">大 (16px)</option>
+                                        <option value="xlarge">特大 (18px)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-800">
+
+                            <!-- ツアー再起動ボタン -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-xs">使い方ガイドツアー</h4>
+                                    <p class="text-[11px] text-slate-500">アプリの基本機能ツアーをもう一度確認します</p>
+                                </div>
+                                <button onclick="startTour()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs">
+                                    <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
+                                    <span>ツアーを開始する</span>
+                                </button>
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-800">
+
+                            <div>
+                                <h3 class="font-bold text-xs text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-2">画面レイアウトの配置パターン</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                    <label class="border-2 border-brand-500 rounded-xl p-3 cursor-pointer bg-brand-50/50 dark:bg-brand-950/20 block relative" id="presetLabel-standard">
+                                        <input type="radio" name="layoutPreset" value="standard" checked onchange="applyLayoutPreset('standard')" class="absolute top-2.5 right-2.5 text-brand-600">
+                                        <div class="font-bold text-xs mb-1">① 標準 (右集約)</div>
+                                        <p class="text-[10px] text-slate-500">問題・AI・辞書を右パネルにまとめる構成</p>
+                                    </label>
+                                    <label class="border border-slate-300 dark:border-slate-700 rounded-xl p-3 cursor-pointer hover:border-brand-400 block relative" id="presetLabel-inline">
+                                        <input type="radio" name="layoutPreset" value="inline" onchange="applyLayoutPreset('inline')" class="absolute top-2.5 right-2.5 text-brand-600">
+                                        <div class="font-bold text-xs mb-1">② エディタ集中型</div>
+                                        <p class="text-[10px] text-slate-500">問題は上、AIは下、右は辞書のみ</p>
+                                    </label>
+                                    <label class="border border-slate-300 dark:border-slate-700 rounded-xl p-3 cursor-pointer hover:border-brand-400 block relative" id="presetLabel-separated">
+                                        <input type="radio" name="layoutPreset" value="separated" onchange="applyLayoutPreset('separated')" class="absolute top-2.5 right-2.5 text-brand-600">
+                                        <div class="font-bold text-xs mb-1">③ 3カラム並列型</div>
+                                        <p class="text-[10px] text-slate-500">問題は上、AIは右、辞書は画面切替</p>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-200 dark:border-slate-800">
+
+                            <div class="space-y-4">
+                                <h3 class="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">各パーツの位置を個別に変更</h3>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-xs">問題・お題文の位置</h4>
+                                        <p class="text-[11px] text-slate-500">演習課題の目標・期待値をどこに置くか</p>
+                                    </div>
+                                    <select id="settingTaskPos" onchange="updatePartPositions()" class="px-2.5 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg outline-none font-bold">
+                                        <option value="top">エディタの直上（横長バナー）</option>
+                                        <option value="right" selected>右側パネルの上段</option>
+                                        <option value="hide">非表示（集中モード）</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-xs">AI分析・アドバイスの位置</h4>
+                                        <p class="text-[11px] text-slate-500">エラー解説や段階的ヒントの表示場所</p>
+                                    </div>
+                                    <select id="settingAiPos" onchange="updatePartPositions()" class="px-2.5 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg outline-none font-bold">
+                                        <option value="right" selected>右側パネル（中段）</option>
+                                        <option value="bottom">エディタ下部（コンソールのタブ内）</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-xs">構文辞書の位置</h4>
+                                        <p class="text-[11px] text-slate-500">関数の使い方やふりがな辞書の確認方法</p>
+                                    </div>
+                                    <select id="settingDictPos" onchange="updatePartPositions()" class="px-2.5 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg outline-none font-bold">
+                                        <option value="right" selected>右側パネルの下段（カードリスト）</option>
+                                        <option value="view">左メニューから開く全画面カードのみ</option>
+                                        <option value="hide">右パネル内は非表示</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- リアルタイムレイアウトプレビュー -->
+                        <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 sticky top-4 shadow-xs">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-extrabold text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    <i data-lucide="layout" class="w-4 h-4 text-brand-500"></i>
+                                    <span>レイアウト プレビュー</span>
+                                </h3>
+                                <span class="text-[10px] text-slate-400 font-mono">Real-time Layout</span>
+                            </div>
+
+                            <div class="bg-slate-900 border border-slate-700 rounded-lg p-2 flex flex-col gap-1.5 h-64 text-[10px] font-bold text-center">
+                                <div class="bg-slate-800 text-slate-400 py-1 rounded flex items-center justify-between px-2 text-[9px]">
+                                    <span>CodeLab</span>
+                                    <span>[実行▶]</span>
+                                </div>
+
+                                <div class="flex-1 flex gap-1.5 overflow-hidden">
+                                    <div class="flex-1 flex flex-col gap-1">
+                                        <div id="previewTaskTop" class="bg-blue-600/30 border border-blue-500 text-blue-300 py-1 rounded text-[9px] flex items-center justify-center">
+                                            🎯 お題バナー
+                                        </div>
+                                        <div class="flex-1 bg-slate-950 border border-slate-800 rounded flex items-center justify-center text-slate-500 font-mono text-[9px]">
+                                            コードエディタ
+                                        </div>
+                                        <div class="h-14 bg-slate-950 border border-slate-800 rounded flex flex-col p-1 gap-1 text-[8px] text-left">
+                                            <div class="flex gap-1 text-slate-400 border-b border-slate-800 pb-0.5">
+                                                <span>💻 出力</span>
+                                                <span id="previewAiTab" class="hidden text-indigo-400 font-bold">✨ AI分析</span>
+                                            </div>
+                                            <div class="text-slate-600">結果出力エリア</div>
+                                        </div>
+                                    </div>
+
+                                    <div id="previewRightPanel" class="w-28 bg-slate-800/80 border border-slate-700 rounded p-1 flex flex-col gap-1">
+                                        <div id="previewTaskRight" class="bg-blue-900/40 border border-blue-700/60 text-blue-300 p-1 rounded text-[8px]">
+                                            🎯 お題（右パネル）
+                                        </div>
+                                        <div id="previewAiRight" class="bg-indigo-900/40 border border-indigo-700/60 text-indigo-300 p-1 rounded text-[8px]">
+                                            🤖 AIアドバイス
+                                        </div>
+                                        <div id="previewDictRight" class="bg-slate-900/60 border border-slate-700 text-slate-400 p-1 rounded text-[8px] flex-1">
+                                            📖 辞書カード
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed">
+                                設定を変更するとプレビューが即座に連動し、次回以降も自動で保存・復元されます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- RIGHT DETAIL PANEL: AIアシスタント & 構文辞書 & 問題文 -->
+            <aside id="detailPanel" class="fixed top-0 right-0 bottom-0 w-full sm:w-[420px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-40 translate-x-full transition-transform duration-200 ease-in-out flex flex-col shadow-2xl">
+                <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <i data-lucide="layout-panel-right" class="w-4 h-4 text-indigo-600"></i> サポートサイドパネル
+                        </span>
+                    </div>
+                    <button onclick="toggleDetailPanel()" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" id="rightPanelContent">
+                    <div id="rightTaskBox" class="bg-slate-50 dark:bg-slate-800/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1">
+                                <i data-lucide="target" class="w-3.5 h-3.5"></i> 現在のお題
+                            </span>
+                            <span id="rightTaskExpectedBadge" class="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold"></span>
+                        </div>
+                        <h4 class="font-extrabold text-xs text-slate-900 dark:text-white" id="rightTaskTitle">タイトル</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed" id="rightTaskDesc">説明文</p>
+                    </div>
+
+                    <div id="rightAiBox" class="bg-indigo-50/70 dark:bg-indigo-950/40 p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AIからのアドバイス
+                            </span>
+                            <span class="text-[9px] bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-1.5 py-0.5 rounded font-bold">ヒント 1/3</span>
+                        </div>
+                        <p id="aiAdviceText" class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                            「うごかす！」を押したあと、下のコンソールから「AI解説を見る」を押すとここにアドバイスが表示されるよ！
+                        </p>
+                    </div>
+
+                    <div id="rightDictBox" class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                <i data-lucide="book" class="w-3.5 h-3.5 text-brand-500"></i> ピックアップ構文カード
+                            </span>
+                            <button onclick="switchView('dict-view'); toggleDetailPanel();" class="text-[11px] text-brand-600 dark:text-brand-400 font-bold hover:underline">
+                                全て見る →
+                            </button>
+                        </div>
+                        <div class="space-y-2 pt-1" id="sideDictCardsContainer"></div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- ツアーオーバーレイ & ツールチップ -->
+    <div id="tourBackdrop" class="fixed inset-0 bg-slate-950/75 z-50 hidden transition-opacity duration-200" onclick="endTour()"></div>
+    <div id="tourCard" class="fixed hidden w-80 bg-white dark:bg-slate-900 border-2 border-brand-500 rounded-2xl p-4 shadow-2xl space-y-3 transition-all duration-200 text-slate-800 dark:text-slate-100">
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] font-black px-2 py-0.5 rounded bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-300 uppercase tracking-wider" id="tourStepBadge">Step 1/6</span>
+            <button onclick="endTour()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">スキップ ✕</button>
+        </div>
+        <div>
+            <h4 id="tourTitle" class="font-extrabold text-sm mb-1 text-slate-900 dark:text-white flex items-center gap-1.5">機能名</h4>
+            <p id="tourText" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">説明文がここに入ります。</p>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+            <button onclick="prevTourStep()" id="tourPrevBtn" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">◀ 前へ</button>
+            <button onclick="nextTourStep()" id="tourNextBtn" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold shadow-xs">次へ ▶</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
