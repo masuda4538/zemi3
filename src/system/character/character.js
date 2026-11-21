@@ -12,10 +12,11 @@
 //      roam: false,             … しばらくさわらないと、画面の中を歩きまわる（おさんぽ）。しばらくしたら もとの場所に帰る
 //      roamHeight: 0,           … おさんぽ中の絵の高さ（px。0 ならそのまま）。大きな絵を、歩くときだけ小さくしたいとき
 //      onRoam: (on) => {},      … おさんぽに出かけた（true）・帰ってきた（false）とき
-//      stroll: { area, mover, onMove, rise },
+//      stroll: { area, mover, onMove, rise, avoid },
 //                               … その場の近くを とことこ歩く。area ＝ 歩ける枠、mover ＝ 動かす要素（なければ入れる場所）、
 //                                 onMove(ratio) ＝ 歩いたあと、枠の中のどこにいるか（0 ＝ 左はし 〜 1 ＝ 右はし）
 //                                 rise ＝ 奥へ歩ける高さ（px。0 なら左右だけ）。奥へ行くほど上に・小さく見える（mover の --depth：0 手前 〜 1 奥）
+//                                 avoid ＝ 立ち止まらない場所を返す関数（例：() => [噴水.getBoundingClientRect(), …]。1 つでも配列でもよい）。通りぬけはする
 //      talk: () => [],          … しゃべる言葉を足したいとき（例：今日の学習時間に合わせた言葉）。呼ぶたびに配列を返す
 //      onSay: (text) => {},     … ふきだしに出したい言葉が来る（自分のふきだしに入れる）
 //      onRestore: () => {},     … いつもの言葉にもどしてほしいとき
@@ -518,6 +519,12 @@ export function mountCharacter(host, {
     const base = m.left - strollX;   // ずらしていないときの左はし
     return [a.left + STROLL_PAD - base, a.right - STROLL_PAD - (base + m.width)];
   };
+  /** x までずらしたとき、立ち止まらない場所（stroll.avoid）に かかるか（左右だけで見る） */
+  const blocked = (x) => {
+    const list = [stroll.avoid?.() ?? []].flat().filter((b) => b && b.width);
+    const m = mover.getBoundingClientRect(), left = m.left - strollX + x;
+    return list.some((b) => left < b.right && left + m.width > b.left);
+  };
   const setStroll = (x, z = strollZ) => {
     strollX = x; strollZ = z;
     mover.style.translate = `${Math.round(x)}px ${Math.round(-z * rise)}px`;   // 奥ほど上へ
@@ -532,6 +539,7 @@ export function mountCharacter(host, {
         if (hi - lo > STROLL_STEP * 2) {
           let to = rand(lo, hi);
           if (Math.abs(to - strollX) < STROLL_STEP * 2) to = strollX < (lo + hi) / 2 ? hi : lo;   // 近すぎたら反対がわへ
+          for (let i = 0; i < 12 && blocked(to); i++) to = rand(lo, hi);   // 立ち止まらない場所（avoid）なら、えらびなおす
           const toZ = rise ? Math.random() : 0;   // 奥ゆきも ばらばらに
           walking = true;
           straighten();

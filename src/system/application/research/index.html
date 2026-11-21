@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechFeed Pro Desktop - ITニュース & AIナレッジベース</title>
+    <title>IT情報収集アプリ - ITニュース & AIナレッジベース</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -124,34 +124,41 @@
                         </div>
                         <div class="hidden sm:block">
                             <h1 class="font-extrabold text-sm leading-none text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
-                                TechFeed Pro
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-brand-100 dark:bg-brand-900/80 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">v2.1</span>
+                                IT情報収集アプリ
                             </h1>
                         </div>
                     </div>
                 </div>
 
-                <!-- Center: Global Quick Search Input -->
-                <div class="relative flex-1 max-w-xl mx-1 sm:mx-2 flex items-center bg-slate-200/70 dark:bg-slate-800/70 rounded-xl p-1 border border-slate-300/60 dark:border-slate-700/60 shadow-inner focus-within:ring-2 focus-within:ring-brand-500/50 transition-all">
-                    
-                    <!-- Category Dropdown -->
-                    <div class="relative flex items-center border-r border-slate-300 dark:border-slate-700 pr-1 shrink-0">
-                        <i data-lucide="filter" class="w-3.5 h-3.5 absolute left-2 text-brand-600 dark:text-brand-400 pointer-events-none"></i>
-                        <select id="categoryDropdown" onchange="setCategory(this.value)" aria-label="カテゴリフィルター" class="appearance-none bg-transparent pl-7 pr-5 sm:pr-6 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 rounded-lg cursor-pointer hover:text-brand-600 focus:outline-none transition-colors max-w-[100px] sm:max-w-none truncate">
-                            <!-- Dynamic options -->
-                        </select>
-                        <i data-lucide="chevron-down" class="w-3 h-3 absolute right-1.5 text-slate-400 pointer-events-none"></i>
-                    </div>
+                <!-- Center: Reset Filters Button + Global Quick Search Input -->
+                <div class="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 max-w-2xl mx-1 sm:mx-2 min-w-0">
+                    <button id="headerResetFiltersBtn" onclick="resetFilters(true)" aria-label="絞り込みをリセット" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-200/70 dark:bg-slate-800/80 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-300/60 dark:border-slate-700/60 transition-all shrink-0 flex items-center gap-1.5 active:scale-95" title="絞り込み条件をリセット">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        <span class="hidden md:inline">絞り込みをリセット</span>
+                        <span class="md:hidden">リセット</span>
+                    </button>
 
-                    <!-- Search Input (Uses '/' or 'Ctrl+K' to avoid hijacking browser Ctrl+F) -->
-                    <div class="relative flex-1 flex items-center min-w-0">
-                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 text-slate-400 shrink-0"></i>
-                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="記事検索 (/ または Ctrl+K)" aria-label="記事を検索" class="w-full pl-8 pr-14 py-1 bg-transparent text-slate-900 dark:text-slate-100 text-xs font-medium focus:outline-none placeholder-slate-400">
-                        <div class="absolute right-2 flex items-center space-x-1">
-                            <kbd class="hidden md:inline bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600">/</kbd>
-                            <button id="clearSearchBtn" onclick="clearSearch()" aria-label="検索内容をクリア" class="hidden p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                            </button>
+                    <div class="relative flex-1 max-w-xl flex items-center bg-slate-200/70 dark:bg-slate-800/70 rounded-xl p-1 border border-slate-300/60 dark:border-slate-700/60 shadow-inner focus-within:ring-2 focus-within:ring-brand-500/50 transition-all min-w-0">
+                        
+                        <!-- Category Dropdown -->
+                        <div class="relative flex items-center border-r border-slate-300 dark:border-slate-700 pr-1 shrink-0">
+                            <i data-lucide="filter" class="w-3.5 h-3.5 absolute left-2 text-brand-600 dark:text-brand-400 pointer-events-none"></i>
+                            <select id="categoryDropdown" onchange="setCategory(this.value)" aria-label="カテゴリフィルター" class="appearance-none bg-transparent pl-7 pr-5 sm:pr-6 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 rounded-lg cursor-pointer hover:text-brand-600 focus:outline-none transition-colors max-w-[100px] sm:max-w-none truncate">
+                                <!-- Dynamic options -->
+                            </select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 absolute right-1.5 text-slate-400 pointer-events-none"></i>
+                        </div>
+
+                        <!-- Search Input (Uses '/' or 'Ctrl+K' to avoid hijacking browser Ctrl+F) -->
+                        <div class="relative flex-1 flex items-center min-w-0">
+                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 text-slate-400 shrink-0"></i>
+                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="記事検索 (/ または Ctrl+K)" aria-label="記事を検索" class="w-full pl-8 pr-14 py-1 bg-transparent text-slate-900 dark:text-slate-100 text-xs font-medium focus:outline-none placeholder-slate-400">
+                            <div class="absolute right-2 flex items-center space-x-1">
+                                <kbd class="hidden md:inline bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600">/</kbd>
+                                <button id="clearSearchBtn" onclick="clearSearch()" aria-label="検索内容をクリア" class="hidden p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -186,11 +193,6 @@
                     <button id="themeToggleBtn" onclick="toggleDarkMode()" aria-label="テーマ切り替え" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 dark:text-slate-400 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-slate-700" title="テーマ切り替え">
                         <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
                         <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-600"></i>
-                    </button>
-
-                    <!-- Account Button -->
-                    <button onclick="openAuthModal()" aria-label="アカウント設定" class="flex items-center space-x-1 p-1 bg-slate-200/60 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg transition-colors border border-slate-300/50 dark:border-slate-700/50" title="アカウント設定">
-                        <div id="userAvatar" class="w-6 h-6 rounded bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-black text-[10px]">U</div>
                     </button>
                 </div>
             </div>
@@ -265,20 +267,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Footer User Bar -->
-                <div class="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/80 flex items-center justify-between shrink-0">
-                    <div class="flex items-center space-x-2 min-w-0">
-                        <div id="userAvatarSidebar" class="w-7 h-7 rounded bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">U</div>
-                        <div class="min-w-0">
-                            <p id="userName" class="text-xs font-bold truncate text-slate-800 dark:text-slate-200 leading-none">ゲストユーザー</p>
-                            <p id="userRole" class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">ローカルモード</p>
-                        </div>
-                    </div>
-                    <button onclick="openAuthModal()" aria-label="アカウント設定を開く" class="p-2 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-                        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-                    </button>
-                </div>
             </aside>
 
             <!-- CENTER MAIN FEED AREA -->
@@ -319,8 +307,9 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-700 dark:text-slate-300">該当する記事が見つかりませんでした</h3>
                     <p class="text-xs text-slate-500 max-w-sm mx-auto">検索ワードを変更するか、フィルター条件を解除してください。</p>
-                    <button onclick="resetFilters()" class="mt-2 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700 transition-colors">
-                        フィルターをリセット
+                    <button onclick="resetFilters(true)" class="mt-2 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700 transition-colors inline-flex items-center space-x-1.5">
+                        <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+                        <span>絞り込みをリセット</span>
                     </button>
                 </div>
             </main>
@@ -465,59 +454,41 @@
                 </div>
             </div>
         </div>
-
-        <!-- AUTH & SETTINGS MODAL -->
-        <div id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-150" onclick="closeAuthModal()">
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm p-5 shadow-2xl relative space-y-4" onclick="event.stopPropagation()">
-                <button onclick="closeAuthModal()" aria-label="設定モーダルを閉じる" class="absolute top-3.5 right-3.5 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-                <div class="text-center">
-                    <div class="w-10 h-10 bg-brand-100 dark:bg-brand-900/60 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mx-auto mb-2">
-                        <i data-lucide="lock" class="w-5 h-5"></i>
-                    </div>
-                    <h3 id="authModalTitle" class="text-base font-bold text-slate-900 dark:text-white">アカウント同期設定</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ブックマークとメモをローカル/サーバーへ同期</p>
-                </div>
-                <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1" for="authUserId">ユーザーID</label>
-                        <input type="text" id="authUserId" required placeholder="例: dev_user01" class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:border-brand-500 rounded-lg text-xs outline-none text-slate-900 dark:text-slate-100">
-                    </div>
-                    <button type="submit" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all">ログインして適用</button>
-                </form>
-                <div id="logoutSection" class="hidden border-t border-slate-200 dark:border-slate-800 pt-3 text-center">
-                    <button onclick="handleLogout()" class="text-xs font-bold text-rose-500 hover:text-rose-600">ログアウト (ゲストに戻る)</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // --- CATEGORY IMAGES & TECH ILLUSTRATIONS ---
+        const CATEGORY_IMAGES = {
+            "AI/LLM": "c146cc35.jpeg",
+            "フロントエンド": "e6efd90f.jpeg",
+            "バックエンド": "fb4a78b1.jpeg",
+            "Cloud/DevOps": "5554af5c.jpeg"
+        };
+
         // --- IT GLOSSARY DATABASE ---
         const IT_DICTIONARY = {
             "ローカルLLM": { category: "AI / ML", summary: "端末やローカル環境で直接実行する軽量な大規模言語モデル。", detail: "プライバシー保護やAPI通信コストゼロ化に優れ、OllamaやTauri環境のネイティブアプリで急普及中。" },
-            "Tauri": { category: "Desktop / Rust", summary: "Web技術(HTML/JS)とRustを用いて超軽量デスクトップアプリを構築するフレームワーク。", detail: "Electronに比べてメモリ消費が極めて少なく、高速なシステムAPIアクセスを提供。" },
-            "Rust": { category: "Language", summary: "メモリ安全性とC/C++並みの超高速な実行速度を両立したシステムプログラミング言語。", detail: "ガベージコレクションなしでコンパイル時にメモリ安全性を保証。" },
+            "Tauri": { category: "デスクトップ / Rust", summary: "Web技術(HTML/JS)とRustを用いて超軽量デスクトップアプリを構築するフレームワーク。", detail: "Electronに比べてメモリ消費が極めて少なく、高速なシステムAPIアクセスを提供。" },
+            "Rust": { category: "言語", summary: "メモリ安全性とC/C++並みの超高速な実行速度を両立したシステムプログラミング言語。", detail: "ガベージコレクションなしでコンパイル時にメモリ安全性を保証。" },
             "Kubernetes": { category: "Cloud / DevOps", summary: "コンテナ化されたアプリケーションの自動デプロイ・スケール管理ツール。", detail: "通称k8s。クラウドネイティブインフラの業界標準。" },
-            "SBOM": { category: "Security", summary: "Software Bill of Materials (ソフトウェア部品表)。", detail: "使用ライブラリや依存関係を明細化した構成リスト。サプライチェーンセキュリティに必須。" },
-            "VLAN": { category: "Network", summary: "Virtual Local Area Network (仮想LAN)。", detail: "スイッチ内でネットワークを論理的に分割し、セキュリティと帯域効率を高める技術。" },
-            "Subnet": { category: "Network", summary: "サブネット (ネットワーク分割単位)。", detail: "IPアドレス空間を細分化し、ブロードキャストドメインを最適化する手法。" },
-            "React": { category: "Frontend", summary: "UIコンポーネント指向のJavaScriptライブラリ。", detail: "仮想DOM（Virtual DOM）と宣言的UI記述により効率的な開発を可能に。" }
+            "SBOM": { category: "セキュリティ", summary: "Software Bill of Materials (ソフトウェア部品表)。", detail: "使用ライブラリや依存関係を明細化した構成リスト。サプライチェーンセキュリティに必須。" },
+            "VLAN": { category: "ネットワーク", summary: "Virtual Local Area Network (仮想LAN)。", detail: "スイッチ内でネットワークを論理的に分割し、セキュリティと帯域効率を高める技術。" },
+            "Subnet": { category: "ネットワーク", summary: "サブネット (ネットワーク分割単位)。", detail: "IPアドレス空間を細分化し、ブロードキャストドメインを最適化する手法。" },
+            "React": { category: "フロントエンド", summary: "UIコンポーネント指向のJavaScriptライブラリ。", detail: "仮想DOM（Virtual DOM）と宣言的UI記述により効率的な開発を可能に。" }
         };
 
         // --- SAMPLE ARTICLES ---
         const SAMPLE_ARTICLES = [
             { id: "art-jp-001", region: "jp", category: "AI/LLM", title: "ローカルLLM開発フレームワークの新バージョン公開、軽量化と高速化を実現", description: "TauriおよびRustベースのネイティブクライアントで動作可能なローカルLLMの最適化ライブラリがリリースされました。VLAN等の外部通信なしで完全動作。", source: "TechNews Japan", url: "https://example.com/news/art-jp-001", date: "2026-11-13T08:30:00Z", isTrending: true, viewsCount: 1420 },
-            { id: "art-jp-002", region: "jp", category: "Frontend", title: "React 19の新機能とパフォーマンス最適化手法の解説まとめ", description: "React 19で正式導入されたServer Actionsおよび自動メモ化コンパイラの仕組みについて解説します。", source: "WebDev Weekly JP", url: "https://example.com/news/art-jp-002", date: "2026-11-12T14:15:00Z", isTrending: true, viewsCount: 980 },
+            { id: "art-jp-002", region: "jp", category: "フロントエンド", title: "React 19の新機能とパフォーマンス最適化手法の解説まとめ", description: "React 19で正式導入されたServer Actionsおよび自動メモ化コンパイラの仕組みについて解説します。", source: "WebDev Weekly JP", url: "https://example.com/news/art-jp-002", date: "2026-11-12T14:15:00Z", isTrending: true, viewsCount: 980 },
             { id: "art-jp-003", region: "jp", category: "Cloud/DevOps", title: "Kubernetes 1.32リリース：マルチクラウド運用の省力化と自動スケール強化", description: "最新リリースでは、エッジノードの自動リカバリ機能およびSubnet単位での通信最適化が大幅更新されました。", source: "Cloud Native Watch", url: "https://example.com/news/art-jp-003", date: "2026-11-11T18:00:00Z", isTrending: false, viewsCount: 650 },
-            { id: "art-jp-004", region: "jp", category: "Security", title: "サプライチェーン攻撃を防ぐSBOM運用の自動化ベストプラクティス", description: "オープンソース依存関係の脆弱性を自動検出し、CISA規約に適合したSBOM出力を実現する手順。", source: "CyberSec Times", url: "https://example.com/news/art-jp-004", date: "2026-11-10T11:40:00Z", isTrending: false, viewsCount: 420 },
+            { id: "art-jp-004", region: "jp", category: "セキュリティ", title: "サプライチェーン攻撃を防ぐSBOM運用の自動化ベストプラクティス", description: "オープンソース依存関係の脆弱性を自動検出し、CISA規約に適合したSBOM出力を実現する手順。", source: "CyberSec Times", url: "https://example.com/news/art-jp-004", date: "2026-11-10T11:40:00Z", isTrending: false, viewsCount: 420 },
             { id: "art-global-001", region: "global", category: "AI/LLM", title: "Next-Gen AI Models Achieve Breakthrough in Local Context Reasoning", description: "New lightweight ローカルLLM solutions enable multi-modal processing directly on end-user machines with Tauri wrappers.", source: "Global Tech Insider", url: "https://example.com/news/art-global-001", date: "2026-11-13T07:00:00Z", isTrending: true, viewsCount: 2310 },
-            { id: "art-global-002", region: "global", category: "Backend", title: "Rust Ecosystem Gains Momentum in High-Throughput Systems", description: "Financial systems report a 40% latency drop after migrating core microservices to Rust and managing Kubernetes clusters seamlessly.", source: "Systems Architecture Today", url: "https://example.com/news/art-global-002", date: "2026-11-12T16:20:00Z", isTrending: true, viewsCount: 1890 }
+            { id: "art-global-002", region: "global", category: "バックエンド", title: "Rust Ecosystem Gains Momentum in High-Throughput Systems", description: "Financial systems report a 40% latency drop after migrating core microservices to Rust and managing Kubernetes clusters seamlessly.", source: "Systems Architecture Today", url: "https://example.com/news/art-global-002", date: "2026-11-12T16:20:00Z", isTrending: true, viewsCount: 1890 }
         ];
 
-        const CATEGORIES = ["すべて", "AI/LLM", "Frontend", "Backend", "Cloud/DevOps", "Security", "Mobile"];
+        const CATEGORIES = ["すべて", "AI/LLM", "フロントエンド", "バックエンド", "Cloud/DevOps", "セキュリティ", "モバイル"];
 
         // --- APPLICATION STATE ---
         let state = {
@@ -526,7 +497,6 @@
             selectedCategory: 'すべて',
             dateFilter: 'all',
             searchQuery: '',
-            user: { isLoggedIn: false, userId: 'ゲストユーザー' },
             bookmarks: new Set(),
             readArticles: new Set(),
             memos: {},
@@ -551,7 +521,6 @@
             if (e.key === 'Escape') {
                 closeDetailPanel();
                 closeGlossaryModal();
-                closeAuthModal();
                 hideContextMenu();
                 if (state.sidebarOpenMobile) toggleSidebar();
             }
@@ -701,8 +670,7 @@
                     bookmarks: Array.from(state.bookmarks),
                     readArticles: Array.from(state.readArticles),
                     memos: state.memos,
-                    categoryVisits: state.categoryVisits,
-                    user: state.user
+                    categoryVisits: state.categoryVisits
                 };
                 localStorage.setItem('techfeed_desktop_v2_1', JSON.stringify(payload));
             } catch (e) {
@@ -719,7 +687,6 @@
                     if (parsed.readArticles) state.readArticles = new Set(parsed.readArticles);
                     if (parsed.memos) state.memos = parsed.memos;
                     if (parsed.categoryVisits) state.categoryVisits = parsed.categoryVisits;
-                    if (parsed.user) state.user = parsed.user;
                 }
             } catch (e) {
                 console.warn('LocalStorage load error:', e);
@@ -741,16 +708,17 @@
                 if (!res.ok) throw new Error('API fetch failed');
                 const rawData = await res.json();
                 const apiArticles = rawData.map((item, idx) => {
-                    const catMap = ['AI/LLM', 'Frontend', 'Backend', 'Cloud/DevOps', 'Security', 'Mobile'];
+                    const catMap = ['AI/LLM', 'フロントエンド', 'バックエンド', 'Cloud/DevOps', 'セキュリティ', 'モバイル'];
+                    const assignedCategory = catMap[idx % catMap.length];
                     return {
                         id: `api-${item.id}`,
                         region: idx % 2 === 0 ? 'global' : 'jp',
-                        category: catMap[idx % catMap.length],
+                        category: assignedCategory,
                         title: item.title,
                         description: item.description || (item.title + " - Tauri, React, Subnet および Cloudインフラストラクチャの最新情報。"),
                         source: item.organization?.name || item.user?.name || "Dev.to Feed",
                         url: item.url,
-                        image: item.cover_image || item.social_image || null,
+                        image: getCategoryImage(assignedCategory),
                         date: new Date(item.published_at || Date.now()).toISOString(),
                         isTrending: idx % 2 === 0,
                         viewsCount: Math.floor(Math.random() * 1500) + 500
@@ -771,8 +739,104 @@
         function refreshArticlesFromAPI() { fetchLiveNewsAPI(); }
 
         function getSVGPlaceholder(category) {
-            const encodedCat = encodeURIComponent(category || 'Tech');
-            return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300"><rect width="100%" height="100%" fill="%231e293b"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="%236366f1">${encodedCat}</text></svg>`;
+            const cat = category || 'Tech';
+            let graphic = '';
+
+            if (cat === 'AI/LLM') {
+                graphic = `
+                    <defs>
+                        <radialGradient id="aiBg" cx="50%" cy="50%" r="70%">
+                            <stop offset="0%" stop-color="#1e3a5f"/>
+                            <stop offset="100%" stop-color="#0f172a"/>
+                        </radialGradient>
+                        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="4" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+                    <rect width="600" height="300" fill="url(#aiBg)"/>
+                    <g stroke="#38bdf8" stroke-opacity="0.35" stroke-width="1.5">
+                        <line x1="180" y1="100" x2="270" y2="75"/><line x1="180" y1="100" x2="255" y2="150"/>
+                        <line x1="180" y1="100" x2="210" y2="210"/><line x1="270" y1="75" x2="360" y2="95"/>
+                        <line x1="270" y1="75" x2="255" y2="150"/><line x1="255" y1="150" x2="360" y2="95"/>
+                        <line x1="255" y1="150" x2="335" y2="195"/><line x1="255" y1="150" x2="210" y2="210"/>
+                        <line x1="360" y1="95" x2="425" y2="145"/><line x1="360" y1="95" x2="335" y2="195"/>
+                        <line x1="335" y1="195" x2="425" y2="145"/><line x1="210" y1="210" x2="335" y2="195"/>
+                    </g>
+                    <g filter="url(#glow)">
+                        <circle cx="180" cy="100" r="6" fill="#7dd3fc"/><circle cx="270" cy="75" r="7" fill="#38bdf8"/>
+                        <circle cx="255" cy="150" r="10" fill="#bae6fd"/><circle cx="360" cy="95" r="7" fill="#818cf8"/>
+                        <circle cx="335" cy="195" r="8" fill="#60a5fa"/><circle cx="210" cy="210" r="6" fill="#818cf8"/>
+                        <circle cx="425" cy="145" r="7" fill="#38bdf8"/>
+                    </g>`;
+            } else if (cat === 'フロントエンド') {
+                graphic = `
+                    <rect width="600" height="300" fill="#0f172a"/>
+                    <g stroke="#38bdf8" stroke-opacity="0.25" stroke-width="1">
+                        <line x1="0" y1="60" x2="600" y2="60"/><line x1="0" y1="240" x2="600" y2="240"/>
+                        <line x1="120" y1="0" x2="120" y2="300"/><line x1="480" y1="0" x2="480" y2="300"/>
+                    </g>
+                    <rect x="150" y="55" width="300" height="190" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.7"/>
+                    <rect x="150" y="55" width="300" height="26" rx="12" fill="#0284c7" fill-opacity="0.45"/>
+                    <circle cx="170" cy="68" r="4" fill="#38bdf8"/><circle cx="184" cy="68" r="4" fill="#7dd3fc"/><circle cx="198" cy="68" r="4" fill="#bae6fd"/>
+                    <rect x="170" y="98" width="90" height="125" rx="6" fill="#0f172a" stroke="#06b6d4" stroke-width="1.5"/>
+                    <rect x="275" y="98" width="155" height="65" rx="6" fill="#0284c7" fill-opacity="0.3" stroke="#38bdf8" stroke-width="1.5"/>
+                    <rect x="275" y="175" width="72" height="48" rx="6" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5"/>
+                    <rect x="358" y="175" width="72" height="48" rx="6" fill="#0e7490" fill-opacity="0.5" stroke="#22d3ee" stroke-width="1.5"/>`;
+            } else if (cat === 'バックエンド') {
+                graphic = `
+                    <rect width="600" height="300" fill="#111827"/>
+                    <g stroke="#6366f1" stroke-width="2" stroke-opacity="0.55" fill="none">
+                        <path d="M130 90 H240 L270 150 H330 L360 90 H470"/>
+                        <path d="M130 210 H240 L270 150 H330 L360 210 H470"/>
+                        <line x1="130" y1="150" x2="470" y2="150" stroke="#f59e0b" stroke-opacity="0.7"/>
+                    </g>
+                    <g>
+                        <circle cx="130" cy="90" r="10" fill="#4f46e5" stroke="#a5b4fc" stroke-width="2"/>
+                        <circle cx="130" cy="150" r="11" fill="#d97706" stroke="#fcd34d" stroke-width="2"/>
+                        <circle cx="130" cy="210" r="10" fill="#4f46e5" stroke="#a5b4fc" stroke-width="2"/>
+                        <circle cx="300" cy="150" r="18" fill="#f59e0b" fill-opacity="0.85" stroke="#fef3c7" stroke-width="2.5"/>
+                        <circle cx="470" cy="90" r="10" fill="#4f46e5" stroke="#a5b4fc" stroke-width="2"/>
+                        <circle cx="470" cy="150" r="11" fill="#d97706" stroke="#fcd34d" stroke-width="2"/>
+                        <circle cx="470" cy="210" r="10" fill="#4f46e5" stroke="#a5b4fc" stroke-width="2"/>
+                    </g>`;
+            } else if (cat === 'Cloud/DevOps') {
+                graphic = `
+                    <rect width="600" height="300" fill="#0f172a"/>
+                    <ellipse cx="300" cy="155" rx="175" ry="52" fill="none" stroke="#60a5fa" stroke-opacity="0.4" stroke-width="1.5" transform="rotate(-10 300 155)"/>
+                    <ellipse cx="300" cy="155" rx="150" ry="42" fill="none" stroke="#818cf8" stroke-opacity="0.45" stroke-width="1.5" transform="rotate(12 300 155)"/>
+                    <path d="M225 182 H380 A36 36 0 0 0 385 110 A52 52 0 0 0 285 95 A42 42 0 0 0 225 182 Z" fill="#1e3a8a" fill-opacity="0.75" stroke="#7dd3fc" stroke-width="2"/>
+                    <circle cx="145" cy="130" r="4" fill="#38bdf8"/><circle cx="455" cy="175" r="4" fill="#818cf8"/>`;
+            } else if (cat === 'セキュリティ') {
+                graphic = `
+                    <rect width="600" height="300" fill="#0b1324"/>
+                    <g stroke="#10b981" stroke-opacity="0.18" stroke-width="1">
+                        <circle cx="300" cy="150" r="75" fill="none"/><circle cx="300" cy="150" r="115" fill="none"/>
+                        <line x1="140" y1="150" x2="460" y2="150"/><line x1="300" y1="25" x2="300" y2="275"/>
+                    </g>
+                    <path d="M300 68 L368 96 V148 C368 194 338 226 300 242 C262 226 232 194 232 148 V96 Z" fill="#064e3b" fill-opacity="0.75" stroke="#34d399" stroke-width="2.5"/>
+                    <rect x="284" y="142" width="32" height="26" rx="4" fill="#10b981" fill-opacity="0.3" stroke="#6ee7b7" stroke-width="2"/>
+                    <path d="M291 142 V132 A9 9 0 0 1 309 132 V142" fill="none" stroke="#6ee7b7" stroke-width="2"/>`;
+            } else {
+                graphic = `
+                    <rect width="600" height="300" fill="#111827"/>
+                    <g stroke="#a855f7" stroke-opacity="0.35" stroke-width="2" fill="none">
+                        <path d="M210 115 A60 60 0 0 0 210 185"/><path d="M190 98 A85 85 0 0 0 190 202"/>
+                        <path d="M390 115 A60 60 0 0 1 390 185"/><path d="M410 98 A85 85 0 0 1 410 202"/>
+                    </g>
+                    <rect x="252" y="54" width="96" height="192" rx="16" fill="#1e1b4b" stroke="#c084fc" stroke-width="2.5"/>
+                    <rect x="262" y="72" width="76" height="148" rx="8" fill="#0f172a" stroke="#818cf8" stroke-width="1"/>
+                    <rect x="286" y="61" width="28" height="4" rx="2" fill="#a855f7"/>
+                    <rect x="274" y="90" width="52" height="28" rx="4" fill="#6366f1" fill-opacity="0.45"/>
+                    <rect x="274" y="128" width="52" height="14" rx="3" fill="#38bdf8" fill-opacity="0.4"/>
+                    <rect x="274" y="150" width="36" height="14" rx="3" fill="#c084fc" fill-opacity="0.4"/>`;
+            }
+
+            return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">${graphic}</svg>`)}`;
+        }
+
+        function getCategoryImage(category) {
+            return CATEGORY_IMAGES[category] || getSVGPlaceholder(category);
         }
 
         function showToast(msg) {
@@ -789,15 +853,6 @@
         }
 
         function updateUI() {
-            const userNameEl = document.getElementById('userName');
-            if (userNameEl) userNameEl.innerText = state.user.userId;
-            const userRoleEl = document.getElementById('userRole');
-            if (userRoleEl) userRoleEl.innerText = state.user.isLoggedIn ? '同期アクティブ' : 'ローカルモード';
-            const userAvatarEl = document.getElementById('userAvatar');
-            if (userAvatarEl) userAvatarEl.innerText = state.user.userId.charAt(0).toUpperCase();
-            const userAvatarSidebar = document.getElementById('userAvatarSidebar');
-            if (userAvatarSidebar) userAvatarSidebar.innerText = state.user.userId.charAt(0).toUpperCase();
-
             const regionArticles = SAMPLE_ARTICLES.filter(a => a.region === state.currentRegion);
             
             const badgeAllCount = document.getElementById('badge-all-count');
@@ -827,6 +882,16 @@
             const titles = { 'all': 'すべての記事', 'recommended': '🔥 おススメ記事', 'trending': '📈 急上昇トレンド', 'bookmarks': 'ブックマーク一覧', 'unread': '未読記事一覧', 'analytics': 'ITトレンド分析' };
             const viewTitleEl = document.getElementById('viewTitle');
             if (viewTitleEl) viewTitleEl.innerHTML = `<span>${titles[state.currentView] || '記事一覧'}</span>`;
+
+            // Update visual state of the Reset Filters button next to the search box
+            const hasActiveFilters = state.selectedCategory !== 'すべて' || state.dateFilter !== 'all' || state.searchQuery !== '' || (state.currentView !== 'all' && state.currentView !== 'analytics');
+            const headerResetBtn = document.getElementById('headerResetFiltersBtn');
+            if (headerResetBtn) {
+                headerResetBtn.disabled = !hasActiveFilters;
+                headerResetBtn.className = hasActiveFilters
+                    ? 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-300/80 dark:border-rose-800/80 shadow-xs transition-all shrink-0 flex items-center gap-1.5 active:scale-95 cursor-pointer'
+                    : 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-200/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border border-slate-300/40 dark:border-slate-700/40 transition-all shrink-0 flex items-center gap-1.5 opacity-60 cursor-default';
+            }
 
             const feedView = document.getElementById('feedView');
             const heroContainer = document.getElementById('heroFeaturedContainer');
@@ -881,7 +946,7 @@
             const hasMemo = !!state.memos[art.id];
             const formattedDate = new Date(art.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             const fallbackImg = getSVGPlaceholder(art.category);
-            const displayImg = art.image || fallbackImg;
+            const displayImg = getCategoryImage(art.category);
             // Keep cards clean: glossary links enabled in Hero and Detail view, disabled in small grid snippets
             const glossaryDescription = injectInlineGlossary(art.description, true);
 
@@ -937,7 +1002,7 @@
                 const hasMemo = !!state.memos[art.id];
                 const formattedDate = new Date(art.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const fallbackImg = getSVGPlaceholder(art.category);
-                const displayImg = art.image || fallbackImg;
+                const displayImg = getCategoryImage(art.category);
                 // Plain text in card snippets to prevent accidental clicks when opening article
                 const plainSnippet = art.description;
 
@@ -1061,11 +1126,29 @@
             document.getElementById('clearSearchBtn').classList.add('hidden');
             updateUI();
         }
-        function resetFilters() {
+        function resetFilters(notify = false) {
             state.selectedCategory = 'すべて';
+            const dropdown = document.getElementById('categoryDropdown');
+            if (dropdown) dropdown.value = 'すべて';
+
             state.dateFilter = 'all';
-            clearSearch();
+            ['all', '24h', '7d'].forEach(k => {
+                const btn = document.getElementById(`date-${k}`);
+                if (btn) {
+                    btn.className = k === 'all'
+                        ? 'px-2 py-1 rounded transition-all bg-white dark:bg-slate-700 shadow-xs text-slate-900 dark:text-white font-bold text-[11px]'
+                        : 'px-2 py-1 rounded transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[11px]';
+                }
+            });
+
+            document.getElementById('searchInput').value = '';
+            state.searchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+
             setViewFilter('all');
+            if (notify) {
+                showToast('絞り込みをリセットしました');
+            }
         }
 
         function toggleBookmark(id, event) {
@@ -1218,33 +1301,6 @@
             clearTimeout(memoSaveTimeout);
             memoSaveTimeout = setTimeout(() => { badge.classList.add('opacity-0'); }, 1200);
             saveLocalState();
-        }
-
-        function openAuthModal() {
-            document.getElementById('authModal').classList.remove('opacity-0', 'pointer-events-none');
-            if (state.user.isLoggedIn) document.getElementById('logoutSection').classList.remove('hidden');
-            else document.getElementById('logoutSection').classList.add('hidden');
-        }
-
-        function closeAuthModal() { document.getElementById('authModal').classList.add('opacity-0', 'pointer-events-none'); }
-
-        function handleAuthSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('authUserId').value.trim();
-            if (!id) return;
-            state.user.isLoggedIn = true;
-            state.user.userId = id;
-            updateUI();
-            closeAuthModal();
-            showToast(`${id} としてログインしました`);
-        }
-
-        function handleLogout() {
-            state.user.isLoggedIn = false;
-            state.user.userId = 'ゲストユーザー';
-            updateUI();
-            closeAuthModal();
-            showToast('ログアウトしました');
         }
 
         function toggleDarkMode() { document.documentElement.classList.toggle('dark'); }
