@@ -8,6 +8,11 @@ let lastWorkedTaskId = 3;
 const userTaskCodes = {};
 let currentSelectedLang = 'python';
 
+let lastExecutionContext = null;
+let aiRequestToken = 0;      // 問題切替時に古いAI応答を破棄するためのトークン
+let syntaxCheckTimer = null; // 入力デバウンス用タイマー
+let syntaxCheckSeq = 0;      // 構文チェックの順序管理
+
 let editorPreferences = {
     showLineNumbers: true,
     fontSize: 'medium'
@@ -848,6 +853,7 @@ function tryDictSnippetInEditor(id, event) {
             ed.value += `\n# --- [${langData.name}] のサンプル ---\n${langData.snippet}\n`;
             ed.scrollTop = ed.scrollHeight;
             updateLineNumbers();
+            scheduleSyntaxCheck();
         }
     }, 50);
 }
@@ -1154,7 +1160,7 @@ function jumpToDictFromTaskCard(dictId, event) {
     }
 }
 
-// ★ 課題選択・エディタ展開（修正：複数行期待値の整形表示対応） ★
+// ★ 課題選択・エディタ展開（白紙スタート ＋ AI分析リセット ＋ 構文チェック連動） ★
 function selectTask(taskId, isNewSelect = true) {
     lastWorkedTaskId = taskId;
     try {
@@ -1176,17 +1182,15 @@ function selectTask(taskId, isNewSelect = true) {
     document.getElementById('rightTaskDesc').innerText = task.desc;
     document.getElementById('rightTaskExpectedBadge').innerText = `目標: ${formattedExpected}`;
 
-    if (!isNewSelect && userTaskCodes[taskId]) {
-        document.getElementById('codeEditor').value = userTaskCodes[taskId];
-    } else if (isNewSelect) {
-        document.getElementById('codeEditor').value = userTaskCodes[taskId] || task.code;
-    }
+    // 保存済みコードがあれば復元、初回は必ずまっさら（''）から開始
+    document.getElementById('codeEditor').value = userTaskCodes[taskId] ?? '';
 
     document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> task_${taskId}.py`;
-    document.getElementById('consoleBody').innerHTML = `<span class="text-slate-500">「うごかす！」ボタンを押すと実行結果がここに表示されます。</span>`;
     
     switchView('editor-task');
     updateLineNumbers();
+    resetWorkspaceFeedback();
+    scheduleSyntaxCheck();
 }
 
 function renderProjectCards() {
@@ -1249,10 +1253,11 @@ function openProject(key) {
     document.getElementById('currentProjectTreeLabel').innerText = proj.name.toUpperCase();
     document.getElementById('codeEditor').value = proj.files[firstFile] || '';
     document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> ${firstFile}`;
-    document.getElementById('consoleBody').innerHTML = `<span class="text-slate-500">「うごかす！」ボタンを押すと実行結果がここに表示されます。</span>`;
 
     switchView('editor-free');
     updateLineNumbers();
+    resetWorkspaceFeedback();
+    scheduleSyntaxCheck();
 }
 
 function renderFileTree() {
@@ -1272,20 +1277,30 @@ function renderFileTree() {
             <span class="flex items-center gap-1.5"><i data-lucide="file" class="w-3.5 h-3.5"></i>${f}</span>
             ${isActive ? '<span class="text-[9px] text-slate-400 font-mono">active</span>' : ''}
         `;
-        item.onclick = () => selectFile(f);
+        item.onclick = () => selectFile(f, true);
         container.appendChild(item);
     });
     if (window.lucide) lucide.createIcons();
 }
 
-function selectFile(f) {
-    currentFileKey = f;
+function selectFile(f, resetFeedback = true) {
+    const editor = document.getElementById('codeEditor');
     const proj = projectsData[currentProjectKey];
-    document.getElementById('codeEditor').value = proj.files[f] || '';
+    if (proj && currentFileKey && editor) {
+        proj.files[currentFileKey] = editor.value;
+    }
+
+    currentFileKey = f;
+    editor.value = proj.files[f] || '';
     document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> ${f}`;
     document.getElementById('activeProjectBreadcrumb').innerText = `${proj.name} / ${f}`;
     renderFileTree();
     updateLineNumbers();
+
+    if (resetFeedback) {
+        resetWorkspaceFeedback();
+    }
+    scheduleSyntaxCheck();
 }
 
 function promptNewFolder() {
@@ -1300,7 +1315,7 @@ function promptNewFolder() {
         name: clean,
         desc: '新規作成されたプロジェクトフォルダ。',
         updated: 'たった今',
-        files: { 'main.py': `# [main.py] 新しいプログラム\nprint("Hello from ${clean}!")\n` }
+        files: { 'main.py': '' }
     };
     renderProjectCards();
 }
@@ -1323,47 +1338,337 @@ function promptNewFile() {
         alert("同名のファイルがすでに存在します。");
         return;
     }
-    proj.files[fName] = `# [${fName}]\n`;
-    selectFile(fName);
+    proj.files[fName] = '';
+    selectFile(fName, true);
 }
 
-function runCode() {
-    const consoleBody = document.getElementById('consoleBody');
-    const aiText = document.getElementById('aiAdviceText');
-    
-    if (activeMode === 'task') {
-        consoleBody.innerHTML = `
-            <div class="text-amber-400 font-bold mb-1">🤔 期待した結果と少しちがうみたい！</div>
-            <div class="text-slate-400">出力結果: <span class="text-rose-400 font-bold">ねんれいは 15さいです</span></div>
-            <div class="text-slate-400">期待される結果: <span class="text-emerald-400 font-bold">ねんれいは 10さいです</span></div>
-            
-            <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center gap-2">
-                <button onclick="openAiHelpFromConsole()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                    <span>💡 AIの解説・ヒントを見る</span>
-                </button>
-                <button onclick="openDictHelpFromConsole('str')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
-                    <i data-lucide="book" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span>📖 関連する辞書(str)を引く</span>
-                </button>
-            </div>
-        `;
+function getTauriInvoke() {
+    return window.__TAURI__?.core?.invoke || null;
+}
 
-        aiText.innerHTML = `
-            プログラムは動いたけれど、<strong>「15歳」</strong>と表示されているよ！<br>
-            <code>10 + 5</code> の計算部分を見直して、10になるように直してみよう！
-        `;
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+}
+
+// ★ 問題・ファイル切替時に AI分析 / コンソール / 構文エラー表示をリセット ★
+function resetWorkspaceFeedback() {
+    aiRequestToken++; // 進行中のAIリクエスト結果を無効化
+    lastExecutionContext = null;
+
+    const aiText = document.getElementById('aiAdviceText');
+    if (aiText) {
+        aiText.innerHTML = `<span class="text-slate-400">コードを実行すると、ここにAIの分析やヒントが表示されるよ！</span>`;
+    }
+
+    const consoleBody = document.getElementById('consoleBody');
+    if (consoleBody) {
+        consoleBody.innerHTML = `<span class="text-slate-500">「うごかす！」を押すと実行結果がここに表示されます。</span>`;
+    }
+
+    updateSyntaxBanner({ ok: true });
+}
+
+// ★ 随時構文チェック用のステータスバーを自動生成・更新 ★
+function getOrCreateSyntaxBanner() {
+    let banner = document.getElementById('liveSyntaxBanner');
+    if (banner) return banner;
+
+    const editor = document.getElementById('codeEditor');
+    if (!editor || !editor.parentElement) return null;
+
+    banner = document.createElement('div');
+    banner.id = 'liveSyntaxBanner';
+    banner.className = 'hidden px-3 py-1.5 text-xs font-mono border-t border-slate-700/60 flex items-center justify-between gap-2';
+    editor.parentElement.insertAdjacentElement('afterend', banner);
+    return banner;
+}
+
+function updateSyntaxBanner(res) {
+    const banner = getOrCreateSyntaxBanner();
+    if (!banner) return;
+
+    const editor = document.getElementById('codeEditor');
+    if (!editor || !editor.value.trim()) {
+        banner.classList.add('hidden');
+        banner.innerHTML = '';
+        return;
+    }
+
+    if (res.ok) {
+        banner.className = 'px-3 py-1 text-[11px] font-mono bg-emerald-950/40 text-emerald-400 border-t border-emerald-800/40 flex items-center justify-between';
+        banner.innerHTML = `<span>✔ 構文チェックOK</span>`;
     } else {
-        consoleBody.innerHTML = `
-            <div class="text-emerald-400 font-bold mb-1">✔ 実行が完了しました (CWD: ${currentProjectKey})</div>
-            <div class="text-slate-300 font-mono">プログラムが正常に動作しました。別ファイルからの import も成功しています。</div>
+        const line = res.line || 1;
+        const msg = translateSyntaxMsg(res.message || '構文エラー');
+        const currentFile = activeMode === 'task' ? `task_${lastWorkedTaskId}.py` : currentFileKey;
+
+        banner.className = 'px-3 py-1.5 text-xs font-mono bg-rose-950/60 text-rose-300 border-t border-rose-700/60 flex items-center justify-between gap-2';
+        banner.innerHTML = `
+            <span>⚠️ ${line}行目付近に構文エラー：${escapeHtml(msg)}</span>
+            <button type="button" onclick="jumpToErrorLine('${escapeHtml(currentFile)}', ${line})" class="px-2 py-0.5 bg-rose-700 hover:bg-rose-600 text-white rounded text-[11px] font-bold shrink-0">
+                ${line}行目へ
+            </button>
         `;
-        aiText.innerHTML = `
-            正常に実行できたね！このフォルダの中に新しいファイルを作って呼び出してみよう！
-        `;
+    }
+}
+
+function translateSyntaxMsg(msg) {
+    if (msg.includes('was never closed') || msg.includes('unterminated')) {
+        return `カッコやクォーテーション（" や '）が閉じられていません (${msg})`;
+    }
+    if (msg.includes("expected ':'")) {
+        return `行末にコロン「:」が抜けています (${msg})`;
+    }
+    if (msg.includes('unexpected indent') || msg.includes('expected an indented block')) {
+        return `インデント（行頭のスペース）がずれています (${msg})`;
+    }
+    if (msg.includes('invalid syntax')) {
+        return `書き方に誤りがあります（スペルや記号を確認しよう）`;
+    }
+    return msg;
+}
+
+// ★ 入力ごとのデバウンス構文チェック（400ms待機して実行） ★
+function scheduleSyntaxCheck() {
+    clearTimeout(syntaxCheckTimer);
+    const editor = document.getElementById('codeEditor');
+    if (!editor) return;
+
+    const code = editor.value;
+    if (!code.trim()) {
+        updateSyntaxBanner({ ok: true });
+        return;
+    }
+
+    syntaxCheckTimer = setTimeout(async () => {
+        const invoke = getTauriInvoke();
+        if (!invoke) return;
+
+        const seq = ++syntaxCheckSeq;
+        try {
+            const res = await invoke('check_python_syntax', { code });
+            if (seq !== syntaxCheckSeq) return;
+            updateSyntaxBanner(res);
+        } catch (_) {
+            // チェック失敗時は無視
+        }
+    }, 400);
+}
+
+// ★ エラー発生ファイルの該当行へワンクリックジャンプ ★
+function jumpToErrorLine(fileName, lineNum) {
+    if (activeMode === 'free' && projectsData[currentProjectKey]?.files?.[fileName] !== undefined) {
+        if (currentFileKey !== fileName) {
+            selectFile(fileName, false); // ジャンプ時はコンソール・AI分析を消さない
+        }
+    }
+
+    const editor = document.getElementById('codeEditor');
+    if (!editor) return;
+
+    const lines = editor.value.split('\n');
+    const targetIdx = Math.max(0, Math.min(lines.length - 1, (parseInt(lineNum, 10) || 1) - 1));
+
+    let startPos = 0;
+    for (let i = 0; i < targetIdx; i++) {
+        startPos += lines[i].length + 1;
+    }
+    const endPos = startPos + lines[targetIdx].length;
+
+    editor.focus();
+    editor.setSelectionRange(startPos, endPos);
+
+    const lineHeight = parseFloat(getComputedStyle(editor).lineHeight) || 22;
+    editor.scrollTop = Math.max(0, targetIdx * lineHeight - editor.clientHeight / 3);
+    updateLineNumbers();
+}
+
+// ★ バックエンド連携版：コード実行 ＆ 自動採点 ★
+async function runCode() {
+    const invoke = getTauriInvoke();
+    const consoleBody = document.getElementById('consoleBody');
+    const editor = document.getElementById('codeEditor');
+    const code = editor.value;
+
+    if (activeMode === 'task') {
+        userTaskCodes[lastWorkedTaskId] = code;
+        try { localStorage.setItem('codelab_task_codes', JSON.stringify(userTaskCodes)); } catch (e) {}
+    } else if (projectsData[currentProjectKey]) {
+        projectsData[currentProjectKey].files[currentFileKey] = code;
+    }
+
+    if (!invoke) {
+        consoleBody.innerHTML = `<div class="text-amber-400">※Tauriバックエンド未接続です。<code>tauri.conf.json</code> の <code>"withGlobalTauri": true</code> を確認し、<code>npm run tauri dev</code> で起動してください。</div>`;
+        return;
+    }
+
+    consoleBody.innerHTML = `<span class="text-slate-400">⏳ Pythonを実行中...</span>`;
+
+    try {
+        if (activeMode === 'task') {
+            const task = tasks.find(t => t.id === lastWorkedTaskId);
+            const projectName = `task_${lastWorkedTaskId}`;
+            const fileName = `task_${lastWorkedTaskId}.py`;
+
+            await invoke('save_project_file', { projectName, fileName, content: code });
+            const projectDir = await invoke('ensure_project_dir', { projectName });
+            const grade = await invoke('grade_task_code', {
+                projectDir,
+                entryFile: fileName,
+                expectedOutput: task?.expected || ''
+            });
+
+            const exec = grade.execution;
+
+            if (grade.isPassed) {
+                lastExecutionContext = null;
+                consoleBody.innerHTML = `
+                    <div class="text-emerald-400 font-bold mb-1">🎉 合格！（${grade.score}点） ${escapeHtml(grade.feedback)}</div>
+                    <pre class="text-slate-200 whitespace-pre-wrap">${escapeHtml(grade.actualOutput || '(出力なし)')}</pre>
+                `;
+            } else if (!exec.success || exec.timedOut) {
+                lastExecutionContext = {
+                    callerFile: fileName,
+                    callerCode: code,
+                    errorFile: exec.errorFile || fileName,
+                    errorLine: exec.errorLine || 1,
+                    errorMsg: exec.stderr
+                };
+                renderErrorConsole(consoleBody, exec);
+            } else {
+                lastExecutionContext = {
+                    callerFile: fileName,
+                    callerCode: code,
+                    errorFile: fileName,
+                    errorLine: 1,
+                    errorMsg: `期待される出力: ${grade.expectedOutput}\n実際の出力: ${grade.actualOutput}`
+                };
+                consoleBody.innerHTML = `
+                    <div class="text-amber-400 font-bold mb-1">🤔 不合格（${grade.score}点）：${escapeHtml(grade.feedback)}</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-xs">
+                        <div class="p-2 rounded bg-slate-800/80 border border-rose-500/40">
+                            <div class="text-rose-400 font-bold mb-1">あなたの出力</div>
+                            <pre class="text-slate-200 whitespace-pre-wrap">${escapeHtml(grade.actualOutput || '(出力なし)')}</pre>
+                        </div>
+                        <div class="p-2 rounded bg-slate-800/80 border border-emerald-500/40">
+                            <div class="text-emerald-400 font-bold mb-1">期待される出力</div>
+                            <pre class="text-slate-200 whitespace-pre-wrap">${escapeHtml(grade.expectedOutput || '(出力なし)')}</pre>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-slate-800 flex flex-wrap items-center gap-2">
+                        <button onclick="requestAiHintFromBackend(1)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">
+                            💡 AIヒントを見る (Lv.1)
+                        </button>
+                    </div>
+                `;
+            }
+        } else {
+            const files = projectsData[currentProjectKey]?.files || { [currentFileKey]: code };
+            const projectDir = await invoke('save_all_project_files', {
+                projectName: currentProjectKey,
+                files
+            });
+
+            const result = await invoke('run_python_code', {
+                projectDir,
+                entryFile: currentFileKey
+            });
+
+            if (result.success) {
+                lastExecutionContext = null;
+                consoleBody.innerHTML = `
+                    <div class="text-emerald-400 font-bold mb-1">✔ 実行完了 (${escapeHtml(currentProjectKey)} / ${escapeHtml(currentFileKey)})</div>
+                    <pre class="text-slate-200 whitespace-pre-wrap">${escapeHtml(result.stdout || '(出力なし)')}</pre>
+                `;
+            } else {
+                lastExecutionContext = {
+                    callerFile: currentFileKey,
+                    callerCode: code,
+                    errorFile: result.errorFile || currentFileKey,
+                    errorLine: result.errorLine || 1,
+                    errorMsg: result.stderr
+                };
+                renderErrorConsole(consoleBody, result);
+            }
+        }
+    } catch (err) {
+        consoleBody.innerHTML = `<div class="text-rose-400">システムエラー: ${escapeHtml(String(err))}</div>`;
     }
 
     if (window.lucide) lucide.createIcons();
+}
+
+// エラーコンソール描画（ワンクリックジャンプ ＋ AIヒントボタン）
+function renderErrorConsole(consoleBody, result) {
+    const targetFile = result.errorFile || '';
+    const targetLine = result.errorLine || 1;
+    const jumpBtn = targetFile
+        ? `<button onclick="jumpToErrorLine('${escapeHtml(targetFile)}', ${targetLine})" class="px-2.5 py-1.5 bg-rose-900/70 hover:bg-rose-800 text-rose-100 rounded-lg text-xs font-bold">
+             👉 ${escapeHtml(targetFile)} の ${targetLine}行目へジャンプ
+           </button>`
+        : '';
+
+    consoleBody.innerHTML = `
+        <div class="text-rose-400 font-bold mb-1">⚠️ エラーが発生しました (${escapeHtml(result.errorType || 'Error')})</div>
+        <pre class="text-rose-300/90 whitespace-pre-wrap text-[11px]">${escapeHtml(result.stderr)}</pre>
+        <div class="mt-3 pt-2 border-t border-slate-800 flex flex-wrap items-center gap-2">
+            ${jumpBtn}
+            <button onclick="requestAiHintFromBackend(1)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">
+                💡 AIヒントを見る (Lv.1)
+            </button>
+        </div>
+    `;
+}
+
+// ★ 段階的ヒント（Lv.1 → Lv.2 → Lv.3）＆ 両コード参照（問題切替時は古い応答を破棄） ★
+async function requestAiHintFromBackend(hintLevel = 1) {
+    const invoke = getTauriInvoke();
+    if (!invoke || !lastExecutionContext) return;
+
+    const myToken = aiRequestToken;
+    if (typeof openAiHelpFromConsole === 'function') openAiHelpFromConsole();
+    const aiText = document.getElementById('aiAdviceText');
+    aiText.innerHTML = `<span class="text-indigo-400">🤖 AIがコードを分析中... (ヒント Lv.${hintLevel})</span>`;
+
+    try {
+        let errorCode = null;
+        if (
+            activeMode === 'free' &&
+            lastExecutionContext.errorFile &&
+            lastExecutionContext.errorFile !== lastExecutionContext.callerFile
+        ) {
+            errorCode = await invoke('read_project_file', {
+                projectName: currentProjectKey,
+                fileName: lastExecutionContext.errorFile
+            }).catch(() => null);
+        }
+
+        const hint = await invoke('ask_ai_hint', {
+            req: {
+                callerFile: lastExecutionContext.callerFile,
+                callerCode: lastExecutionContext.callerCode,
+                errorFile: lastExecutionContext.errorFile,
+                errorCode,
+                errorMsg: lastExecutionContext.errorMsg,
+                hintLevel,
+                isKidMode: typeof isKidMode !== 'undefined' ? isKidMode : false
+            }
+        });
+
+        // 推論中に別の問題・ファイルへ切り替わっていたら結果を破棄
+        if (myToken !== aiRequestToken) return;
+
+        const nextBtn = hintLevel < 3
+            ? `<div class="mt-2"><button onclick="requestAiHintFromBackend(${hintLevel + 1})" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold">もっと詳しいヒントを見る (Lv.${hintLevel + 1})</button></div>`
+            : '';
+
+        aiText.innerHTML = `<div class="whitespace-pre-wrap">${escapeHtml(hint)}</div>${nextBtn}`;
+    } catch (err) {
+        if (myToken !== aiRequestToken) return;
+        aiText.innerText = `AIヒントの取得に失敗しました: ${err}`;
+    }
 }
 
 function openAiHelpFromConsole() {
@@ -1387,12 +1692,14 @@ function formatCode() {
     const ed = document.getElementById('codeEditor');
     ed.value = ed.value.trim();
     updateLineNumbers();
+    scheduleSyntaxCheck();
 }
 
 function insertSnippet(type) {
     const ed = document.getElementById('codeEditor');
     if (type === 'print') ed.value += '\nprint("こんにちは")';
     updateLineNumbers();
+    scheduleSyntaxCheck();
 }
 
 function switchConsoleTab(tab) {
@@ -1434,7 +1741,10 @@ function setupEditorEvents() {
     const lineNumbers = document.getElementById('editorLineNumbers');
     if (!editor || !lineNumbers) return;
 
-    editor.addEventListener('input', updateLineNumbers);
+    editor.addEventListener('input', () => {
+        updateLineNumbers();
+        scheduleSyntaxCheck();
+    });
     editor.addEventListener('scroll', () => {
         lineNumbers.scrollTop = editor.scrollTop;
     });
@@ -1445,6 +1755,7 @@ function setupEditorEvents() {
             const end = editor.selectionEnd;
             editor.setRangeText('    ', start, end, 'end');
             updateLineNumbers();
+            scheduleSyntaxCheck();
         }
     });
 }
@@ -1452,11 +1763,16 @@ function setupEditorEvents() {
 window.onload = () => {
     loadSavedPreferences();
     setupEditorEvents();
+
+    const editor = document.getElementById('codeEditor');
+    if (editor) editor.value = ''; // 起動時はまっさらな状態
+
     if (window.lucide) lucide.createIcons();
     switchView('tasks');
     renderSideDictCards();
     renderDynamicLayout();
     updateLineNumbers();
+    resetWorkspaceFeedback();
 
     try {
         const tourDone = localStorage.getItem('codelab_tour_done');
