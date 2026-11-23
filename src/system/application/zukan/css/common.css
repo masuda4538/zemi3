@@ -14,6 +14,7 @@
     --danger: #e11d48;
     --err: #e11d48;
     --bg-in: #e2e8f0;
+    --bd-hv: #cbd5e1;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -36,6 +37,7 @@
         --danger: #fb7185;
         --err: #fb7185;
         --bg-in: #1e293b;
+        --bd-hv: #334155;
     }
 }
 
@@ -55,6 +57,7 @@
     --danger: #fb7185;
     --err: #fb7185;
     --bg-in: #1e293b;
+    --bd-hv: #334155;
 }
 
 html {
@@ -132,6 +135,47 @@ header {
     background: var(--soft);
     border: 0;
     color: var(--tx);
+}
+
+#theme {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--sub);
+    transition: background-color .15s, border-color .15s;
+}
+
+#theme:hover {
+    background: var(--soft);
+    border-color: var(--bd-hv);
+}
+
+#theme .i-sun {
+    display: none;
+    color: #fbbf24;
+}
+
+#theme .i-moon {
+    display: inline-flex;
+    color: #475569;
+}
+
+:root[data-theme="dark"] #theme .i-sun {
+    display: inline-flex;
+}
+
+:root[data-theme="dark"] #theme .i-moon {
+    display: none;
+}
+
+/* 保存済みテーマがなく、OSがダークのとき */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) #theme .i-sun {
+        display: inline-flex;
+    }
+
+    :root:not([data-theme="light"]) #theme .i-moon {
+        display: none;
+    }
 }
 
 kbd {
