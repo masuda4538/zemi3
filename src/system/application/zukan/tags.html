@@ -1,88 +1,61 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>タグ一覧 - デジタル図鑑アプリ 画面モック</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>タグ一覧 - デジタル図鑑アプリ 画面モック</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/tags.css">
 </head>
+
 <body>
-<header>
-  <button class="icon-btn" id="burger" aria-label="メニューを開閉"><i data-lucide="panel-left"></i><kbd>Ctrl+B</kbd></button>
-  <div class="logo"><i data-lucide="book-open"></i></div>
-  <h1>デジタル図鑑</h1>
-  <span class="sp"></span>
-  <button class="icon-btn" id="theme" aria-label="テーマ切り替え"><i data-lucide="moon"></i></button>
-</header>
-<div class="layout">
-<nav id="nav" aria-label="メインナビゲーション">
-  <div class="lbl">メニュー</div>
-  <a href="index.html"><i data-lucide="library"></i>ホーム／図鑑一覧<span class="n" id="n-home"></span></a>
-  <a href="register.html"><i data-lucide="square-plus"></i>新規データ登録</a>
-  <a href="tags.html" class="on"><i data-lucide="tags"></i>タグ一覧<span class="n" id="n-tags"></span></a>
-</nav>
-<main>
-<div class="ptitle"><h2 id="title">タグ一覧</h2><span class="count" id="pcount"></span></div>
+  <header>
+    <button class="icon-btn" id="burger" aria-label="メニューを開閉"><i data-lucide="panel-left"></i><kbd>Ctrl+B</kbd></button>
+    <div class="logo"><i data-lucide="book-open"></i></div>
+    <h1>デジタル図鑑</h1>
+    <span class="sp"></span>
+    <button class="icon-btn" id="theme" aria-label="テーマ切り替え"><i data-lucide="moon"></i></button>
+  </header>
+  <div class="layout">
+    <nav id="nav" aria-label="メインナビゲーション">
+      <div class="lbl">メニュー</div>
+      <a href="index.html"><i data-lucide="library"></i>ホーム／図鑑一覧<span class="n" id="n-home"></span></a>
+      <a href="register.html"><i data-lucide="square-plus"></i>新規データ登録</a>
+      <a href="tags.html" class="on"><i data-lucide="tags"></i>タグ一覧<span class="n" id="n-tags"></span></a>
+    </nav>
+    <main>
+      <div class="ptitle">
+        <h2 id="title">タグ一覧</h2><span class="count" id="pcount"></span>
+      </div>
 
-<section class="screen">
-  <table>
-    <thead><tr><th>タグ名</th><th>使用件数</th><th>操作</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</section>
-</main>
-</div>
-
-<div class="dlg-bg" id="dbg">
-  <div class="dlg" role="alertdialog" aria-modal="true">
-    <i data-lucide="triangle-alert" class="warn" style="width:40px;height:40px"></i>
-    <p id="dmsg" style="font-weight:700"></p><p id="dsub" class="note"></p>
-    <div class="row-end"><button id="dno">キャンセル</button><button class="dng" id="dyes">削除する</button></div>
+      <section class="screen">
+        <table>
+          <thead>
+            <tr>
+              <th>タグ名</th>
+              <th>使用件数</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </section>
+    </main>
   </div>
-</div>
 
-<script src="common.js"></script>
-<script>
-let editing = -1, terr = "";
+  <div class="dlg-bg" id="dbg">
+    <div class="dlg" role="alertdialog" aria-modal="true">
+      <i data-lucide="triangle-alert" class="warn" style="width:40px;height:40px"></i>
+      <p id="dmsg" style="font-weight:700"></p>
+      <p id="dsub" class="note"></p>
+      <div class="row-end"><button id="dno">キャンセル</button><button class="dng" id="dyes">削除する</button></div>
+    </div>
+  </div>
 
-function renderTags() {
-  $("#tbody").innerHTML = tags.map((t, i) => `<tr><td>${i === editing ? `<input type="text" id="tedit" value="${esc(t)}" aria-label="変更後のタグ名">${terr ? `<p class="err">${terr}</p>` : ""}` : esc(t)}</td><td>${cnt(t)}</td><td><div class="btns">${i === editing ? `<button class="pri" data-ok="${i}"><i data-lucide="check"></i>確定</button>` : `<button data-ed="${i}"><i data-lucide="pencil"></i>編集</button>`}<button class="out-dng" data-rm="${i}"><i data-lucide="trash-2"></i>削除</button></div></td></tr>`).join("");
-  $("#pcount").textContent = tags.length + " 件";
-  updateNavCounts();
-  if (editing >= 0) $("#tedit").focus();
-}
-
-initCommon();
-$("#tbody").addEventListener("click", e => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  if (b.dataset.ed !== undefined) { editing = +b.dataset.ed; terr = ""; renderTags(); }
-  if (b.dataset.ok !== undefined) {
-    const v = $("#tedit").value.trim(), i = +b.dataset.ok;
-    terr = !v ? "タグ名を入力してください" : v.length > 30 ? "タグ名は30文字以内で入力してください。" : (tags.some((t, j) => j !== i && t === v) ? "同じ名前のタグが既にあります。" : "");
-    if (!terr) {
-      items.forEach(it => it.t = it.t.map(t => t === tags[i] ? v : t));
-      tags[i] = v;
-      editing = -1;
-      saveData();
-    }
-    renderTags();
-  }
-  if (b.dataset.rm !== undefined) {
-    const i = +b.dataset.rm;
-    confirmDlg(`タグ「${tags[i]}」を削除します。`, "全ての単語から外されます（単語は残ります）。よろしいですか？", () => {
-      items.forEach(it => it.t = it.t.filter(t => t !== tags[i]));
-      tags.splice(i, 1);
-      editing = -1;
-      saveData();
-      renderTags();
-    });
-  }
-});
-
-renderTags();
-</script>
+  <script type="module" src="js/tags.js"></script>
 </body>
+
 </html>

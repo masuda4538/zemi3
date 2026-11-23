@@ -1,0 +1,39 @@
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--pn);
+    border: 1px solid var(--bd);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+th {
+    background: var(--sd);
+    padding: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--sub);
+}
+
+td {
+    padding: 10px;
+    border-top: 1px solid var(--bd);
+    text-align: center;
+    vertical-align: middle;
+}
+
+td:first-child {
+    font-weight: 700;
+}
+
+td input {
+    max-width: 220px;
+    text-align: left;
+}
+
+td .btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
