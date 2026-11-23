@@ -1,0 +1,19 @@
+/* ═════════ もの：大きい木（tree.js がかく SVG） ═════════
+   入れる場所の大きさいっぱいに かく（下と まん中に そろえる）。入れる場所には position（relative など）を付けておく */
+.obj-tree { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transition: filter .8s; }
+.obj-tree .tr-shadow { fill: rgb(15 40 20 / .18); }
+.obj-tree .tr-trunk { fill: #8a5a34; }
+.obj-tree .tr-bark { fill: none; stroke: rgb(60 35 15 / .35); stroke-width: 2; stroke-linecap: round; }
+.obj-tree .tr-leaf { fill: #4caf63; }
+.obj-tree .tr-leaf.is-dark { fill: #3d9653; }
+.obj-tree .tr-leaf.is-light { fill: #61c174; }
+.obj-tree .tr-shine { fill: rgb(255 255 255 / .16); }
+.obj-tree .tr-fruit { fill: #ff8fa3; }
+.obj-tree .tr-flowers { fill: #fff; }
+.obj-tree .tr-leaves { transform-box: view-box; transform-origin: 100px 130px; animation: obj-tr-sway 6s ease-in-out infinite; }
+@keyframes obj-tr-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+.reduce-motion .obj-tree .tr-leaves { animation: none; }
+[data-time="evening"] .obj-tree { filter: sepia(.15) saturate(1.05); }
+[data-time="night"] .obj-tree { filter: brightness(.62) saturate(.8); }
+/* 根もとの広さ（見えない）：幹の下のところ。木の はばの 2 割、高さの 5 % */
+.obj-tree-foot { position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: 20%; height: 5%; pointer-events: none; }

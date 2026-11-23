@@ -1,0 +1,36 @@
+/* ═════════ もの：噴水（fountain.js がかく SVG） ═════════
+   石の色（--stone・--stone-dark）と水の色（--water・--water-hi）。外がわの data-time（夕方・夜）で少し変える */
+.obj-fountain {
+  --stone: color-mix(in srgb, #e9eef5 88%, var(--surface)); --stone-dark: color-mix(in srgb, #b9c6d6 85%, var(--surface));
+  --water: color-mix(in srgb, #6cc0f2 80%, var(--surface)); --water-hi: #eaf7ff;
+  display: block; width: 100%; height: auto; overflow: visible;
+}
+[data-time="evening"] .obj-fountain { --stone: color-mix(in srgb, #f3dccd 85%, var(--surface)); --stone-dark: color-mix(in srgb, #c9a28e 85%, var(--surface)); }
+[data-time="night"] .obj-fountain {
+  --stone: color-mix(in srgb, #5d6b88 80%, var(--surface)); --stone-dark: color-mix(in srgb, #3c4864 85%, var(--surface));
+  --water: color-mix(in srgb, #3a78b8 85%, var(--surface)); --water-hi: #bfe0ff;
+}
+.obj-fountain .ft-wall, .obj-fountain .ft-stone-dark { fill: var(--stone-dark); transition: fill .8s; }
+.obj-fountain .ft-rim, .obj-fountain .ft-stone { fill: var(--stone); transition: fill .8s; }
+.obj-fountain .ft-water { fill: var(--water); transition: fill .8s; }
+/* 水の流れ：点線を少しずつ ずらして、水が流れているように見せる（線の向き＝流れる向き） */
+.obj-fountain .ft-jet, .obj-fountain .ft-spray, .obj-fountain .ft-fall { fill: none; stroke-linecap: round; }
+.obj-fountain .ft-jet { stroke: var(--water-hi); stroke-width: 5; stroke-dasharray: 9 5; animation: obj-ft-flow .5s linear infinite; opacity: .95; }
+.obj-fountain .ft-spray { stroke: var(--water-hi); stroke-width: 2.6; stroke-dasharray: 7 6; animation: obj-ft-flow .6s linear infinite; opacity: .9; }
+.obj-fountain .ft-fall { stroke: var(--water); stroke-width: 3; stroke-dasharray: 8 5; animation: obj-ft-flow .7s linear infinite; opacity: .85; }
+@keyframes obj-ft-flow { to { stroke-dashoffset: -26; } }
+/* 波の輪：小さく出て、広がりながら消える */
+.obj-fountain .ft-ripples ellipse { fill: none; stroke: var(--water-hi); stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: obj-ft-ripple 2.4s ease-out infinite; opacity: 0; }
+.obj-fountain .ft-ripples ellipse:nth-child(2) { animation-delay: -1.2s; }
+.obj-fountain .ft-ripples ellipse:nth-child(3) { animation-delay: -.5s; }
+.obj-fountain .ft-ripples ellipse:nth-child(4) { animation-delay: -1.7s; }
+@keyframes obj-ft-ripple { 0% { transform: scale(.5); opacity: .9; } 100% { transform: scale(2.6); opacity: 0; } }
+/* しぶき：上に ぽんと はねて、落ちながら消える */
+.obj-fountain .ft-drops circle { fill: var(--water-hi); animation: obj-ft-drop 1.4s ease-in infinite; }
+.obj-fountain .ft-drops circle:nth-child(2) { animation-delay: -.5s; }
+.obj-fountain .ft-drops circle:nth-child(3) { animation-delay: -.9s; }
+.obj-fountain .ft-drops circle:nth-child(4) { animation-delay: -.25s; }
+@keyframes obj-ft-drop { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+/* 「アニメーションを減らす」のときは、水は止めて、波の輪としぶきは出さない */
+.reduce-motion .obj-fountain .ft-jet, .reduce-motion .obj-fountain .ft-spray, .reduce-motion .obj-fountain .ft-fall { animation: none; }
+.reduce-motion .obj-fountain .ft-ripples, .reduce-motion .obj-fountain .ft-drops { display: none; }

@@ -7,7 +7,7 @@
 //  ★ 本当の機能を作るとき
 //    ・最初に届いているものは、MAIL_SAMPLE のかわりに、本当のデータ（下と同じ形の配列）をわたす
 //    ・あとから届いたものは、ホームの main.js にある mailbox.receive(届いたもの) を呼ぶと、ポストに入る
-//      （旗が上がって、手紙がポストから顔を出す）
+//      （手紙がポストの入れ口から顔を出す。問題なら、送った人の頭の上に吹き出しも出る）
 //
 //  届いたもの 1 つの形
 //    id    … 見分けるための名前（同じものが 2 回入らないように）
@@ -63,6 +63,12 @@ export const MAIL_SAMPLE = [
     text: "デジタル図鑑に、新しい生き物を登録したよ。\nよかったら見てみてね。" },
   { id: "m5", type: "gift", from: who("jiro"), at: ago(60 * 24 * 3 + 15), read: true, stamp: "star",
     text: "連続ログイン 7 日、すごいね！" },
+  { id: "m8", type: "quiz", from: who("jiro"), at: ago(60 * 3 + 10), read: false,
+    text: "算数の問題だよ。あんざんで できるかな？",
+    quiz: { title: "計算クイズ", questions: [
+      { q: "12 × 3 は いくつ？", choices: ["32", "36", "38", "42"], answer: 1 },
+      { q: "100 − 37 は いくつ？", choices: ["63", "67", "73", "77"], answer: 0 },
+    ] } },
   { id: "m7", type: "quiz", from: who("yuki"), at: ago(60 * 24 * 2 + 30), read: true,
     text: "図鑑を見ながら作ったよ。",
     quiz: { title: "生き物クイズ", questions: [

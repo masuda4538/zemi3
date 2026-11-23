@@ -1,0 +1,109 @@
+/* ═════════ もの：掲示板（木のわく ＋ コルクボード。board.js） ═════════
+   上半分：どこでも使える部品（cb-…）。下半分：drawBoard がかく 広場に立てる掲示板（obj-board の中の bd-…）
+   部品は :where(…) で書いて「弱い決まり」にしている → 使う がわの CSS で、置き方（display・position・大きさ）を自由に上書きできる */
+
+/* ── 木のわく（木目は ななめのグラデーション。内がわに段差の かげ） ── */
+:where(.cb-frame) {
+  position: relative; display: block; border-radius: 22px; padding: 14px;
+  background: linear-gradient(135deg, #8b5a2b 0%, #6f431d 22%, #845326 48%, #5e3716 76%, #7a4b21 100%);
+  border: 2px solid #4a2a10;
+  box-shadow: 0 24px 50px rgb(44 28 14 / .35), 0 8px 18px rgb(44 28 14 / .22), inset 0 2px 3px rgb(255 224 185 / .35), inset 0 -3px 6px rgb(38 20 7 / .6);
+}
+:where(.cb-screw) { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #3d210b; opacity: .6; box-shadow: inset 0 1px 2px rgb(0 0 0 / .6); }
+:where(.cb-screw.is-tl) { top: 9px; left: 9px; } :where(.cb-screw.is-tr) { top: 9px; right: 9px; }
+:where(.cb-screw.is-bl) { bottom: 9px; left: 9px; } :where(.cb-screw.is-br) { bottom: 9px; right: 9px; }
+/* ── コルクの面（小さな点を 3 重に重ねて、コルクの ぶつぶつ） ── */
+:where(.cb-cork) {
+  position: relative; display: block; border-radius: 14px; color: #2c221e;
+  background-color: #c99764;
+  background-image:
+    radial-gradient(rgb(120 72 32 / .38) 1.2px, transparent 1.2px),
+    radial-gradient(rgb(242 206 162 / .42) 1.5px, transparent 1.5px),
+    radial-gradient(rgb(92 52 20 / .25) 1px, transparent 1px),
+    linear-gradient(180deg, rgb(65 35 12 / .14) 0%, rgb(255 235 205 / .06) 40%, rgb(65 35 12 / .18) 100%);
+  background-size: 18px 18px, 23px 23px, 11px 11px, 100% 100%;
+  background-position: 0 0, 9px 11px, 4px 5px, 0 0;
+  box-shadow: inset 0 6px 14px rgb(32 16 4 / .65), inset 0 -2px 6px rgb(255 228 196 / .2), 0 1px 0 rgb(255 232 205 / .25);
+}
+/* ── 押しピン（立体的な丸。上に小さな光） ── */
+:where(.cb-pin) {
+  position: relative; z-index: 2; display: block; width: 20px; height: 20px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fca5a5, #dc2626);
+  box-shadow: 0 5px 7px rgb(35 18 5 / .45), inset 0 2px 3px rgb(255 255 255 / .75), inset 0 -3px 4px rgb(0 0 0 / .35);
+}
+:where(.cb-pin)::after { content: ""; position: absolute; top: 20%; left: 20%; width: 50%; height: 50%; border-radius: 50%; border: 1.5px solid rgb(255 255 255 / .45); box-sizing: border-box; }
+:where(.cb-pin.is-gold) { background: radial-gradient(circle at 35% 30%, #fde68a, #d97706); }
+:where(.cb-pin.is-silver) { background: radial-gradient(circle at 35% 30%, #f8fafc, #64748b); }
+:where(.cb-pin.is-bronze) { background: radial-gradient(circle at 35% 30%, #fed7aa, #9a3412); }
+:where(.cb-pin.is-teal) { background: radial-gradient(circle at 35% 30%, #99f6e4, #0d9488); }
+/* ── マスキングテープ（ななめの しま。is-mint は水玉） ── */
+:where(.cb-tape) {
+  display: block; height: 16px; width: 56px; border-radius: 2px;
+  background-color: rgb(254 243 199 / .78);
+  background-image: repeating-linear-gradient(45deg, rgb(245 158 11 / .14), rgb(245 158 11 / .14) 6px, transparent 6px, transparent 12px);
+  border-left: 1px dashed rgb(180 130 70 / .35); border-right: 1px dashed rgb(180 130 70 / .35);
+  box-shadow: 0 2px 4px rgb(45 25 10 / .16);
+}
+:where(.cb-tape.is-mint) {
+  background-color: rgb(209 250 229 / .82); background-image: radial-gradient(rgb(16 185 129 / .22) 1.5px, transparent 1.5px); background-size: 8px 8px;
+  border-color: rgb(16 185 129 / .35);
+}
+/* ── 紙のもの ── */
+:where(.cb-craft) {   /* クラフト紙の見出しの板 */
+  position: relative; display: block; border-radius: 16px; color: #3b2313;
+  background: linear-gradient(180deg, #f5e6cf 0%, #ead3b1 100%); border: 1px solid #cfa978;
+  box-shadow: 0 6px 14px rgb(45 25 10 / .25), inset 0 1px 0 rgb(255 255 255 / .6);
+}
+:where(.cb-paper) {   /* 白い紙のカード */
+  position: relative; display: block; border-radius: 16px; background-color: #fffdf9; color: #2c221e;
+  box-shadow: 0 8px 18px rgb(45 25 10 / .24), 0 2px 4px rgb(45 25 10 / .14);
+  transition: transform .22s cubic-bezier(.22, 1, .36, 1), box-shadow .22s ease;
+}
+:where(.cb-paper):hover { transform: translateY(-4px) rotate(0deg) scale(1.015) !important; box-shadow: 0 14px 26px rgb(45 25 10 / .28), 0 4px 8px rgb(45 25 10 / .16); z-index: 3; }
+:where(.cb-note) {    /* ノート（線の入った紙） */
+  position: relative; display: block; border-radius: 16px; color: #2c221e; border: 1px solid rgb(120 53 15 / .15);
+  background-color: #fffefb; background-image: linear-gradient(to bottom, transparent 96%, rgb(203 213 225 / .32) 97%); background-size: 100% 34px;
+  box-shadow: 0 10px 24px rgb(45 25 10 / .26), 0 2px 6px rgb(45 25 10 / .14);
+}
+:where(.cb-sticky) {  /* 黄色い付箋 */
+  position: relative; display: block; border-radius: 12px; border-bottom-right-radius: 22px 6px; color: #3b2313;
+  background: linear-gradient(165deg, #fef9c3 0%, #fef08a 100%); border: 1px solid rgb(253 224 71 / .9);
+  box-shadow: 0 10px 20px rgb(45 25 10 / .28), 0 2px 4px rgb(45 25 10 / .15);
+}
+:where(.cb-memo) {    /* 小さなメモ */
+  position: relative; display: block; border-radius: 9px; background: #fffbeb; color: #78350f; border: 1px solid rgb(253 230 138 / .8);
+  box-shadow: 0 5px 12px rgb(45 25 10 / .22);
+}
+/* 線のアイコン（サイドバーと同じ線の太さ） */
+:where(.cb-icon) { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.18em; }
+.reduce-motion :where(.cb-paper) { transition: none; }
+
+/* ═════════ 広場に立てる掲示板（drawBoard）。入れる場所いっぱいに。大きさは入れる場所の高さ（cqh）に合わせる ═════════ */
+.obj-board { container-type: size; display: flex; flex-direction: column; text-align: left; transition: filter .8s; }
+.obj-board .bd-frame { flex: 1; min-height: 0; display: flex; padding: 4cqh; border-radius: 5cqh; }
+.obj-board .cb-screw { width: 2.4cqh; height: 2.4cqh; }
+.obj-board .cb-screw.is-tl, .obj-board .cb-screw.is-tr { top: 1.4cqh; } .obj-board .cb-screw.is-bl, .obj-board .cb-screw.is-br { bottom: 1.4cqh; }
+.obj-board .cb-screw.is-tl, .obj-board .cb-screw.is-bl { left: 1.4cqh; } .obj-board .cb-screw.is-tr, .obj-board .cb-screw.is-br { right: 1.4cqh; }
+.obj-board .bd-cork { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3cqh; padding: 4.5cqh 4cqh 3cqh; border-radius: 3.5cqh; overflow: hidden; }
+/* 見出しの板（左右にマスキングテープ） */
+/* 見出しの行（見出しの板 ＋ 右どなりの head。head が からなら、板は まん中） */
+.obj-board .bd-head { flex: none; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4cqh; }
+.obj-board .bd-head-slot:empty { display: none; }
+.obj-board .bd-head-slot { margin-left: auto; }
+.obj-board .bd-head:has(.bd-head-slot:not(:empty)) { justify-content: flex-start; }
+.obj-board .bd-head:not(:has(.bd-plate)) .bd-head-slot { margin: 0 auto; }   /* 見出しの板がないときは、まん中 */
+.obj-board .bd-plate { flex: none; display: flex; flex-direction: column; align-items: center; padding: 2cqh 6cqh 2.2cqh; border-radius: 3cqh; rotate: -1deg; text-align: center; line-height: 1.2; }
+.obj-board .bd-plate small { font-size: 3.4cqh; font-weight: 800; letter-spacing: .18em; color: rgb(120 53 15 / .75); }
+.obj-board .bd-plate b { font-size: 6.4cqh; font-weight: 900; letter-spacing: .02em; }
+.obj-board .bd-tape { position: absolute; top: -1.6cqh; width: 11cqh; height: 3.4cqh; }
+.obj-board .bd-tape.is-l { left: 2cqh; rotate: -12deg; } .obj-board .bd-tape.is-r { right: 2cqh; rotate: 12deg; }
+.obj-board .bd-body { flex: 1; min-height: 0; width: 100%; }
+/* 足（2 本） */
+.obj-board .bd-legs { flex: none; position: relative; height: 10cqh; }
+.obj-board .bd-legs::before, .obj-board .bd-legs::after {
+  content: ""; position: absolute; top: -2px; bottom: 0; width: 3.4cqh; border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, #7a4b21, #4f2d12);
+}
+.obj-board .bd-legs::before { left: 16%; }
+.obj-board .bd-legs::after { right: 16%; }
+[data-time="night"] .obj-board { filter: brightness(.82); }

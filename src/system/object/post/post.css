@@ -1,0 +1,25 @@
+/* ═════════ もの：ポスト（post.js がかく SVG）。色は --pt-… で変えられる ═════════ */
+.obj-post { --pt-red: #d40000; --pt-red-dark: #940000; --pt-base: #b5b5b5; display: block; width: 100%; height: auto; overflow: visible; transition: filter .8s; }
+.obj-post .pt-shadow { fill: rgb(15 30 60 / .16); }
+.obj-post .pt-base { fill: var(--pt-base); }
+.obj-post .pt-body { fill: var(--pt-red); }
+.obj-post .pt-shade { fill: rgb(0 0 0 / .08); }
+.obj-post .pt-light { fill: rgb(255 255 255 / .14); }
+.obj-post .pt-dark { fill: var(--pt-red-dark); }
+.obj-post .pt-ring, .obj-post .pt-door { fill: none; stroke: var(--pt-red-dark); stroke-width: 4; }
+.obj-post .pt-slot { fill: #3b3b3b; }
+.obj-post .pt-mark { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; }
+/* 入れ口から顔を出す手紙（入れる場所に has-mail があるとき） */
+.obj-post .pt-letter { transform-box: view-box; opacity: 0; transform: translateY(12px); transition: opacity .3s, transform .4s; }
+.obj-post .pt-letter rect { fill: #fff; stroke: #c9d6e6; stroke-width: 1; }
+.obj-post .pt-letter path { fill: none; stroke: #9db2cc; stroke-width: 1; }
+.obj-post .pt-letter circle { fill: #e5484d; }
+.has-mail > .obj-post .pt-letter { opacity: 1; transform: translateY(0); animation: obj-pt-letter 2.2s ease-in-out .4s infinite; }
+@keyframes obj-pt-letter { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+/* ぴょこっと（入れる場所に is-new があるとき） */
+.is-new > .obj-post { animation: obj-pt-new .7s ease-out; transform-origin: 50% 100%; }
+@keyframes obj-pt-new { 0% { rotate: 0deg; } 20% { rotate: -5deg; } 45% { rotate: 4deg; } 70% { rotate: -2deg; } 100% { rotate: 0deg; } }
+.reduce-motion .has-mail > .obj-post .pt-letter, .reduce-motion .is-new > .obj-post { animation: none; }
+/* 時間帯：夕方は少しあたたかく、夜は暗く */
+[data-time="evening"] .obj-post { filter: sepia(.12) saturate(1.05); }
+[data-time="night"] .obj-post { filter: brightness(.72) saturate(.85); }

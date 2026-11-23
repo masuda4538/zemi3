@@ -5,10 +5,12 @@
 //                                   isFriend: (userId) => フレンドか, onFriend: (userId) => フレンド詳細を開く });
 //    mailbox.receive(届いたもの)   … あとから届いたものをポストに入れる（★ 本当の機能を作ったら、ここを呼ぶ）
 //    mailbox.list()               … 今ポストに入っているもの（新しい順）
+//    mailbox.openMail(id)         … 受け取り箱を開いて、そのものの中身を出す（広場の吹き出しを押したとき）
+//    onChange: (items) => {}      … 見た・届いたで中身が変わったとき（広場の吹き出しを出しなおす）
 //  届いたものの形は pages/friends/mail-sample.js に書いてあります（手紙・問題・フレンド申請・応援のスタンプ）
 //
 //  することと見た目
-//    ・まだ見ていないものがあると … ポストの赤い旗が上がり、手紙が入れ口から顔を出す。右上に数の札
+//    ・まだ見ていないものがあると … 手紙がポストの入れ口から顔を出す。右上に数の札
 //    ・ポストを押すと … ポストの上に「受け取り箱」が開く。届いたものが新しい順に並ぶ（すべて／手紙／問題／申請／応援 で しぼれる）
 //    ・1 つ押すと … 中身が開く（見たことになる）。問題は、問題文と選択肢まで見られる（正解は出さない）
 //                   返事・解く・承認などのボタンは、今は押すと「準備中」のお知らせ
@@ -60,7 +62,7 @@ const previewOf = (m) => m.type === "request" ? "フレンドになってくだ�
   : m.type === "quiz" ? `「${m.quiz?.title ?? ""}」${m.quiz?.questions?.length ?? 0}問`
   : (m.text ?? "");
 
-export function mountMailbox({ post, badge, box, mails = [], onReceive, isFriend = () => false, onFriend }) {
+export function mountMailbox({ post, badge, box, mails = [], onReceive, onChange, isFriend = () => false, onFriend }) {
   const seen = loadRead();
   let items = [...mails].map((m) => ({ ...m, read: m.read || seen.has(m.id) })).sort((a, b) => b.at - a.at);   // 新しい順
   let filter = "all";
@@ -69,13 +71,14 @@ export function mountMailbox({ post, badge, box, mails = [], onReceive, isFriend
   /** 「準備中」のお知らせ（右上） */
   const soon = (title) => window.app?.notify?.({ type: "info", title: `${title}は準備中です`, message: "今は見た目のイメージだけで、まだ送れません。" });
 
-  // ── ポスト：旗・顔を出す手紙・数の札 ──
+  // ── ポスト：顔を出す手紙・数の札 ──
   const drawPost = () => {
     const unread = items.filter((m) => !m.read).length;
     post.classList.toggle("has-mail", unread > 0);
     badge.hidden = unread === 0;
     badge.textContent = unread > 9 ? "9+" : String(unread);
     post.setAttribute("aria-label", `ポスト（届いたもの ${items.length}件・まだ見ていないもの ${unread}件）`);
+    onChange?.([...items]);
   };
 
   // ── 受け取り箱：一覧 ──
@@ -214,7 +217,7 @@ export function mountMailbox({ post, badge, box, mails = [], onReceive, isFriend
   drawPost();
 
   return {
-    /** あとから届いたものを入れる（同じ id のものは入れない）。旗が上がって、ポストが ぴょこっと ゆれる */
+    /** あとから届いたものを入れる（同じ id のものは入れない）。手紙が顔を出して、ポストが ぴょこっと ゆれる */
     receive(mail) {
       if (!mail || items.some((m) => m.id === mail.id)) return;
       items = [{ ...mail, read: !!mail.read }, ...items].sort((a, b) => b.at - a.at);
@@ -226,5 +229,12 @@ export function mountMailbox({ post, badge, box, mails = [], onReceive, isFriend
       onReceive?.(mail);
     },
     list: () => [...items],
+    /** 受け取り箱を開いて、id のものの中身を出す（見たことになる） */
+    openMail(id) {
+      const m = items.find((x) => x.id === id);
+      if (!m) return;
+      open();
+      m.read = true; openId = m.id; drawBox(); drawPost(); saveRead(items);
+    },
   };
 }

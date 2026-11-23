@@ -7,6 +7,8 @@
 //                     その人と送り合ったもの（手紙・問題・応援）。行を押すと中身が開く（問題は問題文と選択肢まで）
 //    フレンドを追加 … 自分の ID と、相手の ID を入れる欄・届いた申請。★ 申請はまだ送れない（押すと「準備中」とお知らせ）
 //    右はし（とても広い画面のときだけ）… 今オンラインのフレンド（押すとフレンド詳細）
+//  ☆（一覧の行の右・詳細）… お気に入りにする・外す。お気に入りの人は、一覧の上のほうに ならぶ
+//    お気に入りは favorites.js（その PC の中に覚えておく）。ホームでは、お気に入りの人が最初の広場、そうでない人が となりの広場にいる
 //  ホームの広場のカード・ポストからも、フレンド詳細を開ける（だれを開くかは open-friend.js でメモしてわたす）
 //  フレンドは、今は仮のデータ（friends-sample.js）。送り合ったものも仮のデータ（mail-sample.js）
 //  core/App.jsx から user（ログインしている人）を受け取ります。
@@ -18,6 +20,7 @@ import { notify } from "../../core/utils/notify.js";
 import { FRIENDS_SAMPLE, lastLoginText } from "./friends-sample.js";
 import { MAIL_SAMPLE, SENT_SAMPLE, MAIL_TYPES, STAMPS, CHOICE_MARKS } from "./mail-sample.js";
 import { peekFriend, clearFriend } from "./open-friend.js";
+import { loadFavorites, toggleFavorite } from "./favorites.js";
 import "./friends.css";
 
 /** 左の項目（上から順に並ぶ） */
@@ -45,6 +48,9 @@ export default function Friends({ user }) {
   // フレンド詳細を開いている人（userId。null ＝ 一覧）。ホームから来たときは、メモされた人を最初に開く
   const [detailId, setDetailId] = useState(() => (FRIENDS_SAMPLE.some((f) => f.userId === peekFriend()) ? peekFriend() : null));
   useEffect(() => { clearFriend(); }, []);   // メモは 1 回使ったら消す
+  // お気に入り（userId の Set）。☆ を押すと切りかえて覚えておく
+  const [favorites, setFavorites] = useState(() => loadFavorites(user?.userId));
+  const flipFav = (userId) => setFavorites(toggleFavorite(user?.userId, userId));
 
   const friends = FRIENDS_SAMPLE;
   const online = friends.filter((f) => f.online);
@@ -67,18 +73,19 @@ export default function Friends({ user }) {
     >
       <p className="fr-sample"><Icon name="alert" />今は見た目のイメージです。フレンドは仮の人たちで、まだ本当の機能はありません。</p>
       {current === "list" && (detail
-        ? <FriendDetail key={detail.userId} friend={detail} onBack={() => setDetailId(null)} />
-        : <FriendList friends={friends} onOpen={openDetail} />)}
+        ? <FriendDetail key={detail.userId} friend={detail} onBack={() => setDetailId(null)} fav={favorites.has(detail.userId)} onFav={() => flipFav(detail.userId)} />
+        : <FriendList friends={friends} onOpen={openDetail} favorites={favorites} onFav={flipFav} />)}
       {current === "add" && <AddFriend user={user} />}
     </SettingsLayout>
   );
 }
 
 // ───────── フレンド一覧（行を押すとフレンド詳細） ─────────
-function FriendList({ friends, onOpen }) {
+function FriendList({ friends, onOpen, favorites, onFav }) {
   const [filter, setFilter] = useState("all");
-  // オンラインの人を上に。そのあとは最後のログインが新しい順
-  const sorted = [...friends].sort((a, b) => (b.online - a.online) || ((b.lastLogin?.getTime() ?? 0) - (a.lastLogin?.getTime() ?? 0)));
+  // お気に入りの人を上に。次にオンラインの人。そのあとは最後のログインが新しい順
+  const fav = (f) => (favorites.has(f.userId) ? 1 : 0);
+  const sorted = [...friends].sort((a, b) => (fav(b) - fav(a)) || (b.online - a.online) || ((b.lastLogin?.getTime() ?? 0) - (a.lastLogin?.getTime() ?? 0)));
   const shown = filter === "online" ? sorted.filter((f) => f.online) : sorted;
   return (
     <section className="panel fr-card">
@@ -97,7 +104,7 @@ function FriendList({ friends, onOpen }) {
       ) : (
         <ul className="fr-list">
           {shown.map((f) => (
-            <li key={f.userId}>
+            <li key={f.userId} className="fr-item">
               <button type="button" className="fr-row is-link" style={{ "--c": f.color }} onClick={() => onOpen(f.userId)} aria-label={`${f.name} さんの くわしい様子を見る`}>
                 <span className="fr-avatar">{f.name.slice(0, 1)}{f.online && <i aria-label="オンライン" />}</span>
                 <span className="fr-who">
@@ -116,6 +123,7 @@ function FriendList({ friends, onOpen }) {
                 </span>
                 <span className="fr-go" aria-hidden="true">›</span>
               </button>
+              <FavButton on={favorites.has(f.userId)} name={f.name} onClick={() => onFav(f.userId)} />
             </li>
           ))}
         </ul>
@@ -125,7 +133,17 @@ function FriendList({ friends, onOpen }) {
 }
 
 // ───────── フレンド詳細（その人のようすと、送り合ったもの） ─────────
-function FriendDetail({ friend: f, onBack }) {
+/** ☆ ボタン（お気に入りにする・外す）。big … 詳細の大きいボタン（文字つき） */
+function FavButton({ on, name, onClick, big = false }) {
+  const label = on ? `${name} さんを お気に入りから外す` : `${name} さんを お気に入りにする`;
+  return (
+    <button type="button" className={`fr-fav${on ? " is-on" : ""}${big ? " is-big" : ""}`} aria-pressed={on} aria-label={label} title={label} onClick={onClick}>
+      <span aria-hidden="true">{on ? "★" : "☆"}</span>{big && (on ? "お気に入り" : "お気に入りにする")}
+    </button>
+  );
+}
+
+function FriendDetail({ friend: f, onBack, fav, onFav }) {
   const [filter, setFilter] = useState("all");   // all ／ got（届いた） ／ sent（送った）
   const [openId, setOpenId] = useState(null);    // 中身を開いている行
   // 送り合ったもの：届いたもの（from がこの人）と、送ったもの（to がこの人）を、新しい順に
@@ -155,6 +173,7 @@ function FriendDetail({ friend: f, onBack }) {
           </div>
         </div>
         <div className="fr-profile-btns">
+          <FavButton big on={fav} name={f.name} onClick={onFav} />
           <button type="button" className="btn btn-primary" onClick={() => soon("手紙を送る機能")}><Icon name="mail" />手紙を送る</button>
           <button type="button" className="btn" onClick={() => soon("問題を送る機能")}><Icon name="quiz" />問題を送る</button>
         </div>

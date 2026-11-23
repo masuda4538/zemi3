@@ -13,24 +13,37 @@
 //    drawLogin   … いちばん上の帯の、ログイン日数・連続日数
 //    greet       … ホームを開いたときの、スタッピーのあいさつ（スタッピーのふきだし。GREETS で言葉を変えられる）
 //    drawScene   … 広場の空（時間帯で 朝・昼・夕方・夜 の色に。1 分ごとに見直す）
-//    奥ゆき      … マウスを動かすと、空・奥の丘・手前の丘・草・スタッピーが べつべつの速さで ずれる（--px・--py。css で使う）
 //    drawRecords … 右下の札（今日／今週／これまでの時間・「記録を見る」ボタン）と、スタッピーのひとこと
 //    広場        … フレンドが歩きまわる（js/plaza.js。★ 今は pages/friends/friends-sample.js の仮のフレンドで、見た目だけ）
-//                 まん中に噴水（index.html の SVG の絵）。フレンドもスタッピーも、噴水の上では立ち止まらない
+//                 まん中に掲示板（勉強時間ランキング）。フレンドもスタッピーも、掲示板の前では立ち止まらない
 //    ポスト      … 左下。フレンドから届いた 手紙・問題・フレンド申請・応援 を受け取る（js/mailbox.js。★ 今は仮のデータで見た目だけ）
 //    openFriend  … 広場のカードの「くわしく見る」・ポストの送った人 → フレンドのページの「フレンド詳細」へ
-//    スタッピー … いちばん下の mountCharacter（言葉は src/system/character/lines.js で変えられる）
+//    2 つの広場  … 最初は お気に入りの広場（plazaFav。噴水・観覧車・ジェットコースター・スタッピー）、
+//                 右どなりは そのほかの広場（plazaOther。花ばたけ）。showPlaza(0 ／ 1) で横にすべる
+//                 カードの ☆ で お気に入りを切りかえると、その人は となりの広場へ歩いていく
+//    吹き出し    … まだ見ていない問題を送ってきたフレンドの頭の上に「問題を送ったよ！」（drawBubbles）
+//    掲示板      … お気に入りの広場の奥。お気に入りのフレンドと自分の、今週の勉強時間ランキング（js/ranking.js。掲示板の絵は object/board。フレンドの時間は仮）
+//    大きい木    … そのほかの広場の奥。フレンドは根もとを よけて歩く（絵は object/tree）
+//    スタッピー … いちばん下の mountCharacter（言葉は src/system/object/character/lines.js で変えられる）
 //                 マウスのほうへ体を向ける・近づくとよろこぶ（follow）、つかんで投げられる（grab）、丘の上をとことこ（stroll）、
 //                 ホームの画面の中をおさんぽ（roam）、時間帯・今日の学習時間でしゃべる（talk）
 //  くわしい記録（グラフ）は、左のサイドバーの「記録」のページ（src/system/pages/records）で見る
-//  スタッピー（キャラクター）は src/system/character/ にまとめてある（絵・動き・なでる・ことば）。ここでは置く場所とふきだしだけ決める
+//  スタッピー（キャラクター）と広場の「もの」は src/system/object/ にまとめてある（絵・動き・見た目）。ここでは置く場所とふきだしだけ決める
 // ═══════════════════════════════════════════════════════════════
-import { mountCharacter } from "../../../character/character.js";   // スタッピー（src/system/character）
+import { mountCharacter } from "../../../object/character/character.js";   // スタッピー（src/system/object/character）
+// 広場の「もの」（絵と見た目。src/system/object）
+import { drawPost } from "../../../object/post/post.js";               // 赤い丸ポスト
+import { drawWheel } from "../../../object/wheel/wheel.js";            // 観覧車
+import { drawCoaster } from "../../../object/coaster/coaster.js";      // ジェットコースター
+import { drawTree } from "../../../object/tree/tree.js";               // 大きい木
+import { drawFlowerField } from "../../../object/flowers/flowers.js";  // 花ばたけ
 import { mountPlaza } from "./plaza.js";                              // 広場のフレンド（★ 今は見た目のイメージだけ）
-import { FRIENDS_SAMPLE } from "../../../pages/friends/friends-sample.js";   // 仮のフレンド（フレンドのページと同じ）
-import { mountMailbox } from "./mailbox.js";                          // 左下のポスト（★ 今は見た目のイメージだけ）
+import { FRIENDS_SAMPLE, RANKING_SAMPLE } from "../../../pages/friends/friends-sample.js";   // 仮のフレンド（フレンドのページと同じ）
+import { mountMailbox } from "./mailbox.js";
+import { mountRanking } from "./ranking.js";                          // お気に入りの広場の掲示板（今週の勉強ランキング）
 import { MAIL_SAMPLE, MAIL_TYPES } from "../../../pages/friends/mail-sample.js";   // フレンドから届いたもの（仮のデータ）
 import { requestFriend } from "../../../pages/friends/open-friend.js";            // フレンドのページの「フレンド詳細」を開く
+import { loadFavorites, toggleFavorite } from "../../../pages/friends/favorites.js";   // お気に入りのフレンド（その PC の中に覚えておく）
 
 /** アイコン（core/components/Icon.jsx と同じ形。ゲストのときのアイコンに使う） */
 const ICONS = {
@@ -139,7 +152,9 @@ const greet = () => {
 const SKY_TIMES = [[0, "night"], [5, "morning"], [10, "day"], [16, "evening"], [19, "night"]];
 const drawScene = () => {
   const hour = new Date().getHours();
-  $("records-chara").dataset.time = SKY_TIMES.filter(([h]) => hour >= h).at(-1)[1];
+  const time = SKY_TIMES.filter(([h]) => hour >= h).at(-1)[1];
+  // 2 つの広場と、ホーム全体（ポストの色に使う）に付ける
+  for (const el of [$("records-chara"), $("plaza-2"), document.querySelector(".home")]) el.dataset.time = time;
 };
 
 // ───────── 右下の札：今日・今週・これまでの時間（くわしいグラフは記録のページで） ─────────
@@ -165,7 +180,14 @@ $("open-records").addEventListener("click", () => app.open(app.user ? "records" 
 
 $("go-login").addEventListener("click", () => app.open("account"));
 
-// ───────── スタッピー（なでる・押す・自分から動く。くわしくは src/system/character/character.js） ─────────
+// ───────── 広場の「もの」を置く（絵は src/system/object。置く場所と大きさは css/style.css） ─────────
+drawPost($("mailbox-post"));
+drawWheel($("plaza-wheel"));
+drawCoaster($("plaza-coaster"));
+const tree = drawTree($("plaza-tree"));                // { svg, foot }：根もとを、フレンドが よける
+drawFlowerField($("flowerbed"), { count: 120, path: true });
+
+// ───────── スタッピー（なでる・押す・自分から動く。くわしくは src/system/object/character/character.js） ─────────
 /** ふきだしの言葉を変えて、ぽんと出す */
 function pop(node, text) {
   node.textContent = text;
@@ -188,11 +210,13 @@ const onPet = () => { app.unlock("pet-1"); app.addProgress("pet-100"); };
 //   grab   … マウスでつかんで投げられる（重力で落ちて、地面でぽよんとはねる。止まったら歩いて丘に帰る）
 //   stroll … 丘の上をとことこ歩く（ふきだしもいっしょ。右に寄ったら、ふきだしは左がわに出す）
 //            rise … 奥へ歩ける高さ（px）。奥へ行くほど上に・小さく見える（css の --depth）
-//            avoid … 立ち止まらない場所（広場のまん中の噴水と、左下のポスト）。スタッピーは噴水より手前を歩くので、通るときは噴水の前に見える
+//            avoid … 立ち止まらない場所（まん中の掲示板と、左下のポスト）。通りすぎるときは、掲示板の前に見える
 //   roam   … しばらくさわらないと、ホームの画面の中をおさんぽ（歩くときは小さめ。帰ってくるまで、ふきだしはかくす）
+//   ground … 地面の高さ。おさんぽでは足もとが 丘の地面（画面の下から 5〜38%）の中だけを歩く（空は歩かない）。投げたときも地面に落ちる
 mountCharacter($("chara-records"), {
   pose: "jump", motion: "hop", shadow: true, follow: true, grab: true, roam: true, roamHeight: 110, talk: studyTalk,
-  stroll: { area: $("records-chara"), mover: $("records-walker"), rise: 36, avoid: () => [$("plaza-fountain").getBoundingClientRect(), $("mailbox-post").getBoundingClientRect()], onMove: (r) => $("records-bubble").classList.toggle("is-left", r > 0.55) },
+  ground: () => ({ top: window.innerHeight * 0.62, bottom: window.innerHeight * 0.95 }),
+  stroll: { area: $("records-chara"), mover: $("records-walker"), rise: 36, avoid: () => [$("plaza-board").getBoundingClientRect(), $("mailbox-post").getBoundingClientRect()], onMove: (r) => $("records-bubble").classList.toggle("is-left", r > 0.55) },
   onRoam: (on) => $("records-bubble").classList.toggle("is-away", on),
   onSay: (t) => { clearTimeout(greetTimer); greetTimer = 0; pop($("records-bubble"), t); },
   onRestore: () => drawRecords(), onPet,
@@ -203,23 +227,87 @@ const openFriend = (userId) => { requestFriend(userId); app.open("friends"); };
 const isFriend = (userId) => FRIENDS_SAMPLE.some((f) => f.userId === userId);
 
 // ───────── 広場のフレンド（★ 今は仮のフレンドで、見た目のイメージだけ。js/plaza.js） ─────────
-mountPlaza({ scene: $("records-chara"), layer: $("plaza-friends"), friends: FRIENDS_SAMPLE, fountain: $("plaza-fountain"), rim: $("fountain-rim"), edge: $("mailbox-post"), onDetail: (f) => openFriend(f.userId) });
-$("plaza-count").textContent = `フレンド ${FRIENDS_SAMPLE.length}人・オンライン ${FRIENDS_SAMPLE.filter((f) => f.online).length}人`;
-
-// ───────── 奥ゆき：マウスの位置（-1〜1）を記録のカードの空に わたす。css が、遠いものほど少し・近いものほど大きく ずらす ─────────
-const scene = $("records-chara");
-let depthFrame = 0;
-const setDepth = (px, py) => { scene.style.setProperty("--px", px.toFixed(3)); scene.style.setProperty("--py", py.toFixed(3)); };
-document.addEventListener("pointermove", (e) => {
-  if (depthFrame || document.documentElement.classList.contains("reduce-motion")) return;   // 「動きを少なくする」のときは ずらさない
-  depthFrame = requestAnimationFrame(() => {
-    depthFrame = 0;
-    const r = scene.getBoundingClientRect();
-    const clamp = (v) => Math.max(-1, Math.min(1, v));
-    setDepth(clamp((e.clientX - (r.left + r.width / 2)) / (window.innerWidth / 2)), clamp((e.clientY - (r.top + r.height / 2)) / (window.innerHeight / 2)));
-  });
+//   お気に入りの人は 最初の広場、そうでない人は となりの広場（お気に入りは favorites.js。その PC の中に覚えておく）
+const me = app.user?.userId ?? null;
+let favorites = loadFavorites(me);
+const plazaOpts = { edge: $("mailbox-post"), onDetail: (f) => openFriend(f.userId), isFavorite: (id) => favorites.has(id), onFavorite: (f) => flipFavorite(f), onBubble: (id) => openBubble(id) };
+const plazaFav = mountPlaza({
+  ...plazaOpts, scene: $("records-chara"), layer: $("plaza-friends"), empty: $("plaza-empty-1"),
+  friends: FRIENDS_SAMPLE.filter((f) => favorites.has(f.userId)), noStop: $("plaza-board"),   // 掲示板の前では立ち止まらない
 });
-document.addEventListener("pointerout", (e) => { if (!e.relatedTarget) setDepth(0, 0); });   // 画面の外へ出たら もとに
+const plazaOther = mountPlaza({
+  ...plazaOpts, scene: $("plaza-2"), layer: $("plaza-friends-2"), empty: $("plaza-empty-2"),
+  friends: FRIENDS_SAMPLE.filter((f) => !favorites.has(f.userId)),
+  fountain: tree.foot, rim: tree.foot,   // 大きい木の根もとを よける（噴水と同じしくみ）
+});
+
+// ───────── 掲示板の上のはし：広場の札（左上）のすぐ下まで上にのばす（札の高さは画面の大きさで変わるので、はかって決める） ─────────
+const placeBoard = () => {
+  const label = document.querySelector(".home-plaza-label").getBoundingClientRect();
+  document.querySelector(".home").style.setProperty("--board-top", `${Math.round(label.bottom + 14)}px`);
+};
+placeBoard();
+window.addEventListener("resize", placeBoard);
+
+// ───────── 掲示板：今週の勉強時間ランキング（お気に入りのフレンドと自分。js/ranking.js。絵は object/board） ─────────
+//   自分は本当の今週の時間（studyTimes）、フレンドは仮の時間（friends-sample.js の weekSec）
+const ranking = mountRanking({
+  board: $("plaza-board"), format: timeText,
+  //   今週の人のならび：お気に入りのフレンド ＋ 仮のメンバー（RANKING_SAMPLE。★ デザイン確認用） ＋ 自分
+  //   自分は本当の今週の時間・連続ログイン日数
+  getRows: () => {
+    const rows = [...FRIENDS_SAMPLE.filter((f) => favorites.has(f.userId)), ...RANKING_SAMPLE].map((f) => ({
+      userId: f.userId, name: f.name, color: f.color, sec: f.weekSec ?? 0, streak: f.streak,
+    }));
+    const times = studyTimes();   // ゲストなら null（ランキングに入らない）
+    if (app.user && times) {
+      rows.push({
+        userId: app.user.userId, name: app.user.name || app.user.userId, color: "#2563eb", me: true,
+        sec: times.week, streak: app.loginDays()?.streak ?? 0,
+      });
+    }
+    return rows;
+  },
+  guestNote: () => (app.user ? "" : "ログインすると、あなたも ランキングに入ります。"),
+});
+/** お気に入りを切りかえる：その人は 今の広場の右はし（または左はし）へ歩いて出ていき、となりの広場に はしから入ってくる */
+function flipFavorite(f) {
+  favorites = toggleFavorite(me, f.userId);
+  const nowFav = favorites.has(f.userId);
+  const [from, to] = nowFav ? [plazaOther, plazaFav] : [plazaFav, plazaOther];
+  from.remove(f.userId, nowFav ? "left" : "right");      // お気に入り（左の広場）へは左へ、そのほか（右の広場）へは右へ
+  setTimeout(() => { to.add(f, nowFav ? "right" : "left"); drawBubbles(mailbox.list()); }, 400);
+  drawPlazaCount();
+  ranking.draw();   // お気に入りが変わったので、ランキングも書き直す
+  app.notify({ type: "success", title: nowFav ? `${f.name} さんを お気に入りにしました` : `${f.name} さんを お気に入りから外しました`, message: nowFav ? "最初の広場に来ます。" : "となりの広場（そのほか）へ行きます。" });
+}
+/** 上の札：それぞれの広場の人数と、オンラインの人数 */
+function drawPlazaCount() {
+  const fav = FRIENDS_SAMPLE.filter((f) => favorites.has(f.userId)).length;
+  $("plaza-n-0").textContent = fav;
+  $("plaza-n-1").textContent = FRIENDS_SAMPLE.length - fav;
+  $("plaza-count").textContent = `オンライン ${FRIENDS_SAMPLE.filter((f) => f.online).length}人`;
+}
+drawPlazaCount();
+
+// ───────── 2 つの広場の行き来（左右の矢印・上の札・← → キー） ─────────
+let plazaNow = 0;   // 0 ＝ お気に入りの広場、1 ＝ そのほかの広場
+function showPlaza(n) {
+  plazaNow = n;
+  $("plaza-track").classList.toggle("is-second", n === 1);
+  $("plaza-next").hidden = n === 1;
+  $("plaza-prev").hidden = n === 0;
+  document.querySelectorAll(".home-plaza-tabs [data-plaza]").forEach((b) => b.setAttribute("aria-selected", String(Number(b.dataset.plaza) === n)));
+  plazaFav.closeCard(); plazaOther.closeCard();
+}
+$("plaza-next").addEventListener("click", () => showPlaza(1));
+$("plaza-prev").addEventListener("click", () => showPlaza(0));
+document.querySelectorAll(".home-plaza-tabs [data-plaza]").forEach((b) => b.addEventListener("click", () => showPlaza(Number(b.dataset.plaza))));
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest?.("input, textarea, [contenteditable]") || e.ctrlKey || e.altKey || e.metaKey) return;
+  if (e.key === "ArrowRight" && plazaNow === 0) showPlaza(1);
+  if (e.key === "ArrowLeft" && plazaNow === 1) showPlaza(0);
+});
 
 // ───────── はじめに描く・変わったら描き直す ─────────
 const drawAll = () => { drawUser(); drawLogin(); drawRecords(); };
@@ -227,8 +315,8 @@ drawAll();
 drawScene();
 setInterval(drawScene, 60 * 1000);   // 時間帯が変わったら、空の色も変える
 greet();                             // ホームを開いたときのあいさつ
-app.onLoginDaysChange(drawAll);          // ログインした日・ログインしている人が変わったとき
-app.onUsageChange(() => { if (!greetTimer) drawRecords(); });   // 使った時間の記録が増えたとき（30 秒ごとなど。あいさつ中は待つ）
+app.onLoginDaysChange(() => { drawAll(); ranking.draw(); });          // ログインした日・ログインしている人が変わったとき
+app.onUsageChange(() => { if (!greetTimer) drawRecords(); ranking.draw(); });   // 使った時間の記録が増えたとき（30 秒ごとなど。あいさつ中は待つ）
 app.onUserChange(drawUser);              // 名前・アイコンを変えたとき（アカウント → プロフィール）
 
 // ───────── 左下のポスト（フレンドから届いたもの。★ 今は仮のデータで、見た目のイメージだけ。js/mailbox.js） ─────────
@@ -236,6 +324,22 @@ app.onUserChange(drawUser);              // 名前・アイコンを変えたと
 //   onReceive … あとから届いたときに、右上にお知らせを出す
 const mailbox = mountMailbox({
   post: $("mailbox-post"), badge: $("mailbox-badge"), box: $("mailbox"), mails: MAIL_SAMPLE, isFriend, onFriend: openFriend,
+  onChange: (items) => drawBubbles(items),
   onReceive: (m) => app.notify({ type: "info", title: `${m.from.name} さんから${MAIL_TYPES[m.type]?.name ?? ""}が届きました`, message: "左下のポストを押すと見られます。" }),
 });
-void mailbox;   // ★ 本当の機能を作るまでは、receive はまだ呼ばない
+// ★ 本当の機能を作るまでは、receive はまだ呼ばない
+
+// ───────── 吹き出し：まだ見ていない問題を送ってきたフレンドの頭の上に「問題を送ったよ！」 ─────────
+//   押すと、ポストの受け取り箱で その問題を開く（見たら吹き出しは消える）
+function drawBubbles(items) {
+  const map = {};
+  for (const m of items) if (m.type === "quiz" && !m.read && !map[m.from.userId]) map[m.from.userId] = "問題を送ったよ！";
+  plazaFav.setBubbles(map);
+  plazaOther.setBubbles(map);
+}
+/** 吹き出しを押したとき：その人の、まだ見ていない いちばん新しい問題を開く */
+function openBubble(userId) {
+  const m = mailbox.list().find((x) => x.type === "quiz" && !x.read && x.from.userId === userId);
+  if (m) mailbox.openMail(m.id);
+}
+drawBubbles(mailbox.list());

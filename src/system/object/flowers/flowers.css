@@ -1,0 +1,9 @@
+/* ═════════ もの：花ばたけ（flowers.js がならべる花） ═════════ */
+.obj-flowers { --fb-green: color-mix(in srgb, #3f9d5f 55%, var(--surface)); transition: filter .8s; }
+.obj-flowers .fb-flower { position: absolute; translate: -50% 0; transform-origin: 50% 100%; animation: obj-fb-sway 3.4s ease-in-out infinite; }
+.obj-flowers .fb-flower svg { display: block; width: 100%; height: auto; }
+.obj-flowers .fb-stem { fill: none; stroke: var(--grass, var(--fb-green)); stroke-width: 2.2; stroke-linecap: round; }
+.obj-flowers .fb-leaf { fill: var(--grass, var(--fb-green)); }
+@keyframes obj-fb-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+.reduce-motion .obj-flowers .fb-flower { animation: none; }
+[data-time="night"] .obj-flowers { filter: brightness(.7) saturate(.8); }

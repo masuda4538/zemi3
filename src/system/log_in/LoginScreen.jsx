@@ -15,7 +15,7 @@ import { useLayoutEffect, useState } from "react";
 import WindowControls from "../core/components/WindowControls";
 import LoginForm from "./LoginForm";
 import NatureBackground from "./NatureBackground";   // うしろの背景（青空と草原）
-import { IMAGES } from "../character/images.js";   // スタッピーの絵（src/system/character/images）
+import { IMAGES } from "../object/character/images.js";   // スタッピーの絵（src/system/object/character/images）
 import { APP_TITLE } from "../core/config";
 import { SESSION_MONTHS } from "./session.js";
 import "./login-screen.css";
