@@ -1,0 +1,53 @@
+.search-bar .field {
+    flex: 0 1 38%;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--bd);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    text-align: left;
+    display: block;
+    width: 100%;
+    font-weight: 400;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -8px rgba(15, 23, 42, .18);
+    background: var(--card);
+}
+
+.card h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ttl);
+}
+
+.card p {
+    margin: 0 0 10px;
+    color: var(--sub);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.empty {
+    margin-top: 48px;
+    text-align: center;
+    color: var(--sub);
+    display: none;
+}
