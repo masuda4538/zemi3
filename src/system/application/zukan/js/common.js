@@ -46,7 +46,10 @@ export function initCommon() {
   });
 
   // テーマ設定
-  const savedTheme = localStorage.getItem("zukan_theme");
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem("zukan_theme");
+  } catch (e) {}
 
   if (savedTheme) {
     document.documentElement.dataset.theme = savedTheme;
@@ -61,7 +64,9 @@ export function initCommon() {
     const next = dark ? "light" : "dark";
 
     d.dataset.theme = next;
-    localStorage.setItem("zukan_theme", next);
+    try {
+      localStorage.setItem("zukan_theme", next);
+    } catch (e) {}
   };
 
   // ダイアログ操作
@@ -82,13 +87,17 @@ export function initCommon() {
   }
 
   // Lucideアイコンの更新
+  // 未変換の <i data-lucide> が残っているときだけ変換する。
+  // （変換済みのsvgを作り直すとDOMが変化→Observerが再発火、のループになるため）
   let tm;
 
   new MutationObserver(() => {
     clearTimeout(tm);
 
     tm = setTimeout(() => {
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && document.querySelector("i[data-lucide]")) {
+        lucide.createIcons();
+      }
     }, 0);
   }).observe(document.body, {
     childList: true,
