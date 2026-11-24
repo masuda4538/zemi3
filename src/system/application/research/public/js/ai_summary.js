@@ -1,6 +1,4 @@
-// --- AI SUMMARY & TRANSLATION MODULE ---
-const LLM_API_KEY = "APIキーを入力";
-
+// --- AI SUMMARY & TRANSLATION MODULE (APIキーはサーバー側の .env で管理) ---
 async function generateAiSummary() {
     const art = SAMPLE_ARTICLES.find(a => a.id === state.activeArticleId);
     if (!art) return;
@@ -14,27 +12,21 @@ async function generateAiSummary() {
 
     const startTime = performance.now();
     btn.disabled = true;
-    label.innerText = 'ローカルAI推論中...';
+    label.innerText = 'AI推論中...';
     if (icon) {
         icon.setAttribute('data-lucide', 'loader-2');
         icon.classList.add('animate-spin');
         if (window.lucide) lucide.createIcons();
     }
 
-    // 外部LLM APIキーが設定されている場合はAPI経由で要約を取得可能
-    if (LLM_API_KEY !== "APIキーを入力") {
-        try {
-            await fetch(API_CONFIG.AI_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${LLM_API_KEY}`
-                },
-                body: JSON.stringify({ prompt: `${art.title}\n${art.description}` })
-            });
-        } catch (e) {
-            console.warn('External AI API fallback to local mock:', e);
-        }
+    try {
+        await fetch(API_CONFIG.AI_PROXY_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: `${art.title}\n${art.description}` })
+        });
+    } catch (e) {
+        console.warn('AI proxy fallback:', e);
     }
 
     setTimeout(() => {

@@ -1,0 +1,9 @@
+{
+  "name": "it-news-app",
+  "version": "1.0.0",
+  "description": "IT情報収集アプリ（APIキー保護プロキシサーバー構成）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

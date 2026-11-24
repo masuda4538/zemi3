@@ -1,11 +1,7 @@
-// --- API CONFIGURATION ---
+// --- CLIENT API ENDPOINTS (APIキーはサーバー側の .env で安全に管理) ---
 const API_CONFIG = {
-    // GNews APIキー（https://gnews.io/ で取得したAPIキーを設定）
-    GNEWS_API_KEY: "APIキーを入力",
-    // AI要約・翻訳用LLM APIキー（クラウドLLMを利用する場合に設定）
-    AI_API_KEY: "APIキーを入力",
-    GNEWS_ENDPOINT: "https://gnews.io/api/v4/top-headlines",
-    AI_ENDPOINT: "https://api.example.com/v1/chat/completions"
+    NEWS_PROXY_ENDPOINT: "/api/news",
+    AI_PROXY_ENDPOINT: "/api/ai/summary"
 };
 
 // --- CATEGORY IMAGES & TECH ILLUSTRATIONS ---

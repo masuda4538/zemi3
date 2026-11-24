@@ -24,19 +24,12 @@ function inferCategoryFromArticle(title, description, fallbackIdx) {
 
 async function fetchLiveNewsAPI(isManualRefresh = false) {
     const syncIcon = document.getElementById('syncIcon');
-
-    if (!API_CONFIG.GNEWS_API_KEY || API_CONFIG.GNEWS_API_KEY === "APIキーを入力") {
-        updateUI();
-        showToast('js/config.js に GNews APIキーを入力してください');
-        return;
-    }
-
     if (syncIcon) syncIcon.classList.add('animate-spin');
     let addedJp = 0;
     let addedGlobal = 0;
 
-    const jpUrl = `${API_CONFIG.GNEWS_ENDPOINT}?category=technology&lang=ja&country=jp&max=10&apikey=${encodeURIComponent(API_CONFIG.GNEWS_API_KEY)}`;
-    const globalUrl = `${API_CONFIG.GNEWS_ENDPOINT}?category=technology&lang=en&max=10&apikey=${encodeURIComponent(API_CONFIG.GNEWS_API_KEY)}`;
+    const jpUrl = `${API_CONFIG.NEWS_PROXY_ENDPOINT}?region=jp`;
+    const globalUrl = `${API_CONFIG.NEWS_PROXY_ENDPOINT}?region=global`;
 
     try {
         const [jpResult, globalResult] = await Promise.allSettled([
@@ -92,8 +85,10 @@ async function fetchLiveNewsAPI(isManualRefresh = false) {
             });
         }
 
-        if (jpResult.status === 'rejected' && globalResult.status === 'rejected') {
-            showToast('GNews APIからの記事取得に失敗しました（APIキーや通信状況をご確認ください）');
+        if ((jpResult.value && jpResult.value.error === 'GNEWS_API_KEY_NOT_SET') || (globalResult.value && globalResult.value.error === 'GNEWS_API_KEY_NOT_SET')) {
+            showToast('.env に GNEWS_API_KEY を設定してサーバーを再起動してください');
+        } else if (jpResult.status === 'rejected' && globalResult.status === 'rejected') {
+            showToast('GNews APIからの記事取得に失敗しました（サーバー・通信状況をご確認ください）');
         } else if (isManualRefresh || addedJp > 0 || addedGlobal > 0) {
             showToast(`GNews APIから記事を取得しました（JP: +${addedJp}件 / Global: +${addedGlobal}件）`);
         }
