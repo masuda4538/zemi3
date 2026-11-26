@@ -98,6 +98,29 @@
 .obj-board .bd-tape { position: absolute; top: -1.6cqh; width: 11cqh; height: 3.4cqh; }
 .obj-board .bd-tape.is-l { left: 2cqh; rotate: -12deg; } .obj-board .bd-tape.is-r { right: 2cqh; rotate: 12deg; }
 .obj-board .bd-body { flex: 1; min-height: 0; width: 100%; }
+/* わくの上の アーチの木の看板（sign の文字があるとき。絵は board.js の archSign）
+   入れる場所（obj-board）の上に はみ出して立てる。はばは 掲示板の はばの 56%。支柱は わくの うしろへ入る */
+.obj-board .bd-sign { position: absolute; left: 50%; bottom: calc(100% + 2.4cqh); translate: -50% 0; width: 56cqw; }
+.obj-board .bd-sign-svg { position: relative; display: block; width: 100%; height: auto; overflow: visible; }
+.obj-board .bd-sign-posts { position: absolute; z-index: -1; left: 26%; right: 26%; top: 80%; height: 8cqh; }   /* 支柱 2 本 */
+.obj-board .bd-sign-posts::before, .obj-board .bd-sign-posts::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 2.6cqh; min-width: 5px; background: linear-gradient(90deg, #7a4b21, #4f2d12);
+}
+.obj-board .bd-sign-posts::before { left: 0; }
+.obj-board .bd-sign-posts::after { right: 0; }
+.obj-board .bd-sign-shadow { fill: rgb(44 28 14 / .3); }
+.obj-board .bd-sign-shine { fill: none; stroke: rgb(255 224 185 / .35); stroke-width: 1.4; }   /* 板の上の ふちの 光 */
+.obj-board .bd-sign-gold { fill: none; stroke: #f2c14e; stroke-width: 1.6; opacity: .9; }
+.obj-board .bd-sign-bulb { fill: #fff3c4; stroke: #c98a1a; stroke-width: .9; animation: bd-bulb 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -18ms); }
+.obj-board .bd-sign-star { fill: #fcd34d; stroke: #b7791f; stroke-width: 1.2; stroke-linejoin: round; }
+.obj-board .bd-sign-text {
+  fill: #fff8ec; font-size: 25px; font-weight: 900; letter-spacing: 2px;
+  paint-order: stroke; stroke: #3d210b; stroke-width: 3.2px; stroke-linejoin: round;
+}
+.obj-board .bd-sign-clock { fill: none; stroke: #fcd34d; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes bd-bulb { 0%, 100% { fill: #fff3c4; } 50% { fill: #fde68a; } }   /* 電球が ゆっくり ちかちか */
+.reduce-motion .obj-board .bd-sign-bulb { animation: none; }
+@media (prefers-reduced-motion: reduce) { .obj-board .bd-sign-bulb { animation: none; } }
 /* 足（2 本） */
 .obj-board .bd-legs { flex: none; position: relative; height: 10cqh; }
 .obj-board .bd-legs::before, .obj-board .bd-legs::after {

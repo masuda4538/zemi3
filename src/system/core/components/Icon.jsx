@@ -34,6 +34,14 @@ const PATHS = {
   search: <><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></>,                              // さがす
   sideClose: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16M16 9.5 13.5 12l2.5 2.5" /></>,   // サイドバーを隠す
   sideOpen: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16M13.5 9.5 16 12l-2.5 2.5" /></>,    // サイドバーを出す
+  chat: <><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z" /><path d="M8 9.5h8M8 12.5h5" /></>,                // チャット（フレンド）
+  copy: <><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" /><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" /></>,   // コピー（紙が 2 まい）
+  send: <><path d="M21 3 10.5 13.5" /><path d="M21 3 14.5 21l-4-7.5L3 9.5z" /></>,                          // 送る（紙ひこうき）
+  plus: <path d="M12 5v14M5 12h14" />,                                                                      // たす
+  close: <path d="M6 6l12 12M18 6 6 18" />,                                                                 // とじる・消す
+  pin: <><path d="M9 3.5h6l-.8 5.5 3.3 3.3v1.7H6.5v-1.7L9.8 9z" /><path d="M12 14v6.5" /></>,                // ピン止め（押しピン）
+  tag: <><path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0z" /><circle cx="8" cy="8" r="1.5" /></>,   // グループ（フレンドの分類）
+  panelRight: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M15 4v16" /></>,      // 右の列を 出す・かくす（チャット）
 };
 
 export default function Icon({ name, className = "" }) {

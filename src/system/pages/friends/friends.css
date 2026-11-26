@@ -1,12 +1,49 @@
-/* ═════════ フレンド（main.jsx。形は core/components/settings-layout.css。★ 今は見た目のイメージだけ） ═════════ */
-
-/* 「今は見た目のイメージです」のお知らせ */
-.fr-sample {
-  display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 8px 14px; border-radius: 10px;
-  background: color-mix(in srgb, #f59e0b 10%, var(--surface)); border: 1px dashed color-mix(in srgb, #f59e0b 45%, var(--border));
-  font-size: 12.5px; font-weight: 700; color: var(--text-2);
+/* ═════════ フレンド（main.jsx。★ フレンドは まだ仮の人たち） ═════════
+   上にバー（core/components/PageBar.jsx）。その すぐ下に「チャット ／ フレンド一覧 ／ フレンドを追加」の タブ（青い下線）
+   チャットは ページの左右いっぱい・下まで（外の枠なし。列のさかいは線だけ。chat.css）
+   フレンド一覧・追加も はばいっぱい（余白は少なめ） */
+.fr-page { padding-bottom: 12px; }
+/* チャットのとき：ページ（.stage）を スクロールさせず、バーの下を ぜんぶ チャットに使う（左右・下の すき間も なし） */
+.stage:has(> .page:not([hidden]) > .fr-page.is-chat) { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0; }
+.stage:has(> .page:not([hidden]) > .fr-page.is-chat) > .page:not([hidden]) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.fr-page.is-chat { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 0; }
+/* 「仮のデータ」の小さな札（上のバー。マウスをのせると 説明） */
+.fr-sample-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 99px; cursor: help;
+  background: color-mix(in srgb, #f59e0b 12%, var(--surface)); border: 1px dashed color-mix(in srgb, #f59e0b 50%, var(--border));
+  font-size: 11.5px; font-weight: 800; color: #b45309; white-space: nowrap;
 }
-.fr-sample .icon { flex: none; width: 16px; height: 16px; color: #d97706; }
+.fr-sample-chip .icon { width: 13px; height: 13px; }
+:root[data-theme="dark"] .fr-sample-chip { color: #fbbf24; }
+/* 上のバーの すぐ下の タブ（はばいっぱいの 細い帯。えらんでいるものは 青い文字と 下線） */
+.fr-page > .page-bar { margin-bottom: 0; }
+.fr-tabs {
+  flex: none; display: flex; align-items: stretch; gap: 4px; margin: 0 -24px 14px; padding: 0 20px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.fr-page.is-chat > .fr-tabs { margin-bottom: 0; }
+.fr-tab {
+  position: relative; display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 14px; border: 0; background: none; cursor: pointer;
+  color: var(--text-2); font: inherit; font-size: 13.5px; font-weight: 800; white-space: nowrap;
+}
+.fr-tab .icon { width: 16px; height: 16px; }
+.fr-tab:hover { color: var(--text); background: var(--hover); }
+.fr-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.fr-tab.is-active { color: var(--primary); }
+.fr-tab.is-active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--primary); }
+:root[data-theme="dark"] .fr-tab.is-active { color: #93c5fd; }
+:root[data-theme="dark"] .fr-tab.is-active::after { background: #60a5fa; }
+.fr-views-n { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); font-size: 11px; line-height: 18px; text-align: center; }
+.fr-tab.is-active .fr-views-n { background: var(--sky-soft); color: var(--primary); }
+.fr-page.is-chat > .ch { flex: 1; min-height: 0; margin: 0 -24px; border-top: 0; }
+.fr-page.is-chat > .ch-catbar { margin: 0 -24px; }   /* 分類のタブの帯も はしまで */   /* .stage の 左右のすき間（24px）の分 外へ出して、はしまで */
+.fr-sub { animation: fr-in .18s var(--ease); }
+@keyframes fr-in { from { opacity: 0; transform: translateY(4px); } }
+.reduce-motion .fr-sub { animation: none; }
+.fr-sub-title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding: 4px 0 10px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
+.fr-sub-title h1 { font-size: 20px; font-weight: 800; }
+.fr-sub-title p { font-size: 13px; color: var(--text-2); }
+
 
 .fr-card { padding: 4px 0; }
 .fr-card + .fr-card { margin-top: 14px; }
@@ -58,14 +95,6 @@
 .fr-add-form .btn .icon { width: 16px; height: 16px; }
 
 /* 右はしの「おまけ」：オンラインのフレンド */
-.fr-aside-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.fr-aside-list button {
-  width: 100%; display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; border: 0; border-radius: 9px;
-  background: none; color: inherit; font: inherit; font-size: 13px; text-align: left; cursor: pointer; box-sizing: content-box;
-}
-.fr-aside-list button:hover { background: var(--surface-2); }
-.fr-aside-list b { flex: 1; min-width: 0; font-weight: 800; }
-.fr-aside-list small { font-size: 12px; font-weight: 700; color: var(--text-3); }
 
 /* 一覧の行は押せる（フレンド詳細へ）。右はしに › */
 .fr-item { display: flex; align-items: stretch; border-top: 1px solid var(--border); }

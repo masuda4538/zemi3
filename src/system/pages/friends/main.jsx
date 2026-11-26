@@ -1,30 +1,36 @@
 // ═══════════════════════════════════════════════════════════════
-//  フレンド：画面（見た目）　［このフォルダーの入口：main.jsx］　★ 今は見た目のイメージだけ
-//  アチーブ・設定・アカウントと同じ形（core/components/SettingsLayout.jsx）：上にバー、左に項目、右に中身
+//  フレンド：画面　［このフォルダーの入口：main.jsx］　★ フレンドは まだ仮の人たち
+//  左のサイドバーの「フレンド」を押すと、まず チャット（LINE のような やりとり）の画面が ページいっぱいに出る
+//  上のバーの すぐ下の タブ（チャット ／ フレンド一覧 ／ フレンドを追加。えらんでいるものは 青い下線）で、ほかの画面へ
+//    チャット       … フレンドと メッセージや問題を送り合う。送った問題の一覧も見られる（chat.jsx・chat-store.js）
+//                     ★ サーバーがないので相手には届かない（その PC の中に保存）
 //    フレンド一覧   … 名前とアイコン・オンライン（または最後のログイン）・アチーブの取得率。「すべて／オンライン」で しぼれる
 //                     行を押すと「フレンド詳細」（FriendDetail）
 //    フレンド詳細   … その人の名前とアイコン・オンライン（最後のログイン）・アチーブの取得率と、
-//                     その人と送り合ったもの（手紙・問題・応援）。行を押すと中身が開く（問題は問題文と選択肢まで）
+//                     その人と送り合ったもの（手紙・問題・応援）。「チャットする」「問題を送る」で その人とのチャットへ
 //    フレンドを追加 … 自分の ID と、相手の ID を入れる欄・届いた申請。★ 申請はまだ送れない（押すと「準備中」とお知らせ）
-//    右はし（とても広い画面のときだけ）… 今オンラインのフレンド（押すとフレンド詳細）
 //  ☆（一覧の行の右・詳細）… お気に入りにする・外す。お気に入りの人は、一覧の上のほうに ならぶ
 //    お気に入りは favorites.js（その PC の中に覚えておく）。ホームでは、お気に入りの人が最初の広場、そうでない人が となりの広場にいる
-//  ホームの広場のカード・ポストからも、フレンド詳細を開ける（だれを開くかは open-friend.js でメモしてわたす）
+//  ホームの広場のカードから来たときは、その人のフレンド詳細を開く（だれを開くかは open-friend.js でメモしてわたす）
+//  ホームのポストのチャットの通知・広場の吹き出しから来たときは、その人とのチャットを開く（これも open-friend.js）
 //  フレンドは、今は仮のデータ（friends-sample.js）。送り合ったものも仮のデータ（mail-sample.js）
 //  core/App.jsx から user（ログインしている人）を受け取ります。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
-import SettingsLayout, { AsideCard } from "../../core/components/SettingsLayout";
+import PageBar from "../../core/components/PageBar";
 import Icon from "../../core/components/Icon";
 import { notify } from "../../core/utils/notify.js";
 import { FRIENDS_SAMPLE, lastLoginText } from "./friends-sample.js";
-import { MAIL_SAMPLE, SENT_SAMPLE, MAIL_TYPES, STAMPS, CHOICE_MARKS } from "./mail-sample.js";
-import { peekFriend, clearFriend } from "./open-friend.js";
+import { MAIL_SAMPLE, SENT_SAMPLE, MAIL_TYPES, STAMPS } from "./mail-sample.js";
+import { peekFriend, peekChat, clearFriend } from "./open-friend.js";
 import { loadFavorites, toggleFavorite } from "./favorites.js";
+import Chat from "./chat.jsx";             // チャット
+import QuizView from "./quiz-view.jsx";    // 問題の中身
 import "./friends.css";
 
-/** 左の項目（上から順に並ぶ） */
-const SECTIONS = [
+/** 上のバーの右の切りかえ（左から順に並ぶ。最初に開くのは チャット） */
+const VIEWS = [
+  { id: "chat", name: "チャット", icon: "chat" },
   { id: "list", name: "フレンド一覧", icon: "friends", desc: "フレンドの、オンラインかどうか・最後のログイン・アチーブの取得率が見られます。押すと くわしく見られます。" },
   { id: "add", name: "フレンドを追加", icon: "userPlus", desc: "相手のログイン ID を入れて、フレンドの申請を送ります。" },
 ];
@@ -44,39 +50,67 @@ const STAMP_ICON = { cheer: "flag", star: "star", heart: "heart" };
 const soon = (title) => notify({ type: "info", title: `${title}は準備中です`, message: "今は見た目のイメージだけで、まだ送れません。", key: "friends" });
 
 export default function Friends({ user }) {
-  const [current, setCurrent] = useState("list");
-  // フレンド詳細を開いている人（userId。null ＝ 一覧）。ホームから来たときは、メモされた人を最初に開く
+  // ホームから来たときは、メモされた人のフレンド詳細を最初に開く。ふつうは チャット
   const [detailId, setDetailId] = useState(() => (FRIENDS_SAMPLE.some((f) => f.userId === peekFriend()) ? peekFriend() : null));
+  const [current, setCurrent] = useState(() => (detailId && !peekChat() ? "list" : "chat"));
   useEffect(() => { clearFriend(); }, []);   // メモは 1 回使ったら消す
   // お気に入り（userId の Set）。☆ を押すと切りかえて覚えておく
   const [favorites, setFavorites] = useState(() => loadFavorites(user?.userId));
   const flipFav = (userId) => setFavorites(toggleFavorite(user?.userId, userId));
+  // チャットで最初に開く人（ホームのポスト・吹き出し、フレンド詳細の「チャットする」「問題を送る」から。compose … 問題を作る画面も開く）
+  const [chatStart, setChatStart] = useState(() => {
+    const id = peekChat();
+    return FRIENDS_SAMPLE.some((f) => f.userId === id) ? { userId: id, compose: false } : null;
+  });
 
   const friends = FRIENDS_SAMPLE;
   const online = friends.filter((f) => f.online);
-  const items = SECTIONS.map((s) => (s.id === "list" ? { ...s, badge: String(friends.length) } : s));
-  const section = SECTIONS.find((s) => s.id === current);
+  const view = VIEWS.find((v) => v.id === current);
   const detail = current === "list" && friends.find((f) => f.userId === detailId);
 
-  /** フレンド詳細を開く（一覧・右はし から） */
+  /** 画面を切りかえる（上のバーの右） */
+  const go = (id) => { setCurrent(id); setDetailId(null); setChatStart(null); };
+  /** フレンド詳細を開く */
   const openDetail = (userId) => { setCurrent("list"); setDetailId(userId); };
+  /** その人とのチャットを開く */
+  const openChat = (userId, compose = false) => { setChatStart({ userId, compose }); setCurrent("chat"); setDetailId(null); };
 
   return (
-    <SettingsLayout
-      bar={{ icon: "friends", page: "フレンド", note: `${friends.length}人・オンライン ${online.length}人` }}
-      items={items}
-      current={current}
-      onSelect={(id) => { setCurrent(id); setDetailId(null); }}
-      title={detail ? `${detail.name} さん` : section.name}
-      desc={detail ? "フレンドの くわしい様子と、送り合ったもの（手紙・問題・応援）が見られます。" : section.desc}
-      aside={<OnlineAside online={online} onOpen={openDetail} />}
-    >
-      <p className="fr-sample"><Icon name="alert" />今は見た目のイメージです。フレンドは仮の人たちで、まだ本当の機能はありません。</p>
-      {current === "list" && (detail
-        ? <FriendDetail key={detail.userId} friend={detail} onBack={() => setDetailId(null)} fav={favorites.has(detail.userId)} onFav={() => flipFav(detail.userId)} />
-        : <FriendList friends={friends} onOpen={openDetail} favorites={favorites} onFav={flipFav} />)}
-      {current === "add" && <AddFriend user={user} />}
-    </SettingsLayout>
+    <div className={`fr-page is-${current}`}>
+      <PageBar icon="friends" page="フレンド" item={detail ? `${detail.name} さん` : view.name} note={`${friends.length}人・オンライン ${online.length}人`}>
+        {/* 「仮のデータ」の小さな札（マウスをのせると 説明） */}
+        <span className="fr-sample-chip" tabIndex={0} title={current === "chat"
+          ? "今は仮のフレンドです。送ったものは この PC の中に保存され、相手には まだ届きません。"
+          : "今は見た目のイメージです。フレンドは仮の人たちで、まだ本当の機能はありません。"}>
+          <Icon name="alert" />仮のデータ
+        </span>
+      </PageBar>
+
+      {/* 上のバーの すぐ下の タブ（チャット ／ フレンド一覧 ／ フレンドを追加） */}
+      <nav className="fr-tabs" role="tablist" aria-label="フレンドの画面">
+        {VIEWS.map((v) => (
+          <button key={v.id} type="button" role="tab" aria-selected={current === v.id} className={`fr-tab${current === v.id ? " is-active" : ""}`} onClick={() => go(v.id)}>
+            <Icon name={v.icon} />{v.name}{v.id === "list" && <span className="fr-views-n">{friends.length}</span>}
+          </button>
+        ))}
+      </nav>
+
+      {current === "chat" ? (
+        <Chat key={chatStart ? `${chatStart.userId}-${chatStart.compose}` : "chat"} user={user} friends={friends} start={chatStart} favorites={favorites} onFav={flipFav} onDetail={openDetail} />
+      ) : (
+        <section className="fr-sub" key={current}>
+          <header className="fr-sub-title">
+            <h1>{detail ? `${detail.name} さん` : view.name}</h1>
+            <p>{detail ? "フレンドの くわしい様子と、送り合ったもの（手紙・問題・応援）が見られます。" : view.desc}</p>
+          </header>
+          {current === "list" && (detail
+            ? <FriendDetail key={detail.userId} friend={detail} onBack={() => setDetailId(null)} fav={favorites.has(detail.userId)} onFav={() => flipFav(detail.userId)}
+                onChat={() => openChat(detail.userId)} onQuiz={() => openChat(detail.userId, true)} />
+            : <FriendList friends={friends} onOpen={openDetail} favorites={favorites} onFav={flipFav} />)}
+          {current === "add" && <AddFriend user={user} />}
+        </section>
+      )}
+    </div>
   );
 }
 
@@ -143,7 +177,7 @@ function FavButton({ on, name, onClick, big = false }) {
   );
 }
 
-function FriendDetail({ friend: f, onBack, fav, onFav }) {
+function FriendDetail({ friend: f, onBack, fav, onFav, onChat, onQuiz }) {
   const [filter, setFilter] = useState("all");   // all ／ got（届いた） ／ sent（送った）
   const [openId, setOpenId] = useState(null);    // 中身を開いている行
   // 送り合ったもの：届いたもの（from がこの人）と、送ったもの（to がこの人）を、新しい順に
@@ -174,8 +208,9 @@ function FriendDetail({ friend: f, onBack, fav, onFav }) {
         </div>
         <div className="fr-profile-btns">
           <FavButton big on={fav} name={f.name} onClick={onFav} />
-          <button type="button" className="btn btn-primary" onClick={() => soon("手紙を送る機能")}><Icon name="mail" />手紙を送る</button>
-          <button type="button" className="btn" onClick={() => soon("問題を送る機能")}><Icon name="quiz" />問題を送る</button>
+          <button type="button" className="btn btn-primary" onClick={onChat}><Icon name="chat" />チャットする</button>
+          <button type="button" className="btn" onClick={onQuiz}><Icon name="quiz" />問題を送る</button>
+          <button type="button" className="btn" onClick={() => soon("手紙を送る機能")}><Icon name="mail" />手紙を送る</button>
         </div>
       </section>
 
@@ -250,33 +285,7 @@ function MailBody({ m }) {
   return <div className="fr-letter"><p>{m.text}</p></div>;
 }
 
-/** 問題：題名・問題の数・ひとこと・問題文と選択肢（正解は出さない） */
-function QuizView({ quiz, note, canSolve }) {
-  if (!quiz) return null;
-  return (
-    <div className="fr-quiz">
-      <div className="fr-quiz-head">
-        <span className="fr-kind is-quiz"><Icon name="quiz" /></span>
-        <span><b>{quiz.title}</b><small>{quiz.questions.length}問</small></span>
-        {canSolve && <button type="button" className="btn btn-primary" onClick={() => soon("問題を解く機能")}><Icon name="quiz" />問題作成で解く</button>}
-      </div>
-      {note && <p className="fr-quiz-note">{note}</p>}
-      <ol className="fr-quiz-list">
-        {quiz.questions.map((x, i) => (
-          <li key={i}>
-            <span className="fr-q-no">Q{i + 1}</span>
-            <div>
-              <p>{x.q}</p>
-              <ul className="fr-choices">
-                {x.choices.map((c, j) => <li key={j}><i>{CHOICE_MARKS[j] ?? j + 1}</i>{c}</li>)}
-              </ul>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
+// 問題の中身（QuizView）は quiz-view.jsx
 
 // ───────── フレンドを追加（★ 見た目だけ。申請はまだ送れない） ─────────
 function AddFriend({ user }) {
@@ -328,26 +337,5 @@ function AddFriend({ user }) {
         )}
       </section>
     </>
-  );
-}
-
-// ───────── 右はしの「おまけ」：今オンラインのフレンド（とても広い画面のときだけ出る。押すとフレンド詳細） ─────────
-function OnlineAside({ online, onOpen }) {
-  return (
-    <AsideCard icon="friends" title="オンラインのフレンド">
-      {online.length === 0 ? <p className="fr-none">今はいません。</p> : (
-        <ul className="fr-aside-list">
-          {online.map((f) => (
-            <li key={f.userId} style={{ "--c": f.color }}>
-              <button type="button" onClick={() => onOpen(f.userId)}>
-                <span className="fr-avatar is-small">{f.name.slice(0, 1)}<i /></span>
-                <b>{f.name}</b>
-                <small>{f.achieve}%</small>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </AsideCard>
   );
 }

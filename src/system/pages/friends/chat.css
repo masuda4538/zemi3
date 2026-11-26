@@ -1,0 +1,512 @@
+/* ═════════ フレンド：チャット（chat.jsx）。LINE のような やりとり ═════════
+   3 列：左 トークの一覧（はば 280px） ・ まん中 やりとり ・ 右 ピン止めと やりとりしたもの（はば 320px。かくせる）
+   ページの左右いっぱい・下までを使う（外の枠・影なし。列のさかいは線だけ。高さは friends.css の .fr-page.is-chat が決める） */
+.ch {
+  display: grid; grid-template-columns: 280px minmax(0, 1fr) 320px; overflow: clip; padding: 0;   /* clip … 中が横に ずれない（スクロールしない） */
+  min-height: 420px; background: var(--surface); border-top: 1px solid var(--border);
+}
+.ch.is-files-hidden { grid-template-columns: 280px minmax(0, 1fr); }   /* 右の列を かくしたとき */
+.ch-files[hidden] { display: none; }
+
+/* ── 左：トークの一覧 ・ 右：送ったもの（どちらも 上に見出し、下に一覧） ── */
+.ch-side, .ch-files { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--surface); }
+.ch-side { border-right: 1px solid var(--border); }
+.ch-files { border-left: 1px solid var(--border); }
+.ch-col-title {
+  flex: none; display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 18px; height: 69px;
+  border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 800;
+}
+.ch-col-title .icon { width: 18px; height: 18px; color: var(--primary); }
+.ch-count { min-width: 22px; height: 20px; padding: 0 7px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); font-size: 11.5px; line-height: 18px; text-align: center; }
+.ch-side .ch-list, .ch-files .ch-list { padding-top: 8px; }
+/* 右の中：上下 2 つ。上 ＝ ピン止めした会話、下 ＝ やりとりしたもの（タブ ＋ 一覧）。それぞれ 多いときは 一覧だけスクロール
+   ピン止めが ないときは、上は 小さく（見出しと ひとことだけ） */
+.ch-files-part { min-height: 0; display: flex; flex-direction: column; }
+.ch-files-part.is-pins { flex: 1 1 0; }
+.ch-files-part.is-pins.is-empty { flex: none; }
+.ch-files-part.is-shared { flex: 1 1 0; border-top: 1px solid var(--border); }
+.ch-files-part .ch-file-list { flex: 1; min-height: 0; overflow-y: auto; }
+.ch-files-part.is-pins .ch-col-title .icon { color: var(--primary); }
+.ch-part-title { flex: none; display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 18px 0; font-size: 14px; font-weight: 800; }
+.ch-part-title .icon { width: 17px; height: 17px; color: var(--primary); }
+.ch-file-tabs { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 8px; border-bottom: 1px solid var(--border); }
+.ch-file-list { padding: 10px 12px 14px !important; display: flex; flex-direction: column; gap: 8px; }
+.ch-files .ch-none { padding: 14px 16px; font-size: 12.5px; }
+.ch-tab.is-pin .icon { color: var(--primary); }
+.ch-tab.is-pin.is-active .icon { color: #fff; }
+/* 「すべて」のときの「送った」（青）・「届いた」（緑）の札 */
+.ch-dir { display: inline-block; margin-right: 6px; padding: 0 7px; border-radius: 99px; font-size: 11px; font-weight: 800; line-height: 18px; vertical-align: 1px; }
+.ch-dir.is-me { background: color-mix(in srgb, #2563eb 14%, transparent); color: #1d4ed8; }
+.ch-dir.is-friend { background: color-mix(in srgb, #22c55e 16%, transparent); color: #15803d; }
+:root[data-theme="dark"] .ch-dir.is-me { color: #93c5fd; }
+:root[data-theme="dark"] .ch-dir.is-friend { color: #4ade80; }
+/* ピン止めした会話の カード（何日の会話か ・ だれ ・ 文 ・「この会話へ」） */
+.ch-pin-card { position: relative; }
+.ch-file.is-pin {
+  grid-template-columns: 30px minmax(0, 1fr); grid-template-areas: "pin date" "pin who" "text text" "go go"; row-gap: 3px; align-items: start;
+  padding: 10px 36px 10px 10px; border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+}
+.ch-file.is-pin:hover { border-color: var(--primary); background: var(--sky-soft); }
+:root[data-theme="dark"] .ch-file.is-pin:hover { background: color-mix(in srgb, var(--primary) 16%, var(--surface)); }
+.ch-file-pin { grid-area: pin; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #fff; }
+.ch-file-pin .icon { width: 15px; height: 15px; }
+.ch-file-date { grid-area: date; font-size: 12px !important; font-weight: 800 !important; color: var(--primary) !important; }
+:root[data-theme="dark"] .ch-file-date { color: #93c5fd !important; }
+.ch-file-who { grid-area: who; font-size: 12px !important; color: var(--text-2); }
+.ch-file-text {
+  grid-area: text; margin-top: 4px; font-size: 13px; font-weight: 700; line-height: 1.5; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ch-file-go { grid-area: go; margin-top: 4px; font-size: 12px; font-weight: 800; color: var(--primary); text-align: right; }
+.ch-pin-card .ch-pin-x { position: absolute; top: 6px; right: 6px; }
+/* 1 つ分（問題のカード） */
+.ch-file {
+  width: 100%; display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 10px; row-gap: 2px; align-items: center;
+  padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text);
+  font: inherit; text-align: left; cursor: pointer; transition: border-color .15s, background .15s;
+}
+.ch-file:hover { border-color: color-mix(in srgb, #f59e0b 50%, var(--border)); background: var(--hover); }
+.ch-file.is-active { border-color: #f59e0b; background: color-mix(in srgb, #f59e0b 10%, var(--surface)); }
+.ch-file:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ch-file .fr-kind { grid-row: span 2; width: 32px; height: 32px; border-radius: 10px; }
+.ch-file .fr-kind .icon { width: 16px; height: 16px; }
+.ch-file b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 800; }
+.ch-file small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+/* トークの一覧の 2 行目：文 ＋ まだ見ていない数（緑の丸） */
+.ch-row-bottom { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ch-row-bottom small { flex: 1; min-width: 0; }
+.ch-unread { flex: none; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: #22c55e; color: #fff; font-size: 11.5px; font-weight: 800; line-height: 20px; text-align: center; }
+.ch-row.is-file .fr-kind { width: 38px; height: 38px; border-radius: 11px; }
+.ch-list { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0 8px 10px; }
+.ch-row {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border: 0; border-radius: 12px;
+  background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.ch-row:hover { background: var(--hover); }
+.ch-row.is-active { background: var(--sky-soft); }
+:root[data-theme="dark"] .ch-row.is-active { background: color-mix(in srgb, var(--primary) 22%, var(--surface)); }
+.ch-row:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.ch-row .fr-avatar { width: 44px; height: 44px; }
+.ch-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ch-row-top { display: flex; align-items: center; gap: 5px; }
+.ch-row-top b { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 800; }
+.ch-row-top time { flex: none; margin-left: auto; padding-left: 4px; font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+/* 名前の横の しるし：★（お気に入り） */
+.ch-mark { flex: none; display: inline-grid; place-items: center; line-height: 1; }
+.ch-mark.is-fav { font-size: 13px; color: #f59e0b; }
+
+/* ── お気に入り ── */
+.ch-talk { position: relative; }
+/* 行にマウスをのせると（キーボードで えらんでも）右に出る ボタン */
+.ch-talk-btns {
+  position: absolute; right: 8px; top: 50%; translate: 0 -50%; display: flex; gap: 4px; padding: 3px;
+  border-radius: 99px; background: var(--surface); box-shadow: 0 2px 8px rgb(15 30 60 / .14);
+  opacity: 0; pointer-events: none; transition: opacity .15s;
+}
+.ch-talk:hover .ch-talk-btns, .ch-talk:focus-within .ch-talk-btns { opacity: 1; pointer-events: auto; }
+.ch-tool {
+  display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%;
+  background: none; color: var(--text-3); font: inherit; font-size: 16px; line-height: 1; cursor: pointer;
+}
+.ch-tool .icon { width: 16px; height: 16px; }
+.ch-tool:hover { background: var(--hover); color: var(--text); }
+.ch-tool:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ch-tool.is-fav:hover, .ch-tool.is-fav.is-on { color: #f59e0b; }
+/* トークの上（相手の名前の右）の 丸いボタン（グループ ・ お気に入り ・ 詳細 ・ 右の列）。マウスをのせると 説明 */
+.ch-head-tools { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.ch-tool.is-round {
+  position: relative; width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 17px;
+}
+.ch-tool.is-round .icon { width: 18px; height: 18px; }
+.ch-tool.is-round:hover { border-color: var(--border-strong); background: var(--hover); color: var(--text); }
+.ch-tool.is-round.is-on { color: var(--primary); background: var(--sky-soft); border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+.ch-tool.is-round.is-fav.is-on { color: #f59e0b; background: color-mix(in srgb, #f59e0b 12%, var(--surface)); border-color: color-mix(in srgb, #f59e0b 50%, var(--border)); }
+:root[data-theme="dark"] .ch-tool.is-round.is-on { color: #93c5fd; background: color-mix(in srgb, var(--primary) 20%, var(--surface)); }
+:root[data-theme="dark"] .ch-tool.is-round.is-fav.is-on { color: #fbbf24; background: color-mix(in srgb, #f59e0b 14%, var(--surface)); }
+.ch-tool-badge {   /* 入っている グループの数 */
+  position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 99px; border: 2px solid var(--surface);
+  background: var(--primary); color: #fff; font-size: 10px; font-weight: 800; line-height: 13px; text-align: center; box-sizing: border-box;
+}
+.ch-tool-sep { width: 1px; height: 22px; margin: 0 4px; background: var(--border); }
+.ch-row-main small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--text-2); }
+.ch-none { padding: 20px 18px; font-size: 13px; line-height: 1.7; color: var(--text-3); }
+
+/* ── 右 ── */
+.ch-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--surface-2); }
+.ch-empty { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--text-3); }
+.ch-empty .icon { width: 40px; height: 40px; color: var(--border-strong); }
+.ch-thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+/* 上：相手の名前 */
+.ch-head { flex: none; display: flex; align-items: center; gap: 12px; height: 69px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.ch-head-who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.ch-head-who b { font-size: 15px; font-weight: 800; }
+.ch-head-who small { font-size: 12px; color: var(--text-3); }
+
+/* まん中：やりとり（ここだけ スクロール） */
+.ch-body {
+  flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 16px 22px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: color-mix(in srgb, var(--sky-soft) 55%, var(--surface-2));
+}
+:root[data-theme="dark"] .ch-body { background: var(--bg); }
+/* 日ごとの まとまり：日付の区切り ＋ その日のメッセージ。区切りは その日の中だけ 上に のこる（次の日が来たら 押し出される） */
+.ch-day-group { display: flex; flex-direction: column; gap: 10px; }
+.ch-day-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ch-day { align-self: center; margin: 6px 0 2px; position: sticky; top: 6px; z-index: 1; }
+.ch-day span { display: inline-block; padding: 3px 12px; border-radius: 99px; background: color-mix(in srgb, var(--surface) 82%, #64748b); box-shadow: 0 1px 4px rgb(15 30 60 / .12); font-size: 11.5px; font-weight: 800; color: var(--text-2); }
+:root[data-theme="dark"] .ch-day span { background: color-mix(in srgb, var(--surface) 80%, #94a3b8); }
+.ch-start { margin: auto; font-size: 13px; font-weight: 700; color: var(--text-3); }
+.ch-msg { display: flex; align-items: flex-start; gap: 8px; max-width: 78%; }
+.ch-msg.is-me { align-self: flex-end; }
+.ch-msg .fr-avatar.is-small { width: 34px; height: 34px; font-size: 14px; }
+.ch-avatar-space { flex: none; width: 34px; }
+.ch-bubble-line { min-width: 0; display: flex; align-items: flex-end; gap: 6px; }
+.ch-msg.is-me .ch-bubble-line { flex-direction: row-reverse; }   /* 自分：時刻は 吹き出しの左 */
+.ch-bubble-line time { flex: none; font-size: 11px; font-weight: 700; color: var(--text-3); }
+.ch-bubble {
+  position: relative; margin: 0; padding: 9px 14px; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-size: 14px; line-height: 1.6; background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(15 30 60 / .08);
+}
+.ch-msg.is-friend .ch-bubble { border-top-left-radius: 6px; }
+.ch-msg.is-me .ch-bubble { background: linear-gradient(150deg, #3b82f6, #2563eb); color: #fff; border-top-right-radius: 6px; }
+/* トークを開いたとき（送った問題から）、その問題を少し光らせる */
+.ch-msg.is-jump .ch-quiz, .ch-msg.is-jump .ch-bubble { animation: ch-flash 1.6s ease-out; }
+@keyframes ch-flash { 0%, 40% { box-shadow: 0 0 0 4px color-mix(in srgb, #f59e0b 55%, transparent); } }
+.reduce-motion .ch-msg.is-jump .ch-quiz, .reduce-motion .ch-msg.is-jump .ch-bubble { animation: none; box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 55%, transparent); }
+
+/* 問題のカード（吹き出しの かわり） */
+.ch-quiz {
+  width: 260px; max-width: 100%; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 16px;
+  border: 1.5px solid color-mix(in srgb, #f59e0b 45%, var(--border)); background: var(--surface); color: var(--text);
+  font: inherit; text-align: left; cursor: pointer; box-shadow: 0 2px 6px rgb(15 30 60 / .08); transition: transform .15s;
+}
+.ch-quiz:hover { transform: translateY(-2px); }
+.ch-quiz:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ch-quiz-top { display: flex; align-items: center; gap: 10px; }
+.ch-quiz-top > span:last-child { min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.ch-quiz-top small { font-size: 11px; font-weight: 800; color: #d97706; }
+.ch-quiz-top b { overflow-wrap: anywhere; font-size: 14.5px; font-weight: 800; }
+.ch-quiz-meta { font-size: 12px; font-weight: 700; color: var(--text-3); }
+.ch-quiz-note { font-size: 13px; line-height: 1.5; color: var(--text-2); overflow-wrap: anywhere; }
+.ch-quiz-go { margin-top: 2px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12.5px; font-weight: 800; color: var(--primary); text-align: center; }
+
+/* 下：入力欄（＋ ・ 文 ・ 送信） */
+.ch-input { flex: none; display: flex; align-items: flex-end; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface); }
+.ch-plus-wrap { position: relative; flex: none; }
+.ch-plus, .ch-send {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+}
+.ch-plus { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); transition: rotate .2s; }
+.ch-plus:hover { color: var(--primary); }
+.ch-plus.is-open { rotate: 45deg; color: var(--primary); }
+.ch-plus .icon, .ch-send .icon { width: 20px; height: 20px; }
+.ch-send { background: var(--primary); color: #fff; }
+.ch-send:disabled { background: var(--surface-2); color: var(--text-3); cursor: default; }
+.ch-plus:focus-visible, .ch-send:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ch-text {
+  flex: 1; min-width: 0; min-height: 40px; max-height: 128px; resize: none; padding: 9px 16px; border-radius: 20px;
+  border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px; line-height: 1.5;
+}
+.ch-text:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--sky-soft); }
+/* ＋ のメニュー（入力欄の上に出す） */
+.ch-menu {
+  position: absolute; left: 0; bottom: calc(100% + 10px); z-index: 5; width: 270px; padding: 6px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 12px 30px rgb(15 30 60 / .2);
+}
+.ch-menu button {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px; border: 0; border-radius: 10px;
+  background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.ch-menu button:hover, .ch-menu button:focus-visible { background: var(--hover); outline: none; }
+.ch-menu button > span:last-child { display: flex; flex-direction: column; line-height: 1.35; }
+.ch-menu b { font-size: 14px; font-weight: 800; }
+.ch-menu small { font-size: 12px; color: var(--text-3); }
+
+/* 正解の選択肢（自分が送った問題のとき。quiz-view.jsx） */
+.fr-choices li.is-answer { background: color-mix(in srgb, #22c55e 14%, var(--surface)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #22c55e 60%, transparent); font-weight: 700; }
+.fr-choices li.is-answer i { color: #15803d; }
+.fr-answer-tag { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 800; color: #15803d; }
+.fr-answer-tag .icon { width: 14px; height: 14px; }
+:root[data-theme="dark"] .fr-choices li.is-answer i, :root[data-theme="dark"] .fr-answer-tag { color: #4ade80; }
+
+/* ── まん中に出す箱（問題の中身・問題を作る画面） ── */
+.ch-modal {
+  width: min(620px, calc(100vw - 40px)); max-height: min(780px, calc(100vh - 40px)); padding: 0; border: 0; border-radius: 20px;
+  background: var(--surface); color: var(--text); box-shadow: 0 24px 60px rgb(15 30 60 / .32); overflow: hidden;
+}
+.ch-modal.is-wide { width: min(760px, calc(100vw - 40px)); height: min(820px, calc(100vh - 40px)); }
+.ch-modal[open] { display: flex; flex-direction: column; animation: ch-in .2s ease-out; }
+.ch-modal::backdrop { background: rgb(15 23 42 / .45); }
+@keyframes ch-in { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+.reduce-motion .ch-modal[open] { animation: none; }
+.ch-modal-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 18px 18px 14px 24px; border-bottom: 1px solid var(--border); }
+.ch-modal-head h2 { flex: 1; min-width: 0; margin: 0; font-size: 17px; font-weight: 900; }
+.ch-modal-close { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 10px; background: none; color: var(--text-3); cursor: pointer; }
+.ch-modal-close .icon { width: 20px; height: 20px; }
+.ch-modal-close:hover { background: var(--surface-2); color: var(--text); }
+.ch-modal-body { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px 24px; }
+.ch-modal-foot { flex: none; display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.ch-modal-foot .btn { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 18px; }
+.ch-modal-foot .btn .icon { width: 16px; height: 16px; }
+.ch-modal-when { margin-right: auto; font-size: 12.5px; font-weight: 700; color: var(--text-3); }
+
+/* 問題を作る画面 */
+.ch-form { display: flex; flex-direction: column; gap: 14px; }
+.ch-field { display: flex; flex-direction: column; gap: 6px; }
+.ch-field > span { font-size: 13px; font-weight: 800; }
+.ch-field small { font-weight: 700; color: var(--text-3); }
+.ch-form .input { width: 100%; }
+.ch-form .input[aria-invalid="true"] { border-color: #e5484d; box-shadow: 0 0 0 3px rgb(229 72 77 / .15); }
+.ch-qs { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.ch-q { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-2); }
+.ch-q-head { display: flex; align-items: center; justify-content: space-between; }
+.ch-q-del { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: var(--text-3); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.ch-q-del .icon { width: 14px; height: 14px; }
+.ch-q-del:hover { background: color-mix(in srgb, #e5484d 10%, transparent); color: #e5484d; }
+.ch-q-text { resize: vertical; min-height: 56px; font: inherit; line-height: 1.5; }
+.ch-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ch-choice { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; border: 1.5px solid transparent; }
+.ch-choice.is-answer { border-color: color-mix(in srgb, #22c55e 60%, transparent); background: color-mix(in srgb, #22c55e 10%, var(--surface)); }
+.ch-choice > i { flex: none; font-style: normal; font-size: 13px; font-weight: 900; color: var(--text-3); }
+.ch-choice .input { flex: 1; min-width: 0; height: 34px; }
+.ch-choice-ok { flex: none; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; font-size: 11.5px; font-weight: 800; color: var(--text-3); white-space: nowrap; }
+.ch-choice-ok input { accent-color: #22c55e; width: 16px; height: 16px; margin: 0; }
+.ch-choice.is-answer .ch-choice-ok { color: #15803d; }
+:root[data-theme="dark"] .ch-choice.is-answer .ch-choice-ok { color: #4ade80; }
+.ch-add-q { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 36px; }
+.ch-add-q .icon { width: 16px; height: 16px; }
+.ch-form-error { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: #e5484d; }
+.ch-form-error .icon { width: 16px; height: 16px; }
+
+/* せまい画面：左右の列を少しせまく。いちばん せまいときは 選択肢を 1 列に */
+@media (max-width: 1300px) {
+  .ch { grid-template-columns: 240px minmax(0, 1fr) 280px; }
+  .ch.is-files-hidden { grid-template-columns: 240px minmax(0, 1fr); }
+}
+@media (max-width: 1100px) {
+  .ch { grid-template-columns: 210px minmax(0, 1fr) 240px; }
+  .ch.is-files-hidden { grid-template-columns: 210px minmax(0, 1fr); }
+  .ch-col-title { padding: 0 14px; font-size: 14px; }
+  .ch-file { grid-template-columns: minmax(0, 1fr); padding: 8px 10px; }   /* せまいときは 問題のしるしを出さない */
+  .ch-file .fr-kind { display: none; }
+  .ch-choices { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── 会話のピン止め ── */
+/* 吹き出しの横の ピンのボタン（マウスをのせると出る。ピン止めしたものは いつも青いピン） */
+.ch-msg-pin {
+  flex: none; align-self: center; display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--surface); color: var(--text-3); cursor: pointer; box-shadow: 0 1px 4px rgb(15 30 60 / .14);
+  opacity: 0; transition: opacity .15s;
+}
+.ch-msg-pin .icon { width: 14px; height: 14px; }
+.ch-msg:hover .ch-msg-pin, .ch-msg-pin:focus-visible { opacity: 1; }
+.ch-msg-pin:hover { color: var(--primary); }
+.ch-msg-pin:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ch-msg-pin.is-on { opacity: 1; background: var(--primary); color: #fff; box-shadow: none; }
+.ch-pin-x { flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: none; color: var(--text-3); cursor: pointer; }
+.ch-pin-x .icon { width: 15px; height: 15px; }
+.ch-pin-x:hover { background: color-mix(in srgb, #e5484d 10%, transparent); color: #e5484d; }
+
+/* ── トークの一覧の タブ（すべて・お気に入り・未読・オンライン・グループ…・＋） ── */
+.ch-tabs {   /* 1 行に ならべて、入りきらない分は 横にスクロール（スクロールバーは 細く） */
+  flex: none; display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 6px; padding: 10px 12px 9px; border-bottom: 1px solid var(--border);
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: smooth;
+}
+.ch-tabs::-webkit-scrollbar { display: none; }
+.ch-tabs > * { flex: none; }
+/* 続きがある はしを うすく消す（右に続きがある ・ 左に続きがある ・ 両方） */
+.ch-tabs.has-right { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+.ch-tabs.has-left { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px); mask-image: linear-gradient(to right, transparent, #000 28px); }
+.ch-tabs.has-left.has-right { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+.reduce-motion .ch-tabs { scroll-behavior: auto; }
+.ch-tab {
+  display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 1px solid var(--border); border-radius: 99px;
+  background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap;
+  max-width: 100%;
+}
+.ch-tab:hover { border-color: var(--border-strong); color: var(--text); }
+.ch-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ch-tab.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.ch-tab .icon { width: 13px; height: 13px; }
+.ch-tab-mark { color: #f59e0b; font-size: 12px; }
+.ch-tab.is-active .ch-tab-mark { color: #fde68a; }
+.ch-tab-n { min-width: 16px; padding: 0 4px; border-radius: 99px; background: var(--surface-2); color: var(--text-3); font-size: 10.5px; line-height: 16px; text-align: center; }
+.ch-tab.is-active .ch-tab-n { background: rgb(255 255 255 / .22); color: #fff; }
+.ch-tab.is-group:not(.is-active) { border-style: dashed; }
+.ch-tab.is-add { width: 28px; padding: 0; justify-content: center; border-style: dashed; color: var(--primary); }
+.ch-tab.is-add .icon { width: 15px; height: 15px; }
+/* 名前を入れる 小さな欄（グループを作る・名前を変える） */
+.ch-name-input { display: inline-flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ch-name-input .input { height: 28px; width: 150px; max-width: 100%; padding: 0 10px; border-radius: 99px; font-size: 12.5px; }
+.ch-name-input .input[aria-invalid="true"] { border-color: #e5484d; }
+.ch-name-err { font-size: 11px; font-weight: 800; color: #e5484d; }
+/* グループのタブを えらんでいるときの帯 */
+.ch-group-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+.ch-group-info { flex: 1; min-width: 0; display: inline-flex; align-items: center; gap: 6px; }
+.ch-group-info .icon { flex: none; width: 15px; height: 15px; color: var(--primary); }
+.ch-group-info b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 800; }
+.ch-group-info small { flex: none; font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+.ch-mini {
+  flex: none; height: 26px; padding: 0 9px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  color: var(--text-2); font: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+.ch-mini:hover { color: var(--text); border-color: var(--border-strong); }
+.ch-mini.is-danger:hover, .ch-mini.is-sure { color: #fff; background: #e5484d; border-color: #e5484d; }
+/* トークの上の「グループ」ボタンの メニュー */
+.ch-group-menu-wrap { position: relative; }
+.ch-group-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 10; width: 250px; padding: 8px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 12px 30px rgb(15 30 60 / .2);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ch-group-menu-title { margin: 2px 6px 6px; font-size: 12px; font-weight: 800; color: var(--text-3); }
+.ch-group-menu-none { margin: 4px 6px 8px; font-size: 12.5px; color: var(--text-3); }
+.ch-group-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 9px; cursor: pointer; font-size: 13.5px; font-weight: 700; }
+.ch-group-item:hover { background: var(--hover); }
+.ch-group-item input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+.ch-group-item span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-group-item small { font-size: 11.5px; color: var(--text-3); }
+.ch-group-new {
+  display: flex; align-items: center; gap: 6px; margin-top: 4px; padding: 8px; border: 1px dashed var(--border-strong); border-radius: 9px;
+  background: none; color: var(--primary); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer;
+}
+.ch-group-new .icon { width: 15px; height: 15px; }
+.ch-group-new:hover { background: var(--sky-soft); }
+.ch-group-menu .ch-name-input { margin-top: 4px; }
+.ch-group-menu .ch-name-input .input { width: 100%; }
+
+/* ── 飛んだとき：やりとりの上に「〇月〇日（〇）の会話」と 少しのあいだ出す ── */
+.ch-body-wrap { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
+.ch-jump-date {
+  position: absolute; top: 12px; left: 50%; translate: -50% 0; z-index: 3; margin: 0;
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 99px; white-space: nowrap;
+  background: var(--primary); color: #fff; font-size: 13px; font-weight: 800; box-shadow: 0 6px 18px rgb(37 99 235 / .35);
+  animation: ch-jump-in 3s ease forwards; pointer-events: none;
+}
+.ch-jump-date .icon { width: 15px; height: 15px; }
+@keyframes ch-jump-in { 0% { opacity: 0; transform: translateY(-6px); } 10%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.reduce-motion .ch-jump-date { animation: none; }
+
+/* ── トークの けんさく欄（名前・会話の文で さがす） ── */
+.ch-search {
+  flex: none; position: relative; display: flex; align-items: center; margin: 10px 12px 0; height: 36px;
+  border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); transition: border-color .15s, box-shadow .15s;
+}
+.ch-search:focus-within { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--sky-soft); }
+.ch-search > .icon { flex: none; width: 16px; height: 16px; margin: 0 8px 0 11px; color: var(--text-3); }
+.ch-search input { flex: 1; min-width: 0; height: 100%; padding: 0 6px 0 0; border: 0; outline: none; background: none; color: var(--text); font: inherit; font-size: 13px; }
+.ch-search input::-webkit-search-cancel-button { display: none; }
+.ch-search-x { flex: none; display: grid; place-items: center; width: 26px; height: 26px; margin-right: 5px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--text-3); cursor: pointer; }
+.ch-search-x .icon { width: 14px; height: 14px; }
+.ch-search-x:hover { background: var(--hover); color: var(--text); }
+.ch-hit mark { padding: 0 2px; border-radius: 3px; background: #fde68a; color: #78350f; font-weight: 800; }
+:root[data-theme="dark"] .ch-hit mark { background: #a16207; color: #fffbeb; }
+.ch-search + .ch-tabs { border-bottom: 1px solid var(--border); }
+
+/* ── グループトーク ── */
+/* トークの見出しの右の「＋ グループ」（グループトークを作る） */
+.ch-new-room {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 11px; border-radius: 99px;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); background: var(--sky-soft); color: var(--primary);
+  font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+.ch-new-room .icon { width: 14px; height: 14px; }
+.ch-new-room:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+:root[data-theme="dark"] .ch-new-room { background: color-mix(in srgb, var(--primary) 18%, var(--surface)); color: #93c5fd; }
+/* グループの丸（人のしるし）と 人数 */
+.fr-avatar.is-room { border-radius: 30%; }
+.fr-avatar.is-room .icon { width: 55%; height: 55%; }
+.ch-room-n { flex: none; padding: 0 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-3); font-size: 10.5px; font-weight: 800; line-height: 16px; }
+/* お知らせ（グループを作った・メンバーを足した など）：まん中に 小さく */
+.ch-notice { align-self: center; max-width: 86%; display: flex; align-items: baseline; gap: 8px; padding: 4px 14px; border-radius: 99px; background: color-mix(in srgb, var(--surface) 70%, transparent); font-size: 12px; font-weight: 700; color: var(--text-2); text-align: center; }
+.ch-notice time { flex: none; font-size: 10.5px; color: var(--text-3); }
+/* 吹き出しの上の 送った人の名前（グループトーク） */
+.ch-msg-col { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ch-msg.is-me .ch-msg-col { align-items: flex-end; }
+.ch-sender { padding-left: 4px; font-size: 11.5px; font-weight: 800; color: var(--text-2); }
+/* グループトークを作る・設定する画面：メンバーを えらぶ */
+.ch-member-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ch-member-list[aria-invalid="true"] .ch-member { border-color: #e5484d; }
+.ch-member {
+  display: grid; grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "chk av name" "chk av sub"; column-gap: 10px; align-items: center;
+  padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); cursor: pointer;
+}
+.ch-member:hover { border-color: var(--border-strong); background: var(--hover); }
+.ch-member.is-on { border-color: var(--primary); background: var(--sky-soft); }
+:root[data-theme="dark"] .ch-member.is-on { background: color-mix(in srgb, var(--primary) 16%, var(--surface)); }
+.ch-member input { grid-area: chk; width: 17px; height: 17px; margin: 0; accent-color: var(--primary); }
+.ch-member .fr-avatar { grid-area: av; width: 36px; height: 36px; font-size: 15px; }
+.ch-member b { grid-area: name; font-size: 14px; font-weight: 800; }
+.ch-member small { grid-area: sub; font-size: 11.5px; color: var(--text-3); }
+.ch-member-note { font-size: 12px; color: var(--text-3); }
+.ch-leave { margin-right: auto; color: #e5484d; border-color: color-mix(in srgb, #e5484d 40%, var(--border)); }
+.ch-leave:hover, .ch-leave.is-sure { background: #e5484d; border-color: #e5484d; color: #fff; }
+.ch-modal-foot .ch-leave + .ch-form-error { margin-right: 0; }
+
+/* ── 分類のタブの帯（フレンドの画面の タブの すぐ下。横いっぱいの 1 行） ── */
+.ch-catbar { flex: none; display: flex; align-items: center; min-width: 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+.ch-catbar .ch-tabs { flex: 1; min-width: 0; padding: 8px 20px; border-bottom: 0; }
+.ch-catbar .ch-group-bar { flex: none; padding: 6px 20px 6px 14px; border-bottom: 0; border-left: 1px solid var(--border); background: none; }
+.ch-catbar .ch-group-info { flex: none; }
+
+/* ── プログラムのコード（吹き出し・中身を見る画面）：行番号つき・1 行ずつ コピーできる ── */
+.fr-kind.is-code { background: #6366f1; }
+.ch-code-bubble { min-width: 0; max-width: min(560px, 100%); display: flex; flex-direction: column; gap: 6px; }
+.ch-code-note { margin: 0; padding: 8px 12px; border-radius: 14px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(15 30 60 / .08); }
+.ch-msg.is-me .ch-code-note { align-self: flex-end; background: linear-gradient(150deg, #3b82f6, #2563eb); color: #fff; }
+.ch-modal .ch-code-note { margin-bottom: 12px; background: var(--surface-2); box-shadow: none; }
+.ch-code { min-width: 0; border: 1px solid #dbe4f3; border-radius: 14px; overflow: hidden; background: #f8fbff; box-shadow: 0 1px 2px rgb(15 30 60 / .08); }
+.ch-code-head { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border-bottom: 1px solid #dbe4f3; background: #eef4fd; }
+.ch-code-lang { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 900; color: #1e40af; }
+.ch-code-lang .icon { width: 16px; height: 16px; }
+.ch-code-head small { margin-right: auto; font-size: 12px; font-weight: 700; color: var(--text-3); }
+.ch-code-all { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; border: 1px solid #c7d6ee; border-radius: 9px; background: #fff; color: #1d4ed8; font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.ch-code-all .icon { width: 15px; height: 15px; }
+.ch-code-all:hover { background: #e0ecff; border-color: #93b4ea; }
+.ch-code-all.is-done { background: #dcfce7; border-color: #86efac; color: #15803d; }
+.ch-code-lines {
+  margin: 0; padding: 6px 0; list-style: none; max-height: 320px; overflow: auto; counter-reset: none;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "BIZ UDGothic", "MS Gothic", monospace; font-size: 13px; line-height: 1.65;
+}
+.ch-code.is-big .ch-code-lines { max-height: none; font-size: 14px; }
+.ch-code-lines li { position: relative; display: flex; align-items: stretch; min-width: max-content; }
+.ch-code-lines li:hover { background: #e7effc; }
+.ch-code-lines li.is-done { background: #dcfce7; }
+.ch-code-no {
+  position: sticky; left: 0; z-index: 1; flex: none; width: 44px; padding: 0 10px 0 0; border: 0; border-right: 1px solid #dbe4f3;
+  background: #f1f6fd; color: #94a3b8; font: inherit; text-align: right; cursor: pointer; user-select: none;
+}
+.ch-code-lines li:hover .ch-code-no { color: #1d4ed8; background: #dbe8fb; }
+.ch-code-lines li.is-done .ch-code-no { color: #15803d; background: #bbf7d0; }
+.ch-code-lines code { flex: 1; padding: 0 92px 0 12px; white-space: pre; color: #0f172a; font: inherit; }
+/* 行に マウスをのせると 右に出る「コピー」ボタン（横に スクロールしても 右はしに いる） */
+.ch-code-copy {
+  position: sticky; right: 6px; margin-left: -86px; align-self: center; flex: none; display: inline-flex; align-items: center; gap: 4px;
+  height: 22px; padding: 0 8px; border: 1px solid #c7d6ee; border-radius: 7px; background: #fff; color: #1d4ed8;
+  font: 800 11.5px/1 system-ui, sans-serif; cursor: pointer; opacity: 0; transition: opacity .12s;
+}
+.ch-code-copy .icon { width: 13px; height: 13px; }
+.ch-code-lines li:hover .ch-code-copy, .ch-code-lines li.is-done .ch-code-copy, .ch-code-copy:focus-visible { opacity: 1; }
+.ch-code-copy:hover { background: #2563eb; border-color: #2563eb; color: #fff; }
+.ch-code-lines li.is-done .ch-code-copy { background: #16a34a; border-color: #16a34a; color: #fff; }
+.reduce-motion .ch-code-copy { transition: none; }
+/* コードを送る画面 */
+.ch-langs { display: flex; flex-wrap: wrap; gap: 6px; }
+.ch-code-input { min-height: 240px; resize: vertical; font-family: ui-monospace, "Cascadia Code", Consolas, "BIZ UDGothic", monospace; font-size: 13.5px; line-height: 1.6; tab-size: 4; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+.ch-code-hint { margin-right: auto; font-size: 12px; font-weight: 700; color: var(--text-3); }
+.ch-form-error + .ch-code-hint { margin-right: 0; }
+.ch-msg.is-jump .ch-code { animation: ch-flash 1.6s ease-out; }
+.reduce-motion .ch-msg.is-jump .ch-code { animation: none; }
+/* 暗い色 */
+:root[data-theme="dark"] .ch-code { background: #0f172a; border-color: #334155; }
+:root[data-theme="dark"] .ch-code-head { background: #1e293b; border-color: #334155; }
+:root[data-theme="dark"] .ch-code-lang { color: #93c5fd; }
+:root[data-theme="dark"] .ch-code-all, :root[data-theme="dark"] .ch-code-copy { background: #1e293b; border-color: #475569; color: #93c5fd; }
+:root[data-theme="dark"] .ch-code-all:hover { background: #273449; }
+:root[data-theme="dark"] .ch-code-all.is-done { background: #14532d; border-color: #166534; color: #86efac; }
+:root[data-theme="dark"] .ch-code-no { background: #111c31; border-color: #334155; color: #64748b; }
+:root[data-theme="dark"] .ch-code-lines li:hover { background: #1b2a44; }
+:root[data-theme="dark"] .ch-code-lines li:hover .ch-code-no { background: #1e3a66; color: #93c5fd; }
+:root[data-theme="dark"] .ch-code-lines li.is-done, :root[data-theme="dark"] .ch-code-lines li.is-done .ch-code-no { background: #14532d; color: #86efac; }
+:root[data-theme="dark"] .ch-code-lines code { color: #e2e8f0; }

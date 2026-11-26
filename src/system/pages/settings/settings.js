@@ -51,6 +51,7 @@ export const DEFAULTS = {
   startMaximized: true,    // 起動したときに最大化する
   // キーボード
   shortcuts: DEFAULT_SHORTCUTS,   // { 操作の id: "Ctrl+1" など }（一覧は core/shortcuts.js）
+  shortcutsVersion: 2,     // ショートカットの決まりの番号（2：サイドバーを隠す／出すを Ctrl+B から Ctrl+Shift+B にした。merge で使う）
 };
 
 /** 文字の大きさ → 画面の拡大率 */
@@ -85,6 +86,11 @@ function merge(saved) {
       if (typeof sc[id] === "string") merged.shortcuts[id] = sc[id];
     }
   }
+  // 前の決まり（番号 1）で保存した人：サイドバーを隠す／出すが 前の最初のキー Ctrl+B のままなら、Ctrl+Shift+B に直す
+  //   （自分で べつのキーにしている人・Ctrl+Shift+B を ほかの操作に使っている人は そのまま）
+  const oldVersion = (saved?.shortcutsVersion ?? 1) < 2;
+  const usedElsewhere = Object.entries(merged.shortcuts).some(([id, k]) => id !== "sidebar" && k === "Ctrl+Shift+B");
+  if (oldVersion && merged.shortcuts.sidebar === "Ctrl+B" && !usedElsewhere) merged.shortcuts.sidebar = "Ctrl+Shift+B";
   return merged;
 }
 
