@@ -1,6 +1,76 @@
+/* ============================================================
+   検索バー
+   ============================================================ */
+
+/* 配置：検索欄を広げ、新規登録は右端へ */
 .search-bar .field {
-    flex: 0 1 38%;
+    flex: 1 1 0;
+    max-width: 560px;
 }
+
+.search-bar .grn {
+    margin-left: auto;
+}
+
+/* 検索欄：入力・✕・フィルターアイコン（右端に2つ並ぶぶん右余白をとる） */
+.search-bar .field #q {
+    padding-right: 68px;
+}
+
+.field .clear {
+    position: absolute;
+    right: 36px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    padding: 4px 6px;
+    color: var(--sub);
+    display: none;
+}
+
+.field .clear:hover {
+    color: var(--tx);
+}
+
+.field .clear.on {
+    display: inline-flex;
+}
+
+/* 絞り込み中のフィルターアイコンの印 */
+.field .filter.on::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+}
+
+/* 絞り込みをリセット：条件があるときだけ有効表示 */
+.rst {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: transparent;
+}
+
+.rst:disabled {
+    color: var(--sub);
+    border-color: var(--bd);
+    opacity: .6;
+    cursor: default;
+}
+
+.rst:disabled:hover {
+    background: transparent;
+}
+
+
+/* ============================================================
+   一覧
+   ============================================================ */
 
 .grid {
     display: grid;
@@ -45,9 +115,87 @@
     font-size: 13px;
 }
 
+/* 該当なし */
 .empty {
     margin-top: 48px;
     text-align: center;
     color: var(--sub);
     display: none;
+}
+
+
+/* ============================================================
+   検索詳細モーダル（こだわり条件）
+   中央表示。暗い背景は common.css の .dlg-bg を流用
+   ============================================================ */
+
+.fdlg {
+    background: var(--pn);
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, .3);
+}
+
+/* ヘッダー */
+.fdlg-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bd);
+}
+
+.fdlg-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.fdlg-head .icon-btn {
+    background: transparent;
+    color: var(--sub);
+}
+
+/* 本文 */
+.fdlg-body {
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.fdlg-body h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+}
+
+/* タグ候補：本文のスクロール領域で切れないよう、入力欄の下に展開する */
+.fdlg .suggest {
+    position: static;
+    margin-top: 6px;
+    box-shadow: none;
+}
+
+/* フッター */
+.fdlg-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--bd);
+}
+
+
+/* ============================================================
+   レスポンシブ
+   ============================================================ */
+
+@media (max-width: 720px) {
+    .search-bar .field {
+        flex-basis: 100%;
+        max-width: none;
+    }
 }
