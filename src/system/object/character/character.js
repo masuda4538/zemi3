@@ -2,7 +2,7 @@
 //  キャラクター「スタッピー」：動きと、なでる・押すしかけ　［このフォルダーの入口：character.js］
 //
 //  使い方（ホームの JS でも、React のページでも同じ）
-//    import { mountCharacter } from "<ここまでの道>/character/character.js";
+//    import { mountCharacter } from "<ここまでの道>/object/character/character.js";
 //    const stappy = mountCharacter(入れる場所の要素, {
 //      pose: "main",            … 絵（"main" ＝ 立ち姿 ／ "jump" ＝ 跳ねている姿。images.js）
 //      motion: "sway",          … いつもの動き（"sway" ＝ ゆらゆら ／ "hop" ＝ ぴょんぴょん ／ "none"）
@@ -11,6 +11,8 @@
 //      grab: false,             … マウスでつかんで、投げられるか（重力で落ちて、地面で ぽよんと はねる。そのあと歩いて帰る）
 //      roam: false,             … しばらくさわらないと、画面の中を歩きまわる（おさんぽ）。しばらくしたら もとの場所に帰る
 //      roamHeight: 0,           … おさんぽ中の絵の高さ（px。0 ならそのまま）。大きな絵を、歩くときだけ小さくしたいとき
+//      ground: null,            … 地面の高さ（関数。() => ({ top, bottom }) 画面の上からの px）。あると、おさんぽでは足もとが
+//                                 この間だけを歩き（空を歩かない）、投げたときも この下のはし（bottom）に落ちる。なければ画面ぜんぶ
 //      onRoam: (on) => {},      … おさんぽに出かけた（true）・帰ってきた（false）とき
 //      stroll: { area, mover, onMove, rise, avoid },
 //                               … その場の近くを とことこ歩く。area ＝ 歩ける枠、mover ＝ 動かす要素（なければ入れる場所）、
@@ -132,7 +134,7 @@ function replay(node, cls, all) {
 
 // ───────── 本体 ─────────
 export function mountCharacter(host, {
-  pose = "main", motion = "sway", shadow = false, follow = false, grab = false, roam = false, roamHeight = 0, stroll = null, talk,
+  pose = "main", motion = "sway", shadow = false, follow = false, grab = false, roam = false, roamHeight = 0, ground = null, stroll = null, talk,
   onSay, onRestore, onPet, onRoam,
 } = {}) {
   const face = FACE[pose] ?? FACE.main;
@@ -345,13 +347,19 @@ export function mountCharacter(host, {
   /** 行ける場所（画面のはしから EDGE はなれたところ。体がはみ出さないように） */
   const clampX = (x) => Math.max(EDGE, Math.min(window.innerWidth - homeBox.w - EDGE, x));
   const clampY = (y) => Math.max(EDGE, Math.min(window.innerHeight - homeBox.h - EDGE, y));
+  /** 行き先の高さ（体の上のはし）：ground があれば、足もとが地面の中に来るように。なければ画面のどこでも */
+  const randomTop = () => {
+    const g = ground?.();
+    if (!g) return clampY(rand(0, window.innerHeight));
+    return clampY(rand(g.top, g.bottom) - homeBox.h);
+  };
   const randomSpot = () => {
     const now = root.getBoundingClientRect();
     for (let i = 0; i < 8; i++) {   // 今の場所から、ある程度はなれたところを選ぶ
-      const x = clampX(rand(0, window.innerWidth)), y = clampY(rand(0, window.innerHeight));
+      const x = clampX(rand(0, window.innerWidth)), y = randomTop();
       if (Math.hypot(x - now.left, y - now.top) > 180) return [x, y];
     }
-    return [clampX(rand(0, window.innerWidth)), clampY(rand(0, window.innerHeight))];
+    return [clampX(rand(0, window.innerWidth)), randomTop()];
   };
   /** もとの場所からはなれる：体をページのいちばん上に出して（position: fixed）、もとの場所は同じ大きさであけておく */
   const leaveHome = () => {
@@ -476,7 +484,8 @@ export function mountCharacter(host, {
     const step = (t) => {
       if (!alive) return;
       const dt = Math.min(32, t - last); last = t;
-      const floor = window.innerHeight - homeBox.h - EDGE, right = window.innerWidth - homeBox.w - EDGE;
+      // 地面：ground があれば その下のはし（足もと）、なければ画面の下
+      const floor = Math.min(window.innerHeight - EDGE, ground?.()?.bottom ?? Infinity) - homeBox.h, right = window.innerWidth - homeBox.w - EDGE;
       vy += GRAVITY * dt;
       x += vx * dt; y += vy * dt;
       if (x < EDGE) { x = EDGE; vx = -vx * WALL; }          // 左のかべ
@@ -582,7 +591,16 @@ export function mountCharacter(host, {
   window.addEventListener("resize", onResize);
   blinkLoop();
   idleLoop();
-  if (stroll) { mover.classList.add("chara-mover"); strollLoop(); }
+  if (stroll) {
+    mover.classList.add("chara-mover");
+    // 最初の場所が 立ち止まらない場所（avoid）なら、かからない場所へ動かしておく（画面ができてから）
+    requestAnimationFrame(() => {
+      if (!alive || !stroll.avoid || !blocked(strollX)) return;
+      const [lo, hi] = strollRange();
+      for (let i = 0; i < 30; i++) { const x = rand(lo, hi); if (!blocked(x)) { setStroll(x); break; } }
+    });
+    strollLoop();
+  }
   touch();
 
   return {

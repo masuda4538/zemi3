@@ -68,12 +68,14 @@
 .fr-aside-list small { font-size: 12px; font-weight: 700; color: var(--text-3); }
 
 /* 一覧の行は押せる（フレンド詳細へ）。右はしに › */
+.fr-item { display: flex; align-items: stretch; border-top: 1px solid var(--border); }
+.fr-item:hover { background: var(--surface-2); }
 .fr-row.is-link {
-  width: 100%; grid-template-columns: auto minmax(0, 1fr) 150px minmax(160px, 220px) 14px;
-  border-width: 1px 0 0; border-style: solid; border-color: var(--border); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  flex: 1; min-width: 0; width: 100%; grid-template-columns: auto minmax(0, 1fr) 150px minmax(160px, 220px) 14px; padding-right: 8px;
+  border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
   transition: background .15s;
 }
-.fr-row.is-link:hover { background: var(--surface-2); }
+
 .fr-go { font-size: 20px; line-height: 1; color: var(--text-3); }
 .fr-row.is-link:hover .fr-go { color: var(--primary); }
 
@@ -171,3 +173,17 @@
   .fr-mail-body { padding-left: 20px; }
 }
 .fr-quiz-list > li > div { flex: 1; min-width: 0; }
+/* ☆（お気に入りにする・外す）：一覧の行の右はし と、詳細のボタン */
+.fr-fav {
+  flex: none; display: grid; place-items: center; width: 52px; border: 0; background: none; cursor: pointer;
+  color: var(--text-3); font: inherit; font-size: 20px; line-height: 1;
+}
+.fr-fav:hover { color: #f59e0b; }
+.fr-fav.is-on { color: #f59e0b; }
+.fr-fav.is-big {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: auto; height: 36px; padding: 0 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 800; color: var(--text-2);
+}
+.fr-fav.is-big span { font-size: 17px; }
+.fr-fav.is-big.is-on { color: #b45309; background: color-mix(in srgb, #f59e0b 12%, var(--surface)); border-color: color-mix(in srgb, #f59e0b 50%, var(--border)); }
+:root[data-theme="dark"] .fr-fav.is-big.is-on { color: #fbbf24; }

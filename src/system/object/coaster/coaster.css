@@ -1,0 +1,7 @@
+/* ═════════ もの：ジェットコースター（coaster.js がかく SVG） ═════════ */
+.obj-coaster { display: block; width: 100%; height: auto; overflow: visible; transition: filter .8s; }
+.obj-coaster .cs-pole { fill: none; stroke: #c3cfdd; stroke-width: 2.4; }
+.obj-coaster .cs-rail { fill: none; stroke: #ef5b5b; stroke-width: 4; stroke-linejoin: round; }
+.obj-coaster .cs-rail.is-tie { stroke: #fff; stroke-width: 1.4; stroke-dasharray: 2 5; }
+.obj-coaster .cs-head { fill: #fde68a; }
+[data-time="night"] .obj-coaster { filter: brightness(.75); }

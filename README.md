@@ -66,11 +66,15 @@ tauri-app/
 │     │  ├─ loading-screen.js    ロード画面を消す（出しておく時間・Enter キーで始める）
 │     │  └─ exit-confirm.js      × で閉じるときの「アプリを閉じますか？」（文）
 │     ├─ log_in/            … ★ ログインの処理（ログイン・新規登録・ログアウト）
-│     ├─ character/         … キャラクター「スタッピー」（images/ に絵、character.js に動き・なでる、lines.js にことば）
 │     │  ├─ LoginScreen.jsx      起動したときのログインの画面（login-screen.css が見た目）
 │     │  ├─ LoginForm.jsx        ログイン／新規登録の入力（login-form.css が見た目）
 │     │  ├─ register.js          新規登録のステップと入力チェック
 │     │  └─ session.js           ログイン・新規登録・ログアウト・ログインを覚えておく（3 か月で期限切れ）
+│     ├─ object/            … ★ いろいろな画面で使う「もの」（1 つにつき 1 フォルダー。絵と動き 〇〇.js・見た目 〇〇.css・画像 images/）
+│     │  ├─ character/       キャラクター「スタッピー」（images/ に絵、character.js に動き・なでる、lines.js にことば）
+│     │  ├─ post/ fountain/ wheel/ coaster/ board/ tree/ flowers/ person/
+│     │  │                   ポスト・噴水・観覧車・ジェットコースター・掲示板・木・花ばたけ・フレンドの人形（ホームの広場で使う）
+│     │  └─ README.md        使い方の一覧
 │     ├─ core/              … アプリの土台（画面の組み立て・みんなで使う部品。ふだんはさわらない）
 │     │  ├─ App.jsx         … 全体（左のサイドバー＋右の画面。ログインしている人を持つ）
 │     │  ├─ App.css         … 全体の見た目（レイアウト）

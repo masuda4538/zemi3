@@ -67,6 +67,13 @@ function renderGrid() {
     </button>`
     ).join("");
 
+    // renderGrid() 内、$("#grid").innerHTML の生成後
+    $("#grid").querySelectorAll(".card").forEach((card, idx) => {
+        card.onclick = () => {
+            location.href = `detail.html?w=${encodeURIComponent(r[idx].w)}`;
+        };
+    });
+
     $("#empty").style.display = r.length ? "none" : "block";
     $("#pcount").textContent = r.length + " 件";
 
