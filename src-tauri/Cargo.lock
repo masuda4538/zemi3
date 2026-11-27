@@ -3398,12 +3398,14 @@ dependencies = [
 name = "tauri-app"
 version = "0.1.0"
 dependencies = [
+ "reqwest",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
  "tauri-plugin-store",
+ "tokio",
  "webkit2gtk",
 ]
 
@@ -3742,6 +3744,7 @@ dependencies = [
  "libc",
  "mio",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",

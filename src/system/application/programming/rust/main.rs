@@ -66,10 +66,37 @@
 
 /// 動くかどうか 確かめる用（いらなくなったら 消してよい。消したら 下の commands! からも 消す）
 ///   JS：await app.invoke("ping")   →  "プログラム学習の Rust が動いています"
+// ═══════════════════════════════════════════════════════════════
+// ファイルをつなぐ
+// ═══════════════════════════════════════════════════════════════
+mod ai;
+mod executor;
+
+use ai::*;
+use executor::*;
+
+// workspace.rs がある場合は以下もコメントアウト解除
+// mod workspace;
+// use workspace::*;
+
+/// 疎通確認用
 #[tauri::command]
 fn ping() -> String {
     "プログラム学習の Rust が動いています".into()
 }
 
-// ★ JS から呼べるようにする関数を、ここに並べる（カンマで区切る）
-crate::commands![ping];
+// ★ JS から呼べるようにする関数を登録
+crate::commands![
+    ping,
+    run_python_code,
+    grade_task_code,
+    check_python_syntax,
+    ask_ai_hint,
+    check_ai_status,
+    // workspace 関連を使う場合は以下も追加
+    // ensure_project_dir,
+    // save_project_file,
+    // save_all_project_files,
+    // read_project_file,
+    // list_project_files,
+];
