@@ -13,10 +13,11 @@
 //    });
 //    plaza.add(フレンド, "left")      … 広場に入れる（"left" ／ "right" なら、そのはしから歩いて入ってくる）
 //    plaza.remove(userId, "right")    … 広場から出す（"left" ／ "right" なら、そのはしへ歩いて出ていく）
-//    plaza.setBubbles({ userId: "問題を送ったよ！" })   … フレンドの頭の上の吹き出し（書いていない人は消す）
+//    plaza.setBubbles({ userId: { text: "チャットが来たよ！", kind: "chat" } })   … フレンドの頭の上の吹き出し（書いていない人は消す）
+//      kind … "chat"（青い しるし） ／ "quiz"（オレンジの ？）。文字だけ（"…"）でもよい（そのときは quiz）
 //    フレンド … { name, userId, color, online, lastLogin, achieve }（今は pages/friends/friends-sample.js の仮のデータ）
 //  することと見た目
-//    ・フレンドは人の形（丸い頭 ＋ 肩。絵は object/person）を、人ごとの色でぬる。頭の上に名前（オンラインなら緑の点）
+//    ・フレンドは人の形（丸い頭 ＋ 肩。絵は object/person）を、人ごとの色でぬる。足もとの下に名前（オンラインなら緑の点）。頭の すぐ上には 吹き出し
 //    ・ときどき、広場の中をとことこ歩く。奥（上のほう）へ行くほど小さく、手前の人ほど前に重なる
 //    ・まん中の噴水はよけて歩く（噴水の池の上では止まらない。向こうがわへ行くときは、池の角を回って行く）
 //      噴水より手前にいる人は噴水の前に、奥にいる人は噴水のうしろに見える
@@ -25,7 +26,7 @@
 //      カードを出しているあいだ、その人は止まる。カードの外を押すか × で閉じる
 //      カードの ☆ を押すと、お気に入りにする・外す（onFavorite。その人は となりの広場へ歩いていく）
 //      カードの「くわしく見る」を押すと、フレンドのページの「フレンド詳細」を開く（onDetail）
-//    ・吹き出し（setBubbles）を出している人は、吹き出しを押すと onBubble（ポストのその問題を開く）
+//    ・吹き出し（setBubbles）を出している人は、吹き出しを押すと onBubble（その人とのチャットを開く）
 //    ・設定の「アニメーションを減らす」のときは歩かない（出入りは、すぐに入れかわる）
 //  見た目は css/style.css の「広場」
 // ═══════════════════════════════════════════════════════════════
@@ -269,7 +270,7 @@ export function mountPlaza({ scene, layer, friends, fountain = null, rim = null,
     el.className = `home-friend${f.online ? " is-online" : ""}`;
     el.style.setProperty("--c", f.color);
     el.setAttribute("aria-label", `${f.name} さん（押すと くわしく見られます）`);
-    el.innerHTML = `<span class="home-friend-name">${f.online ? "<i></i>" : ""}${f.name}</span>${PERSON}<span class="home-friend-shadow"></span>`;
+    el.innerHTML = `${PERSON}<span class="home-friend-shadow"></span><span class="home-friend-name">${f.online ? "<i></i>" : ""}${f.name}</span>`;   // 人 → かげ → 足もとの下に名前
     const p = { f, el, x: 0, z: 0, timer: 0, leg: 0, paused: false, gone: false };
     el.addEventListener("click", (e) => {
       if (e.target.closest(".home-friend-bubble")) { onBubble?.(f.userId); return; }   // 吹き出しを押した
@@ -317,11 +318,12 @@ export function mountPlaza({ scene, layer, friends, fountain = null, rim = null,
     put(p);
     void p.el.offsetWidth;
   };
-  /** 頭の上の吹き出し（{ userId: 言葉 }。書いていない人は消す） */
+  /** 頭の上の吹き出し（{ userId: { text, kind } }。書いていない人は消す） */
   const setBubbles = (map = {}) => {
     for (const [id, p] of people) {
       let b = p.el.querySelector(".home-friend-bubble");
-      const text = map[id];
+      const v = map[id];
+      const text = typeof v === "string" ? v : v?.text;
       if (!text) { b?.remove(); p.el.classList.remove("has-bubble"); continue; }
       if (!b) {
         b = document.createElement("span");
@@ -329,7 +331,8 @@ export function mountPlaza({ scene, layer, friends, fountain = null, rim = null,
         p.el.prepend(b);
       }
       b.textContent = text;
-      b.title = "押すと、ポストで見られます";
+      b.dataset.kind = (typeof v === "string" ? "quiz" : v.kind) ?? "quiz";
+      b.title = "押すと、チャットが開きます";
       p.el.classList.add("has-bubble");
     }
   };

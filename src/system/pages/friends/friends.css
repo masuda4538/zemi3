@@ -1,17 +1,55 @@
-/* ═════════ フレンド（main.jsx。形は core/components/settings-layout.css。★ 今は見た目のイメージだけ） ═════════ */
-
-/* 「今は見た目のイメージです」のお知らせ */
-.fr-sample {
-  display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 8px 14px; border-radius: 10px;
-  background: color-mix(in srgb, #f59e0b 10%, var(--surface)); border: 1px dashed color-mix(in srgb, #f59e0b 45%, var(--border));
-  font-size: 12.5px; font-weight: 700; color: var(--text-2);
+/* ═════════ フレンド（main.jsx。★ フレンドは まだ仮の人たち） ═════════
+   上にバー（core/components/PageBar.jsx）。その すぐ下に「チャット ／ フレンド一覧 ／ フレンドを追加」の タブ（青い下線）
+   チャットは ページの左右いっぱい・下まで（外の枠なし。列のさかいは線だけ。chat.css）
+   フレンド一覧・追加も はばいっぱい（余白は少なめ） */
+.fr-page { padding-bottom: 12px; }
+/* チャットのとき：ページ（.stage）を スクロールさせず、バーの下を ぜんぶ チャットに使う（左右・下の すき間も なし） */
+.stage:has(> .page:not([hidden]) > .fr-page.is-chat) { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0; }
+.stage:has(> .page:not([hidden]) > .fr-page.is-chat) > .page:not([hidden]) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.fr-page.is-chat { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 0; }
+/* 「仮のデータ」の小さな札（上のバー。マウスをのせると 説明） */
+.fr-sample-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 99px; cursor: help;
+  background: color-mix(in srgb, #f59e0b 12%, var(--surface)); border: 1px dashed color-mix(in srgb, #f59e0b 50%, var(--border));
+  font-size: 11.5px; font-weight: 800; color: #b45309; white-space: nowrap;
 }
-.fr-sample .icon { flex: none; width: 16px; height: 16px; color: #d97706; }
+.fr-sample-chip .icon { width: 13px; height: 13px; }
+:root[data-theme="dark"] .fr-sample-chip { color: #fbbf24; }
+/* 上のバーの すぐ下の タブ（はばいっぱいの 細い帯。えらんでいるものは 青い文字と 下線） */
+.fr-page > .page-bar { margin-bottom: 0; }
+.fr-tabs {
+  flex: none; display: flex; align-items: stretch; gap: 4px; margin: 0 -24px 14px; padding: 0 20px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.fr-page.is-chat > .fr-tabs { margin-bottom: 0; }
+.fr-tab {
+  position: relative; display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 14px; border: 0; background: none; cursor: pointer;
+  color: var(--text-2); font: inherit; font-size: 13.5px; font-weight: 800; white-space: nowrap;
+}
+.fr-tab .icon { width: 16px; height: 16px; }
+.fr-tab:hover { color: var(--text); background: var(--hover); }
+.fr-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.fr-tab.is-active { color: var(--primary); }
+.fr-tab.is-active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--primary); }
+:root[data-theme="dark"] .fr-tab.is-active { color: #93c5fd; }
+:root[data-theme="dark"] .fr-tab.is-active::after { background: #60a5fa; }
+.fr-views-n { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); font-size: 11px; line-height: 18px; text-align: center; }
+.fr-tab.is-active .fr-views-n { background: var(--sky-soft); color: var(--primary); }
+.fr-page.is-chat > .ch { flex: 1; min-height: 0; margin: 0 -24px; border-top: 0; }
+.fr-page.is-chat > .ch-catbar { margin: 0 -24px; }   /* 分類のタブの帯も はしまで */   /* .stage の 左右のすき間（24px）の分 外へ出して、はしまで */
+.fr-sub { animation: fr-in .18s var(--ease); }
+@keyframes fr-in { from { opacity: 0; transform: translateY(4px); } }
+.reduce-motion .fr-sub { animation: none; }
+.fr-sub-title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding: 4px 0 10px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
+.fr-sub-title h1 { font-size: 20px; font-weight: 800; }
+.fr-sub-title p { font-size: 13px; color: var(--text-2); }
+
 
 .fr-card { padding: 4px 0; }
 .fr-card + .fr-card { margin-top: 14px; }
 .fr-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px 10px; font-size: 13px; font-weight: 700; color: var(--text-2); }
 .fr-card-head strong { font-size: 14px; color: var(--text); }
+.fr-card-note { margin-left: 6px; font-size: 12px; font-weight: 700; color: var(--text-3); }
 .fr-none { padding: 14px 20px 18px; font-size: 13px; color: var(--text-3); }
 
 /* 一覧の 1 行：アイコン ｜ 名前・ID ｜ オンライン or 最後のログイン ｜ アチーブ（バーと %） */
@@ -58,14 +96,6 @@
 .fr-add-form .btn .icon { width: 16px; height: 16px; }
 
 /* 右はしの「おまけ」：オンラインのフレンド */
-.fr-aside-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.fr-aside-list button {
-  width: 100%; display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; border: 0; border-radius: 9px;
-  background: none; color: inherit; font: inherit; font-size: 13px; text-align: left; cursor: pointer; box-sizing: content-box;
-}
-.fr-aside-list button:hover { background: var(--surface-2); }
-.fr-aside-list b { flex: 1; min-width: 0; font-weight: 800; }
-.fr-aside-list small { font-size: 12px; font-weight: 700; color: var(--text-3); }
 
 /* 一覧の行は押せる（フレンド詳細へ）。右はしに › */
 .fr-item { display: flex; align-items: stretch; border-top: 1px solid var(--border); }
@@ -114,7 +144,7 @@
 .fr-counts li { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
 .fr-counts span { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
 .fr-counts b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
-/* 送り合ったもの：1 行（種類 ｜ 届いた／送った ｜ 題名とはじめの文 ｜ 時間 ｜ ›）。押すと下に中身 */
+/* 送り合ったもの（チャットで送り合った 問題・コード）：1 行（種類 ｜ 届いた／送った ｜ 題名とはじめの文 ｜ 時間 ｜ ›）。押すと下に中身 */
 .fr-mail { border-top: 1px solid var(--border); }
 .fr-mail-row {
   width: 100%; display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto 14px; align-items: center; gap: 12px;
@@ -123,10 +153,8 @@
 .fr-mail-row:hover { background: var(--surface-2); }
 .fr-kind { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: #fff; }
 .fr-kind .icon { width: 17px; height: 17px; }
-.fr-kind.is-letter { background: #3b82f6; }
 .fr-kind.is-quiz { background: #f59e0b; }
 .fr-kind.is-request { background: #10b981; }
-.fr-kind.is-gift { background: #f43f5e; }
 .fr-dir { padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 800; white-space: nowrap; }
 .fr-dir.is-got { background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); }
 .fr-dir.is-sent { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
@@ -138,20 +166,8 @@
 .fr-mail.is-open .fr-mail-arrow { rotate: 90deg; color: var(--primary); }
 .fr-mail-body { padding: 0 20px 16px 64px; animation: fr-open .2s ease-out; }
 @keyframes fr-open { from { opacity: 0; transform: translateY(-4px); } }
-/* 手紙 */
-.fr-letter { padding: 12px 16px; border-radius: 12px; background: var(--surface-2); border-left: 4px solid var(--primary); }
-.fr-letter p { margin: 0; font-size: 13.5px; line-height: 1.8; white-space: pre-line; }
-/* 応援 */
-.fr-gift { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 12px; background: var(--surface-2); }
-.fr-gift p { margin: 0; font-size: 13.5px; }
-.fr-stamp {
-  flex: none; display: grid; place-items: center; align-content: center; gap: 1px; width: 76px; height: 76px; border-radius: 50%; rotate: -8deg;
-  color: #e5484d; border: 2.5px solid currentColor; box-shadow: inset 0 0 0 3px var(--surface-2), inset 0 0 0 4px currentColor;
-}
-.fr-stamp .icon { width: 22px; height: 22px; }
-.fr-stamp b { font-size: 11px; font-weight: 900; }
-.fr-stamp.is-star { color: #e8a317; }
-.fr-stamp.is-heart { color: #ec4899; }
+/* コード（チャットと同じ 行番号つき。1 行ずつ コピーできる） */
+.fr-code-note { margin: 0 0 8px; font-size: 13.5px; line-height: 1.6; color: var(--text-2); }
 /* 問題：題名・問題の数・ひとこと・問題文と選択肢（正解は出さない） */
 .fr-quiz { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; background: var(--surface-2); }
 .fr-quiz-head { display: flex; align-items: center; gap: 10px; }

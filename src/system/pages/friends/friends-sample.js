@@ -32,13 +32,28 @@ export function lastLoginText(date, withDate = true) {
   return `${rel}（${date.getMonth() + 1}/${date.getDate()} ${pad(date.getHours())}:${pad(date.getMinutes())}）`;
 }
 
-/** ランキングの見た目を たしかめるための 仮のメンバー（★ デザイン確認用。フレンドではない人。ホームの掲示板のランキングだけに出す）
+/** ランキングの見た目を たしかめるための 仮のメンバー 20 人（★ デザイン確認用。ホームの掲示板のランキングと、看板を押して開く順位のモーダルだけに出す。
+ *  広場やフレンドのページには出さない）
  *  使わなくなったら、この配列を からにする（[]）か、ホームの js/main.js の getRows から外す */
-export const RANKING_SAMPLE = [
-  { userId: "sample-sakura", name: "さくら", color: "#f97316", weekSec: 6 * 3600 + 30 * 60, lastWeekSec: 5 * 3600, streak: 14 },
-  { userId: "sample-kenta", name: "けんた", color: "#0ea5e9", weekSec: 4 * 3600 + 50 * 60, lastWeekSec: 2 * 3600, streak: 6 },
-  { userId: "sample-mio", name: "みお", color: "#14b8a6", weekSec: 3 * 3600 + 40 * 60, lastWeekSec: 4 * 3600, streak: 8 },
-  { userId: "sample-sota", name: "そうた", color: "#6366f1", weekSec: 3 * 3600 + 5 * 60, lastWeekSec: 3 * 3600 + 30 * 60, streak: 4 },
-  { userId: "sample-rina", name: "りな", color: "#f43f5e", weekSec: 2 * 3600 + 30 * 60, lastWeekSec: 3 * 3600, streak: 2 },
-  { userId: "sample-haruto", name: "はると", color: "#84cc16", weekSec: 1 * 3600 + 45 * 60, lastWeekSec: 1 * 3600, streak: 5 },
+export const RANKING_SAMPLE = [   // 20 人
+  { userId: "sample-sakura", name: "さくら", color: "#f97316", weekSec: 6 * 3600 + 30 * 60, streak: 14 },
+  { userId: "sample-kenta", name: "けんた", color: "#0ea5e9", weekSec: 4 * 3600 + 50 * 60, streak: 6 },
+  { userId: "sample-mio", name: "みお", color: "#14b8a6", weekSec: 3 * 3600 + 40 * 60, streak: 8 },
+  { userId: "sample-sota", name: "そうた", color: "#6366f1", weekSec: 3 * 3600 + 5 * 60, streak: 4 },
+  { userId: "sample-rina", name: "りな", color: "#f43f5e", weekSec: 2 * 3600 + 30 * 60, streak: 2 },
+  { userId: "sample-haruto", name: "はると", color: "#84cc16", weekSec: 1 * 3600 + 45 * 60, streak: 5 },
+  { userId: "sample-aoi", name: "あおい", color: "#06b6d4", weekSec: 8 * 3600 + 10 * 60, streak: 18 },
+  { userId: "sample-yuto", name: "ゆうと", color: "#8b5cf6", weekSec: 5 * 3600 + 55 * 60, streak: 10 },
+  { userId: "sample-hinata", name: "ひなた", color: "#f59e0b", weekSec: 5 * 3600 + 5 * 60, streak: 7 },
+  { userId: "sample-ren", name: "れん", color: "#10b981", weekSec: 4 * 3600 + 20 * 60, streak: 9 },
+  { userId: "sample-mei", name: "めい", color: "#ec4899", weekSec: 4 * 3600, streak: 3 },
+  { userId: "sample-sora", name: "そら", color: "#3b82f6", weekSec: 3 * 3600 + 25 * 60, streak: 11 },
+  { userId: "sample-kotone", name: "ことね", color: "#d946ef", weekSec: 2 * 3600 + 50 * 60, streak: 1 },
+  { userId: "sample-daiki", name: "だいき", color: "#ef4444", weekSec: 2 * 3600 + 15 * 60, streak: 4 },
+  { userId: "sample-yuna", name: "ゆな", color: "#22c55e", weekSec: 1 * 3600 + 55 * 60, streak: 6 },
+  { userId: "sample-kaito", name: "かいと", color: "#0284c7", weekSec: 1 * 3600 + 20 * 60, streak: 2 },
+  { userId: "sample-iroha", name: "いろは", color: "#e879f9", weekSec: 55 * 60, streak: 3 },
+  { userId: "sample-sho", name: "しょう", color: "#65a30d", weekSec: 40 * 60, streak: 1 },
+  { userId: "sample-mana", name: "まな", color: "#fb7185", weekSec: 25 * 60, streak: 1 },
+  { userId: "sample-riku", name: "りく", color: "#475569", weekSec: 10 * 60, streak: 0 },
 ];

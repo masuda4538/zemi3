@@ -14,7 +14,7 @@ const PAGE_DEFAULTS = { settings: "Ctrl+,", account: "" };
 export const ACTIONS = [
   ...PAGES.map((p, i) => ({ id: `page:${p.id}`, name: `${p.name}を開く`, group: "ページを開く", initial: i < 9 ? `Ctrl+${i + 1}` : "" })),
   ...BOTTOM_PAGES.map((p) => ({ id: `page:${p.id}`, name: `${p.name}を開く`, group: "ページを開く", initial: PAGE_DEFAULTS[p.id] ?? "" })),
-  { id: "sidebar", name: "サイドバーを隠す／出す", group: "画面", initial: "Ctrl+B" },
+  { id: "sidebar", name: "サイドバーを隠す／出す", group: "画面", initial: "Ctrl+Shift+B" },   // 前は Ctrl+B（settings.js の merge で直す）
   { id: "theme", name: "ホワイト／ダークを切り替える", group: "画面", initial: "Ctrl+Shift+D" },
   { id: "logout", name: "ログアウト", group: "アカウント", initial: "" },
 ];

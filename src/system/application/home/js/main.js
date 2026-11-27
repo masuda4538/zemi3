@@ -16,12 +16,13 @@
 //    drawRecords … 右下の札（今日／今週／これまでの時間・「記録を見る」ボタン）と、スタッピーのひとこと
 //    広場        … フレンドが歩きまわる（js/plaza.js。★ 今は pages/friends/friends-sample.js の仮のフレンドで、見た目だけ）
 //                 まん中に掲示板（勉強時間ランキング）。フレンドもスタッピーも、掲示板の前では立ち止まらない
-//    ポスト      … 左下。フレンドから届いた 手紙・問題・フレンド申請・応援 を受け取る（js/mailbox.js。★ 今は仮のデータで見た目だけ）
+//    ポスト      … 左下。チャットの通知（だれから来たか）と、フレンド申請 だけを受け取る（js/mailbox.js。★ フレンドは仮の人たち）
 //    openFriend  … 広場のカードの「くわしく見る」・ポストの送った人 → フレンドのページの「フレンド詳細」へ
+//    openChat    … ポストのチャットの通知・広場の吹き出し → フレンドのページの その人とのチャットへ
 //    2 つの広場  … 最初は お気に入りの広場（plazaFav。噴水・観覧車・ジェットコースター・スタッピー）、
 //                 右どなりは そのほかの広場（plazaOther。花ばたけ）。showPlaza(0 ／ 1) で横にすべる
 //                 カードの ☆ で お気に入りを切りかえると、その人は となりの広場へ歩いていく
-//    吹き出し    … まだ見ていない問題を送ってきたフレンドの頭の上に「問題を送ったよ！」（drawBubbles）
+//    吹き出し    … まだ見ていないチャットがあるフレンドの頭の上に「チャットが来たよ！」（いちばん新しいのが問題なら「問題を送ったよ！」。drawBubbles）
 //    掲示板      … お気に入りの広場の奥。お気に入りのフレンドと自分の、今週の勉強時間ランキング（js/ranking.js。掲示板の絵は object/board。フレンドの時間は仮）
 //    大きい木    … そのほかの広場の奥。フレンドは根もとを よけて歩く（絵は object/tree）
 //    スタッピー … いちばん下の mountCharacter（言葉は src/system/object/character/lines.js で変えられる）
@@ -41,8 +42,10 @@ import { mountPlaza } from "./plaza.js";                              // 広場�
 import { FRIENDS_SAMPLE, RANKING_SAMPLE } from "../../../pages/friends/friends-sample.js";   // 仮のフレンド（フレンドのページと同じ）
 import { mountMailbox } from "./mailbox.js";
 import { mountRanking } from "./ranking.js";                          // お気に入りの広場の掲示板（今週の勉強ランキング）
-import { MAIL_SAMPLE, MAIL_TYPES } from "../../../pages/friends/mail-sample.js";   // フレンドから届いたもの（仮のデータ）
-import { requestFriend } from "../../../pages/friends/open-friend.js";            // フレンドのページの「フレンド詳細」を開く
+import { REQUEST_SAMPLE } from "../../../pages/friends/mail-sample.js";   // 届いたフレンド申請（仮のデータ）
+import { stampOf } from "../../../pages/friends/stamps.js";                 // スタンプの名前（チャットの通知の文）
+import { unreadChats, markAllRead } from "../../../pages/friends/chat-store.js";   // チャット（まだ見ていないもの）
+import { requestFriend, requestChat } from "../../../pages/friends/open-friend.js";   // フレンドのページの「フレンド詳細」「チャット」を開く
 import { loadFavorites, toggleFavorite } from "../../../pages/friends/favorites.js";   // お気に入りのフレンド（その PC の中に覚えておく）
 
 /** アイコン（core/components/Icon.jsx と同じ形。ゲストのときのアイコンに使う） */
@@ -224,6 +227,8 @@ mountCharacter($("chara-records"), {
 
 // ───────── フレンド詳細を開く（フレンドのページ。だれを開くかは open-friend.js でメモしてわたす） ─────────
 const openFriend = (userId) => { requestFriend(userId); app.open("friends"); };
+/** その人とのチャットを開く（フレンドのページ） */
+const openChat = (userId) => { requestChat(userId); app.open("friends"); };
 const isFriend = (userId) => FRIENDS_SAMPLE.some((f) => f.userId === userId);
 
 // ───────── 広場のフレンド（★ 今は仮のフレンドで、見た目のイメージだけ。js/plaza.js） ─────────
@@ -241,12 +246,22 @@ const plazaOther = mountPlaza({
   fountain: tree.foot, rim: tree.foot,   // 大きい木の根もとを よける（噴水と同じしくみ）
 });
 
-// ───────── 掲示板の上のはし：広場の札（左上）のすぐ下まで上にのばす（札の高さは画面の大きさで変わるので、はかって決める） ─────────
+// ───────── 掲示板の上のはし：広場の札（左上）の すぐ下。ただし わくの上の アーチの看板が、名前の帯（いちばん上）に かからないように下げる ─────────
+//   看板の大きさは 掲示板の大きさで変わるので、置いてから はかって、かかっていたら その分 下げる（2 回 くり返して ととのえる）
 const placeBoard = () => {
+  const home = document.querySelector(".home");
   const label = document.querySelector(".home-plaza-label").getBoundingClientRect();
-  document.querySelector(".home").style.setProperty("--board-top", `${Math.round(label.bottom + 14)}px`);
+  const hero = document.querySelector(".home-hero").getBoundingClientRect();
+  let top = Math.round(label.bottom + 14);
+  home.style.setProperty("--board-top", `${top}px`);
+  for (let i = 0; i < 2; i++) {
+    const sign = document.querySelector("#plaza-board .bd-sign")?.getBoundingClientRect();
+    const over = sign ? hero.bottom + 10 - sign.top : 0;   // 看板が 帯に かかっている長さ
+    if (over <= 0) break;
+    top += Math.ceil(over);
+    home.style.setProperty("--board-top", `${top}px`);
+  }
 };
-placeBoard();
 window.addEventListener("resize", placeBoard);
 
 // ───────── 掲示板：今週の勉強時間ランキング（お気に入りのフレンドと自分。js/ranking.js。絵は object/board） ─────────
@@ -270,6 +285,7 @@ const ranking = mountRanking({
   },
   guestNote: () => (app.user ? "" : "ログインすると、あなたも ランキングに入ります。"),
 });
+placeBoard();   // 掲示板（看板つき）を かいてから、置く場所を決める
 /** お気に入りを切りかえる：その人は 今の広場の右はし（または左はし）へ歩いて出ていき、となりの広場に はしから入ってくる */
 function flipFavorite(f) {
   favorites = toggleFavorite(me, f.userId);
@@ -319,27 +335,45 @@ app.onLoginDaysChange(() => { drawAll(); ranking.draw(); });          // ログ�
 app.onUsageChange(() => { if (!greetTimer) drawRecords(); ranking.draw(); });   // 使った時間の記録が増えたとき（30 秒ごとなど。あいさつ中は待つ）
 app.onUserChange(drawUser);              // 名前・アイコンを変えたとき（アカウント → プロフィール）
 
-// ───────── 左下のポスト（フレンドから届いたもの。★ 今は仮のデータで、見た目のイメージだけ。js/mailbox.js） ─────────
-//   本当の機能を作ったら：届いたときに mailbox.receive({ id, type, from, at, text, stamp }) を呼ぶ（形は pages/friends/mail-sample.js）
+// ───────── 左下のポスト（チャットの通知と フレンド申請。js/mailbox.js） ─────────
+//   チャット … まだ見ていないメッセージがある人ごとに 1 つ（pages/friends/chat-store.js の unreadChats から作る）
+//   申請     … 仮のデータ（pages/friends/mail-sample.js の REQUEST_SAMPLE）
+//   本当の機能を作ったら：届いたときに mailbox.receive(届いたもの) を呼ぶ
 //   onReceive … あとから届いたときに、右上にお知らせを出す
+function postMails() {
+  const chats = unreadChats(app.user?.userId).map(({ friendId, count, last }) => {
+    const f = FRIENDS_SAMPLE.find((x) => x.userId === friendId);
+    if (!f) return null;
+    return {
+      id: `chat:${friendId}:${last.id}`, type: "chat", from: { userId: f.userId, name: f.name, color: f.color },
+      at: new Date(last.at), count, quiz: last.type === "quiz", read: false,
+      text: last.type === "quiz" ? `問題「${last.quiz?.title ?? ""}」を送ってきました`
+        : last.type === "code" ? `コード（${last.lang || "その他"}）を送ってきました`
+        : last.type === "stamp" ? `スタンプ「${stampOf(last.stamp)?.name ?? ""}」を送ってきました` : last.text,
+    };
+  }).filter(Boolean);
+  return [...chats, ...REQUEST_SAMPLE];
+}
 const mailbox = mountMailbox({
-  post: $("mailbox-post"), badge: $("mailbox-badge"), box: $("mailbox"), mails: MAIL_SAMPLE, isFriend, onFriend: openFriend,
+  post: $("mailbox-post"), badge: $("mailbox-badge"), box: $("mailbox"), mails: postMails(), isFriend, onFriend: openFriend,
+  onChat: openChat, onAllRead: () => markAllRead(app.user?.userId),
   onChange: (items) => drawBubbles(items),
-  onReceive: (m) => app.notify({ type: "info", title: `${m.from.name} さんから${MAIL_TYPES[m.type]?.name ?? ""}が届きました`, message: "左下のポストを押すと見られます。" }),
+  onReceive: (m) => app.notify({ type: "info", title: `${m.from.name} さんから${m.type === "chat" ? "チャット" : "フレンド申請"}が届きました`, message: "左下のポストを押すと見られます。" }),
 });
+app.onUserChange(() => mailbox.setMails(postMails()));   // ログインしている人が変わったら、その人のチャットに
 // ★ 本当の機能を作るまでは、receive はまだ呼ばない
 
-// ───────── 吹き出し：まだ見ていない問題を送ってきたフレンドの頭の上に「問題を送ったよ！」 ─────────
-//   押すと、ポストの受け取り箱で その問題を開く（見たら吹き出しは消える）
+// ───────── 吹き出し：まだ見ていないチャットがあるフレンドの頭の上に「チャットが来たよ！」 ─────────
+//   いちばん新しいのが問題なら「問題を送ったよ！」。押すと、その人とのチャットを開く（開いたら見たことになり、吹き出しは消える）
 function drawBubbles(items) {
   const map = {};
-  for (const m of items) if (m.type === "quiz" && !m.read && !map[m.from.userId]) map[m.from.userId] = "問題を送ったよ！";
+  for (const m of items) {
+    if (m.type !== "chat" || m.read || map[m.from.userId]) continue;
+    map[m.from.userId] = m.quiz ? { text: "問題を送ったよ！", kind: "quiz" } : { text: "チャットが来たよ！", kind: "chat" };
+  }
   plazaFav.setBubbles(map);
   plazaOther.setBubbles(map);
 }
-/** 吹き出しを押したとき：その人の、まだ見ていない いちばん新しい問題を開く */
-function openBubble(userId) {
-  const m = mailbox.list().find((x) => x.type === "quiz" && !x.read && x.from.userId === userId);
-  if (m) mailbox.openMail(m.id);
-}
+/** 吹き出しを押したとき：その人とのチャットを開く */
+function openBubble(userId) { openChat(userId); }
 drawBubbles(mailbox.list());

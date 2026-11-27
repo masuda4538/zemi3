@@ -258,7 +258,7 @@ body { padding: 0; overflow: hidden; }
   font-size: 11px; font-weight: 800; color: var(--text-3);
 }
 .home-friends { position: absolute; inset: 0; pointer-events: none; }   /* 広場いっぱいの入れもの（フレンドだけ押せる） */
-/* フレンド 1 人（人の形 ＋ 頭の上の名前 ＋ 足もとのかげ）。left・bottom は plaza.js が決める（歩くときは なめらかに） */
+/* フレンド 1 人（人の形 ＋ 足もとのかげ ＋ その下に名前）。left・bottom は plaza.js が決める（歩くときは なめらかに） */
 .home-friend {
   --depth: 0; --face: 1;
   position: absolute; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -274,11 +274,13 @@ body { padding: 0; overflow: hidden; }
 @keyframes home-friend-step { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
 .home-friend:hover .home-friend-body, .home-friend.is-open .home-friend-body { filter: drop-shadow(0 0 0 #fff) drop-shadow(0 3px 6px color-mix(in srgb, var(--c) 50%, transparent)); }
 .home-friend:focus-visible { outline: 2px solid var(--c); outline-offset: 3px; border-radius: 8px; }
-/* 頭の上の名前（オンラインなら緑の点） */
+/* 足もとの下の名前（オンラインなら緑の点）。
+   position: absolute … 名前の高さで 足もとの場所（plaza.js が決める bottom）が ずれないように、人の下に はみ出して置く */
 .home-friend-name {
-  display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; white-space: nowrap;
+  position: absolute; top: calc(100% + 3px); left: 50%; translate: -50% 0;
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 99px; white-space: nowrap;
   background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--c) 45%, transparent);
-  font-size: 11px; font-weight: 800; line-height: 1.5; box-shadow: 0 2px 6px rgb(15 30 60 / .1);
+  font-size: 12.5px; font-weight: 800; line-height: 1.5; box-shadow: 0 2px 6px rgb(15 30 60 / .1);
 }
 .home-friend-name i, .home-friend-online i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px rgb(34 197 94 / .25); }
 /* 押したときの小さなカード（名前とアイコン・オンライン or 最後のログイン・アチーブの取得率） */
@@ -328,12 +330,13 @@ body { padding: 0; overflow: hidden; }
   font-size: 12px; font-weight: 800; line-height: 1; box-shadow: 0 3px 8px rgb(229 72 77 / .4);
 }
 
-/* ── 受け取り箱（ポストを押すと開く。置く場所は js/mailbox.js が決める） ── */
+/* ── 受け取り箱（ポストを押すと開く。置く場所と たての長さは js/mailbox.js が決める） ──
+   大きさは いつも同じ：横 420px・たて 520px（中身が多いときは 中だけスクロール。小さい画面では 画面に入る大きさまで） */
 .mailbox {
-  position: absolute; z-index: 40; width: min(350px, calc(100vw - 32px));
+  position: absolute; z-index: 40; width: min(420px, calc(100vw - 32px));
   display: flex; flex-direction: column; overflow: hidden; border-radius: 18px;
   background: var(--surface); border: 1px solid var(--border); box-shadow: 0 16px 40px rgb(15 30 60 / .24);
-  color: var(--text); font-size: 13px; animation: home-box-in .22s ease-out; transform-origin: 20% 100%;
+  color: var(--text); font-size: 14px; animation: home-box-in .22s ease-out; transform-origin: 20% 100%;
 }
 @keyframes home-box-in { from { opacity: 0; transform: translateY(8px) scale(.97); } }
 .reduce-motion .mailbox { animation: none; }
@@ -371,7 +374,7 @@ body { padding: 0; overflow: hidden; }
 .mb-avatar.is-big { width: 42px; height: 42px; font-size: 17px; }
 .mb-kind { position: absolute; right: -4px; bottom: -3px; display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; border: 2px solid var(--surface); color: #fff; }
 .mb-kind .mb-icon { width: 11px; height: 11px; stroke-width: 2.4; }
-.mb-kind.is-letter { background: #3b82f6; }
+.mb-kind.is-letter, .mb-kind.is-chat { background: #3b82f6; }
 .mb-kind.is-request { background: #10b981; }
 .mb-kind.is-quiz { background: #f59e0b; }
 .mb-kind.is-gift { background: #f43f5e; }
@@ -379,9 +382,11 @@ body { padding: 0; overflow: hidden; }
 .mb-title { font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mb-title b { color: var(--text); font-weight: 800; }
 .mb-preview { font-size: 12px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mb-time { align-self: start; padding-top: 2px; font-size: 11px; font-weight: 700; color: var(--text-3); white-space: nowrap; }
+.mb-time { align-self: start; padding-top: 2px; font-size: 11px; font-weight: 700; color: var(--text-3); white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.mb-time em { display: inline-flex; align-items: center; gap: 1px; font-style: normal; font-size: 11.5px; font-weight: 800; color: var(--primary); }   /* チャットの「チャットを開く ›」 */
+.mb-time em .mb-icon { width: 13px; height: 13px; }
 .mb-item.is-unread .mb-time { color: var(--primary); }
-.mb-item.is-unread .mb-time::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: var(--primary); vertical-align: 1px; }
+.mb-item.is-unread .mb-time > span::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: var(--primary); vertical-align: 1px; }
 .mb-none { margin: 18px 0; text-align: center; color: var(--text-3); font-weight: 700; }
 .mb-foot { flex: none; display: flex; justify-content: flex-end; padding: 8px 12px; border-top: 1px solid var(--border); }
 .mb-allread { border: 0; background: none; color: var(--primary); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; padding: 4px 6px; border-radius: 7px; }
@@ -514,17 +519,21 @@ body { padding: 0; overflow: hidden; }
   position: absolute; z-index: -2; right: 1.5%; bottom: 43%; width: clamp(140px, 38cqh, 290px);
 }
 
-/* フレンドの頭の上の吹き出し（まだ見ていない問題が届いている人。押すとポストのその問題が開く） */
+/* フレンドの頭の すぐ上の吹き出し（まだ見ていない問題が届いている人。しっぽは頭を指す。押すとポストのその問題が開く） */
 .home-friend-bubble {
-  position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0; z-index: 2;
-  display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 12px; white-space: nowrap;
+  position: absolute; bottom: calc(100% + 10px); left: 50%; translate: -50% 0; z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 14px; white-space: nowrap;
   background: var(--surface); border: 2px solid #f59e0b; box-shadow: 0 4px 12px rgb(15 30 60 / .16);
-  font-size: 11.5px; font-weight: 800; color: var(--text); cursor: pointer;
+  font-size: 13px; font-weight: 800; color: var(--text); cursor: pointer;
   animation: home-bubble-bob 1.8s ease-in-out infinite;
 }
-.home-friend-bubble::before { content: "?"; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 5px; background: #f59e0b; color: #fff; font-size: 11px; font-weight: 900; }
+.home-friend-bubble::before { content: "?"; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; background: #f59e0b; color: #fff; font-size: 12px; font-weight: 900; }
+.home-friend-bubble[data-kind="chat"] { border-color: #3b82f6; }   /* チャット：青。しるしは「…」 */
+.home-friend-bubble[data-kind="chat"]::before { content: "…"; background: #3b82f6; line-height: 1; padding-bottom: 4px; box-sizing: border-box; }
+.home-friend-bubble[data-kind="chat"]::after { border-color: #3b82f6; }
+.home-friend-bubble[data-kind="chat"]:hover { background: color-mix(in srgb, #3b82f6 12%, var(--surface)); }
 .home-friend-bubble::after {
-  content: ""; position: absolute; left: 50%; top: 100%; width: 9px; height: 9px; translate: -50% -4px; rotate: 45deg;
+  content: ""; position: absolute; left: 50%; top: 100%; width: 11px; height: 11px; translate: -50% -5px; rotate: 45deg;
   background: var(--surface); border: solid #f59e0b; border-width: 0 2px 2px 0;
 }
 .home-friend-bubble:hover { background: color-mix(in srgb, #f59e0b 12%, var(--surface)); }
@@ -541,30 +550,28 @@ body { padding: 0; overflow: hidden; }
 .home-friend-fav.is-on { color: #f59e0b; background: color-mix(in srgb, #f59e0b 12%, var(--surface)); border-color: color-mix(in srgb, #f59e0b 50%, var(--border)); }
 .home-friend-top { padding-right: 24px; }
 
-/* ═════════ 掲示板（お気に入りの広場の奥のまん中。今週の勉強ランキング。js/ranking.js） ═════════
-   絵（木のわく ＋ コルクボード ＋ 足）は object/board。ここは置く場所と大きさ：広場の札のすぐ下（--board-top。js/main.js の placeBoard がはかる）から地面まで
-   下は 画面の下から 15% まで。はばは 高さに合わせる（たて 3：横 4）。観覧車・コースターに かからないように、広場の はばの 58% まで
-   手前のフレンドや噴水より うしろ（z-index 2） */
+/* ═════════ 掲示板（お気に入りの広場の奥のまん中。丘の てっぺんあたりに立つ。今週の勉強ランキング。js/ranking.js） ═════════
+   絵（木のわく ＋ コルクボード ＋ 足 ＋ 上のアーチの看板）は object/board。ここは置く場所と大きさ
+   上のはし（--board-top）：js/main.js の placeBoard がはかる（広場の札の下。上の看板が 名前の帯に かからないところ）
+   下のはし（足の先）：画面の下から 40%（丘の てっぺんの少し下）。はばは 高さに合わせる（たて 3：横 4。広場の はばの 47% まで）
+   手前のフレンドより うしろ（z-index 2） */
 .home-board {
-  position: absolute; z-index: 2; left: 50%; top: var(--board-top, 176px); bottom: 15%; translate: -50% 0;
-  aspect-ratio: 4 / 3; max-width: 58%;
+  position: absolute; z-index: 2; left: 50%; top: var(--board-top, 176px); bottom: 40%; translate: -50% 0;
+  aspect-ratio: 4 / 3; max-width: 47%;
 }
 /* ═════════ ランキング（js/ranking.js）。掲示板（コルクボード）の中に、ぜんぶ出す ═════════
    大きさの もと --u：掲示板の高さ（cqh）か はば（cqw）の小さいほうに合わせる（はばが せまくても はみ出さないように）
-   上から：「今週の勉強時間」の札 → 表彰台（上位 3 人） → 一覧（4 位から 4 人） */
-.home-board { --u: min(1cqh, .62cqw); }
-.home-board .bd-cork { gap: calc(var(--u) * 1.4); padding: calc(var(--u) * 2) calc(var(--u) * 4) calc(var(--u) * 2.2); }
-.home-board .bd-body { display: flex; flex-direction: column; gap: calc(var(--u) * 2.6); }
-/* 「今週の勉強時間」の札（いちばん上のまん中） */
-.rb-period {
-  display: inline-flex; align-items: center; gap: calc(var(--u) * .8); padding: calc(var(--u) * .5) calc(var(--u) * 2.6); border-radius: 99px;
-  background: rgb(255 255 255 / .9); color: #1d4ed8; font-size: calc(var(--u) * 2.6); font-weight: 800; box-shadow: 0 2px 6px rgb(45 25 10 / .22);
-}
+   上から：表彰台（上位 3 人） → 自分の順位（青い帯）。「今週の勉強時間」は わくの上の看板（object/board の sign） */
+.home-board { --u: min(1.1cqh, .7cqw); }
+.home-board .bd-cork { gap: 0; padding: calc(var(--u) * 2.6) calc(var(--u) * 3) calc(var(--u) * 2.2); }
+.home-board .bd-body { display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 3.6); }   /* 表彰台と自分の順位を、たての まん中に */
 /* 表彰台（白いカード。2 位・1 位・3 位。1 位は少し大きく） */
+/* 表彰台のカードは 大きく見せる（--u を 1.3 倍くらいに） */
+.rb-podium { --u: min(1.45cqh, .9cqw); }
 .rb-podium { flex: none; width: 94%; align-self: center; display: flex; align-items: flex-end; justify-content: center; gap: calc(var(--u) * 3); }
 .rb-card {
-  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * .4);
-  padding: calc(var(--u) * 1.2) calc(var(--u) * 1.5) calc(var(--u) * 1.3); border-radius: calc(var(--u) * 3); text-align: center;
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * .8);
+  padding: calc(var(--u) * 1.6) calc(var(--u) * 1.5) calc(var(--u) * 2); border-radius: calc(var(--u) * 3); text-align: center;
   background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 6px 14px rgb(45 25 10 / .22); color: #1e293b;
 }
 .rb-card.is-1 { flex-grow: 1.12; padding-top: calc(var(--u) * .7); padding-bottom: calc(var(--u) * 1.9); background: linear-gradient(180deg, #fffbeb, #fff 70%); border: 2px solid #fcd34d; }
@@ -573,7 +580,8 @@ body { padding: 0; overflow: hidden; }
 .rb-card.is-me { outline: 2px solid #2563eb; outline-offset: 1px; }
 .rb-card { position: relative; }
 .rb-card-pin { position: absolute; top: calc(var(--u) * -1.6); left: 50%; translate: -50% 0; width: calc(var(--u) * 3.8); height: calc(var(--u) * 3.8); }   /* 上の押しピン */
-.rb-top { display: inline-flex; align-items: center; gap: calc(var(--u) * .6); margin-top: calc(var(--u) * 1.4); font-size: calc(var(--u) * 1.9); font-weight: 900; letter-spacing: .12em; color: #a8a29e; }
+.rb-top { display: inline-flex; align-items: center; gap: calc(var(--u) * .6); margin-top: calc(var(--u) * 2.8);   /* 上の押しピンと重ならないように あける */
+  font-size: calc(var(--u) * 1.9); font-weight: 900; letter-spacing: .12em; color: #a8a29e; }
 .rb-card.is-1 .rb-top { color: #d97706; }
 .rb-crown { color: #f59e0b; font-size: calc(var(--u) * 2.6); line-height: 1; }
 .rb-crown .cb-icon { fill: #fde68a; }
@@ -603,33 +611,103 @@ body { padding: 0; overflow: hidden; }
 .rb-me-tag { padding: 0 calc(var(--u) * 1.2); border-radius: 99px; background: #2563eb; color: #fff; font-size: calc(var(--u) * 2); font-weight: 800; }
 .rb-none { margin: auto; padding: calc(var(--u) * 1.5); font-size: calc(var(--u) * 2.6); font-weight: 700; color: #94a3b8; text-align: center; }
 .rb-podium > .rb-none { color: #fffbeb; }
-/* 一覧（4 位から 4 人）：ノートの紙。上にマスキングテープと押しピン 2 つ。はばは表彰台とそろえる。1 行ずつ ゆったり。自分の行（is-me）は青く目立たせる */
-.rb-sheet { position: relative; flex: 1; min-height: 0; width: 94%; align-self: center; display: flex; margin-top: calc(var(--u) * 1); }
+/* 自分の順位：白い紙。上にマスキングテープと押しピン 2 つ。はばは表彰台の 6 割で まん中。中に 青い帯（rb-mine） */
+.rb-sheet { position: relative; flex: none; width: 60%; align-self: center; display: flex; margin-top: calc(var(--u) * 1); }
 .rb-sheet-tape { position: absolute; z-index: 2; top: calc(var(--u) * -1.8); left: 50%; translate: -50% 0; rotate: -1deg; width: calc(var(--u) * 15); height: calc(var(--u) * 3.6); }
 .rb-sheet-pin { position: absolute; z-index: 2; top: calc(var(--u) * -1.6); width: calc(var(--u) * 4); height: calc(var(--u) * 4); }
 .rb-sheet-pin.is-l { left: calc(var(--u) * 3.6); } .rb-sheet-pin.is-r { right: calc(var(--u) * 3.6); }
-.rb-list {
-  flex: 1; min-width: 0; display: flex; flex-direction: column; padding: calc(var(--u) * 3) calc(var(--u) * 4) calc(var(--u) * 1.6);
-  border-radius: calc(var(--u) * 3); background-size: 100% calc(var(--u) * 7); overflow: hidden; color: #2c221e;
+.rb-note { flex: 1; min-width: 0; display: flex; padding: calc(var(--u) * 3.2) calc(var(--u) * 3) calc(var(--u) * 2.4); border-radius: calc(var(--u) * 3); color: #2c221e; }
+/* 自分の順位の青い帯：頭文字の丸 ・「あなたは 〇位（〇人中）」と時間 ・ その下に「〇位まで あと 〇分」 */
+.rb-mine {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: calc(var(--u) * 3); padding: calc(var(--u) * 1.6) calc(var(--u) * 3);
+  border-radius: calc(var(--u) * 2.4); background: #dbeafe; box-shadow: inset 6px 0 0 #2563eb;
 }
-.rb-list-head { flex: none; display: flex; align-items: center; gap: calc(var(--u) * 2); padding-bottom: calc(var(--u) * 1.8); margin-bottom: calc(var(--u) * .6); border-bottom: 2px dashed rgb(120 53 15 / .18); }
-.rb-list-head b { display: inline-flex; align-items: center; gap: calc(var(--u) * 1.2); font-size: calc(var(--u) * 3.2); font-weight: 800; color: #3b2313; white-space: nowrap; }
-.rb-list-head .cb-icon { color: #d97706; }
-.rb-row { flex: 1; min-height: 0; display: flex; align-items: center; gap: calc(var(--u) * 3); padding: 0 calc(var(--u) * 1.4); }
-.rb-row + .rb-row { border-top: 1px solid rgb(214 211 209 / .7); }
-.rb-row.is-me { margin: calc(var(--u) * .6) calc(var(--u) * -1.6) 0; padding: 0 calc(var(--u) * 3); border-radius: calc(var(--u) * 2); background: #dbeafe; box-shadow: inset 5px 0 0 #2563eb; border-top-color: transparent; }
-.rb-row.is-me + .rb-row { border-top-color: transparent; }
-.rb-row.is-me .rb-row-rank { color: #1d4ed8; }
-.rb-row-rank { min-width: calc(var(--u) * 4); flex: none; text-align: center; font-size: calc(var(--u) * 3.4); font-weight: 900; color: #78716c; font-variant-numeric: tabular-nums; }
-.rb-row .rb-avatar { width: calc(var(--u) * 7); height: calc(var(--u) * 7); font-size: calc(var(--u) * 3); }
-.rb-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 1.2); }
-.rb-row-top { display: flex; align-items: baseline; gap: calc(var(--u) * 1.4); }
-.rb-row-name { display: flex; align-items: center; gap: calc(var(--u) * 1.2); min-width: 0; overflow: hidden; white-space: nowrap; font-size: calc(var(--u) * 3.4); font-weight: 800; color: #2c221e; }
-.rb-row-time { margin-left: auto; font-size: calc(var(--u) * 3.6); font-weight: 900; color: #3b2313; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.rb-bar { display: block; height: calc(var(--u) * 1.6); border-radius: 99px; background: rgb(69 26 3 / .09); overflow: hidden; }
-.rb-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #d97706, #f59e0b); transition: width .5s; }
-.rb-row.is-empty .rb-row-rank { color: #d6d3d1; }
-.rb-row.is-guest { justify-content: center; font-size: calc(var(--u) * 2.3); font-weight: 700; color: #78716c; }
+.rb-mine .rb-avatar { width: calc(var(--u) * 8); height: calc(var(--u) * 8); font-size: calc(var(--u) * 3.6); box-shadow: 0 0 0 3px #fff; }
+.rb-mine-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 1); }
+.rb-mine-top { display: flex; align-items: baseline; gap: calc(var(--u) * 2); }
+.rb-mine-rank { white-space: nowrap; font-size: calc(var(--u) * 3.2); font-weight: 800; color: #1e3a8a; }
+.rb-mine-rank b { margin: 0 calc(var(--u) * .4); font-size: calc(var(--u) * 5.6); font-weight: 900; color: #1d4ed8; font-variant-numeric: tabular-nums; line-height: 1; }
+.rb-mine-rank small { margin-left: calc(var(--u) * .6); font-size: calc(var(--u) * 2.4); font-weight: 700; color: #64748b; }
+.rb-mine-time { margin-left: auto; white-space: nowrap; font-size: calc(var(--u) * 4.2); font-weight: 900; color: #2563eb; font-variant-numeric: tabular-nums; }
+.rb-mine-next {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: calc(var(--u) * .8); max-width: 100%; overflow: hidden;
+  padding: calc(var(--u) * .5) calc(var(--u) * 2); border-radius: 99px; background: #fff; white-space: nowrap;
+  font-size: calc(var(--u) * 2.5); font-weight: 700; color: #475569;
+}
+.rb-mine-next b { font-weight: 900; color: #ea580c; }
+.rb-mine-next .cb-icon { color: #ea580c; }
+.rb-mine.is-guest { justify-content: center; background: #f1f5f9; box-shadow: none; font-size: calc(var(--u) * 2.8); font-weight: 700; color: #64748b; text-align: center; }
+
+/* 掲示板を押すと、全員の順位のモーダルが開く：マウスをのせると 少し浮き上がる。キーボードで えらんだら 青いわく */
+.home-board { cursor: pointer; transition: scale .2s ease; }
+.home-board:hover { scale: 1.02; }
+.home-board:focus-visible { outline: 3px solid #2563eb; outline-offset: 6px; border-radius: 12px; }
+.reduce-motion .home-board { transition: none; }
+
+/* ═════════ ランキングのモーダル（js/ranking.js の open。<dialog>） ═════════
+   まん中に白い箱（横 680px・たて 760px まで。小さい画面では 画面に入る大きさ）。上：見出しと ×、自分の順位の青い帯。下：全員の一覧（ここだけ スクロール） */
+.rk-modal {
+  width: min(680px, calc(100vw - 32px)); height: min(760px, calc(100vh - 40px)); padding: 0; border: 0; border-radius: 20px;
+  background: var(--surface); color: var(--text); box-shadow: 0 24px 60px rgb(15 30 60 / .32); overflow: hidden;
+}
+.rk-modal[open] { display: flex; animation: rk-in .22s ease-out; }
+.rk-modal::backdrop { background: rgb(15 23 42 / .45); }
+@keyframes rk-in { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+.reduce-motion .rk-modal[open] { animation: none; }
+.rk-box { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.rk-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 24px 22px 16px 28px; }
+.rk-head h2 { margin: 0; font-size: 19px; font-weight: 900; }
+.rk-head-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; color: #fff; background: linear-gradient(150deg, #60a5fa, #2563eb); font-size: 20px; }
+.rk-head-icon .cb-icon { fill: rgb(255 255 255 / .25); }
+.rk-close { margin-left: auto; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 10px; background: none; color: var(--text-3); cursor: pointer; }
+.rk-close svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.rk-close:hover { background: var(--surface-2); color: var(--text); }
+.rk-close:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+/* 自分の順位の帯 */
+.rk-mine {
+  flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin: 0 28px 20px; padding: 16px 22px;
+  border-radius: 16px; background: #dbeafe; box-shadow: inset 5px 0 0 #2563eb; color: #1e3a8a;
+}
+.rk-mine-rank { font-size: 14px; font-weight: 800; white-space: nowrap; }
+.rk-mine-rank b { margin: 0 2px; font-size: 26px; font-weight: 900; color: #1d4ed8; line-height: 1; font-variant-numeric: tabular-nums; }
+.rk-mine-rank small { margin-left: 4px; font-size: 12px; font-weight: 700; color: #64748b; }
+.rk-mine-next { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 99px; background: #fff; font-size: 12.5px; font-weight: 700; color: #475569; white-space: nowrap; }
+.rk-mine-next b { font-weight: 900; color: #ea580c; }
+.rk-mine-next .cb-icon { color: #ea580c; }
+.rk-mine.is-guest { justify-content: center; background: var(--surface-2); box-shadow: none; color: var(--text-2); font-size: 13px; font-weight: 700; }
+/* 全員の一覧（スクロール） */
+.rk-list {
+  flex: 1; min-height: 0; margin: 0; padding: 16px 24px 24px; list-style: none; overflow-y: auto; border-top: 1px solid var(--border); scroll-padding: 16px;
+  display: flex; flex-direction: column; gap: 10px; background: var(--surface-2);
+}
+/* 1 人ずつ カードで囲う。1〜3 位は ふちを 金・銀・銅、自分は青 */
+.rk-row {
+  flex: none; display: flex; align-items: center; gap: 14px; padding: 14px 18px 14px 14px;
+  border: 1.5px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: 0 2px 6px rgb(15 30 60 / .05);
+}
+.rk-row.is-rank-1 { border-color: #fcd34d; background: linear-gradient(90deg, color-mix(in srgb, #fde68a 30%, var(--surface)), var(--surface) 60%); }
+.rk-row.is-rank-2 { border-color: #cbd5e1; }
+.rk-row.is-rank-3 { border-color: #fdba74; }
+.rk-row.is-me { border: 2px solid #2563eb; background: #dbeafe; color: #1e3a8a; box-shadow: 0 4px 12px rgb(37 99 235 / .18); }
+.rk-rank { flex: none; display: grid; place-items: center; width: 30px; height: 30px; font-size: 15px; font-weight: 900; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.rk-rank.is-rank-1, .rk-rank.is-rank-2, .rk-rank.is-rank-3 { border-radius: 50%; color: #fff; box-shadow: inset 0 -2px 0 rgb(0 0 0 / .15); }
+.rk-rank.is-rank-1 { background: linear-gradient(150deg, #fcd34d, #f59e0b); }
+.rk-rank.is-rank-2 { background: linear-gradient(150deg, #cbd5e1, #64748b); }
+.rk-rank.is-rank-3 { background: linear-gradient(150deg, #fdba74, #b45309); }
+.rk-row.is-me .rk-rank { color: #1d4ed8; }
+.rk-row .rb-avatar { width: 38px; height: 38px; font-size: 16px; }
+.rk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.rk-top { display: flex; align-items: center; gap: 10px; }
+.rk-name { min-width: 0; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; font-size: 14.5px; font-weight: 800; }
+.rk-name .rb-me-tag { font-size: 11px; padding: 1px 8px; }
+.rk-streak { flex: none; display: inline-flex; align-items: center; gap: 3px; padding: 1px 8px; border-radius: 99px; background: #fff7ed; color: #ea580c; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+.rk-streak .cb-icon { color: #f97316; }
+.rk-time { margin-left: auto; flex: none; font-size: 15px; font-weight: 900; color: #2563eb; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rk-bar { display: block; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--text) 8%, transparent); overflow: hidden; }
+.rk-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #d97706, #f59e0b); }
+.rk-row.is-me .rk-bar { background: rgb(37 99 235 / .14); }
+.rk-none { padding: 24px; text-align: center; color: var(--text-3); font-weight: 700; }
+@media (max-width: 520px) { .rk-streak { display: none; } .rk-mine-next { margin-left: 0; } }
 
 /* ═════════ 大きい木（そのほかの広場の まん中の奥。絵と動きは object/tree） ═════════
    上の札のすぐ下（176px）から地面まで。はばは高さに合わせる（木の絵の たて横の わり合い）
