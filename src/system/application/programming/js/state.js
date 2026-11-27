@@ -41,12 +41,17 @@ let layoutConfig = {
     dictPos: 'right'
 };
 
+// 共通の呼び出し関数
 async function invokeRust(cmd, args = {}) {
-    const tauriInvoke = window.__TAURI__?.core?.invoke;
-    if (typeof tauriInvoke !== 'function') {
-        throw new Error('Tauri バックエンドに接続できません（cargo run で起動したウィンドウ内で実行してください）。');
+    // 1. ゼミ共通基盤の app.invoke があれば優先して使用
+    if (window.app && typeof window.app.invoke === 'function') {
+        return await window.app.invoke(cmd, args);
     }
-    return await tauriInvoke(cmd, args);
+    // 2. 単独起動・フォールバック用 (Tauri v2 標準)
+    if (window.__TAURI__?.core?.invoke) {
+        return await window.__TAURI__.core.invoke(cmd, args);
+    }
+    throw new Error('Rust バックエンドに接続できません。zemi3 の npm run tauri dev から開いてください。');
 }
 
 function escapeHtml(str) {
