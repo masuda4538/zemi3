@@ -9,6 +9,7 @@ pub fn run() {
             executor::grade_task_code,
             executor::check_python_syntax,
             ai::ask_ai_hint,
+            ai::check_ai_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

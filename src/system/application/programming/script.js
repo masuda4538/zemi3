@@ -1,3 +1,8 @@
+// ===================================================================
+// CodeLab フロントエンド制御スクリプト
+// (Tauri v2 / Rust バックエンド連携 + 3段階AIエラー・差分分析 + Ollama稼働監視)
+// ===================================================================
+
 let isKidMode = true;
 let isDetailOpen = false;
 let activeMode = 'task';
@@ -8,7 +13,11 @@ let lastWorkedTaskId = 3;
 const userTaskCodes = {};
 let currentSelectedLang = 'python';
 
-// 直近の実行結果（差分タブ・AI解説・履歴用）
+// AI 段階的ヒント管理（1: 着眼点/エラー翻訳 -> 2: 原因・考え方 -> 3: 具体的な修正コード）
+let currentAiHintLevel = 1;
+let aiHintFetchedForCurrentRun = false;
+
+// 直近の実行結果（差分タブ・AIエラー分析・履歴用）
 let lastRunState = {
     code: '',
     output: '',
@@ -28,6 +37,9 @@ let layoutConfig = {
     dictPos: 'right'
 };
 
+// ===================================================================
+// 課題データ
+// ===================================================================
 const tasks = [
     { id: 1, category: 'output', difficulty: 'easy', diffLabel: '初級', title: '課題01: helloを出力', desc: 'print関数を使って画面に文字列を出力する最初の一歩です。', time: '3分', expected: 'hello', code: `print("hello")\n`, relatedDictIds: ['print'] },
     { id: 2, category: 'output', difficulty: 'easy', diffLabel: '初級', title: '課題02: 複数行のメッセージ', desc: '複数のprint文を使って複数行の文章を画面に表示させましょう。', time: '3分', expected: "1行目\n2行目", code: `print("1行目")\nprint("2行目")\n`, relatedDictIds: ['print'] },
@@ -35,10 +47,13 @@ const tasks = [
     { id: 4, category: 'calc', difficulty: 'medium', diffLabel: '中級', title: '課題04: 割り勘計算ツール', desc: '合計金額と人数を変数で受け取り、1人あたりの金額を計算します。', time: '8分', expected: '1人あたり: 500円', code: `total = 1500\npeople = 3\nprint("1人あたり: " + str(total // people) + "円")\n`, relatedDictIds: ['print', 'int'] },
     { id: 5, category: 'branch', difficulty: 'medium', diffLabel: '中級', title: '課題05: 偶数・奇数の判定', desc: 'if文と余り演算子(%)を使って数字の偶数・奇数を判定します。', time: '8分', expected: '偶数です', code: `num = 10\nif num % 2 == 0:\n    print("偶数です")\nelse:\n    print("奇数です")\n`, relatedDictIds: ['print', 'if'] },
     { id: 6, category: 'branch', difficulty: 'hard', diffLabel: '上級', title: '課題06: 成績ランク判定', desc: '得点に応じて「A」「B」「C」に3分岐させるプログラムです。', time: '12分', expected: '評価: A', code: `score = 85\nif score >= 80:\n    print("評価: A")\nelif score >= 60:\n    print("評価: B")\nelse:\n    print("評価: C")\n`, relatedDictIds: ['print', 'if'] },
-    { id: 7, category: 'loop', difficulty: 'medium', diffLabel: '中級', title: '課題07: 1〜10のループ出力', desc: 'for文とrange関数を使って1から10までの数値を順に出力します。', time: '10分', expected: '1\n2\n3\n4\n5', code: `for i in range(1, 6):\n    print(i)\n`, relatedDictIds: ['print', 'for'] },
+    { id: 7, category: 'loop', difficulty: 'medium', diffLabel: '中級', title: '課題07: 1〜5のループ出力', desc: 'for文とrange関数を使って1から5までの数値を順に出力します。', time: '10分', expected: '1\n2\n3\n4\n5', code: `for i in range(1, 6):\n    print(i)\n`, relatedDictIds: ['print', 'for'] },
     { id: 8, category: 'loop', difficulty: 'hard', diffLabel: '上級', title: '課題08: リストの合計値計算', desc: 'リスト内の数値をループで足し合わせ、合計値を算出します。', time: '15分', expected: '合計: 60', code: `numbers = [10, 20, 30]\ntotal = 0\nfor n in numbers:\n    total += n\nprint("合計: " + str(total))\n`, relatedDictIds: ['print', 'for'] }
 ];
 
+// ===================================================================
+// 多言語構文辞書データ
+// ===================================================================
 const dictionaryData = [
     {
         id: 'print',
@@ -147,7 +162,7 @@ const projectsData = {
 };
 
 // ===================================================================
-// Tauri v2 (Rust バックエンド) 通信ヘルパー
+// Tauri v2 (Rust バックエンド) 通信ヘルパー & ユーティリティ
 // ===================================================================
 async function invokeRust(cmd, args = {}) {
     const tauriInvoke = window.__TAURI__?.core?.invoke;
@@ -164,6 +179,25 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function formatHintMarkdown(text) {
+    return escapeHtml(text)
+        .replace(/```python\s*([\s\S]*?)```/g, '<pre class="bg-slate-900 text-emerald-300 p-2 rounded my-1.5 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap">$1</pre>')
+        .replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-900 text-slate-200 p-2 rounded my-1.5 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap">$1</pre>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-white">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-brand-600 dark:text-brand-400 font-mono font-bold">$1</code>')
+        .replace(/\n/g, '<br>');
+}
+
+function resetLastRunState() {
+    lastRunState = {
+        code: '',
+        output: '',
+        expected: '',
+        passed: false,
+        error: ''
+    };
 }
 
 function appendHistoryRow(taskTitle, statusText, badgeClass, memoText) {
@@ -185,42 +219,12 @@ function appendHistoryRow(taskTitle, statusText, badgeClass, memoText) {
 // 使い方ガイドツアー
 // ===================================================================
 const tourSteps = [
-    {
-        view: 'tasks',
-        target: '#nav-tasks',
-        title: '① 課題演習メニュー',
-        text: '初級から上級まで、段階的なプログラミング問題を選んで挑戦できるモードだよ！'
-    },
-    {
-        view: 'tasks',
-        target: '#taskGrid',
-        title: '② 課題カード一覧',
-        text: '解きたいお題カードを選んでみよう。「使う関数」を押せば構文辞書もすぐに確認できるよ。'
-    },
-    {
-        view: 'editor-task',
-        target: '#codeEditor',
-        title: '③ コードエディタ',
-        text: 'ここにPythonのプログラムを直接書くよ！行番号も表示されて見やすくなっているよ。'
-    },
-    {
-        view: 'editor-task',
-        target: '#tour-run-btn',
-        title: '④ うごかす！ボタン',
-        text: 'プログラムが書けたらここを押そう！Rust側でPythonが実行されて下のコンソールに結果が届くよ。'
-    },
-    {
-        view: 'editor-task',
-        target: '#consoleBody',
-        title: '⑤ 出力コンソール ＆ AI解説',
-        text: '実行結果が表示されるよ。間違えたときは「💡 AIの解説を見る」ボタンからヒントをチェックしよう！'
-    },
-    {
-        view: 'dict-view',
-        target: '#nav-dict',
-        title: '⑥ 多言語対応・構文辞書',
-        text: 'printやstrの使い方がいつでも調べられるよ。PythonだけでなくJavaScriptやC言語の書き方とも比較できるんだ！'
-    }
+    { view: 'tasks', target: '#nav-tasks', title: '① 課題演習メニュー', text: '初級から上級まで、段階的なプログラミング問題を選んで挑戦できるモードだよ！' },
+    { view: 'tasks', target: '#taskGrid', title: '② 課題カード一覧', text: '解きたいお題カードを選んでみよう。「使う関数」を押せば構文辞書もすぐに確認できるよ。' },
+    { view: 'editor-task', target: '#codeEditor', title: '③ コードエディタ', text: 'ここにPythonのプログラムを直接書くよ！行番号も表示されて見やすくなっているよ。' },
+    { view: 'editor-task', target: '#tour-run-btn', title: '④ うごかす！ボタン', text: 'プログラムが書けたらここを押そう！Rust側でPythonが実行されて下のコンソールに結果が届くよ。' },
+    { view: 'editor-task', target: '#consoleBody', title: '⑤ 出力コンソール ＆ AI解説', text: '実行結果やエラーが表示されるよ。困ったときは「💡 AIの解説・ヒントを見る」ボタンから段階的なヒントをチェックしよう！' },
+    { view: 'dict-view', target: '#nav-dict', title: '⑥ 多言語対応・構文辞書', text: 'printやstrの使い方がいつでも調べられるよ。PythonだけでなくJavaScriptやC言語の書き方とも比較できるんだ！' }
 ];
 
 let currentTourIndex = 0;
@@ -234,11 +238,12 @@ function startTour() {
 
 function renderTourStep() {
     const step = tourSteps[currentTourIndex];
+    const currentView = getCurrentVisibleView();
 
     if (step.view) {
-        if (step.view === 'editor-task' && getCurrentVisibleView() !== 'editor-task') {
+        if (step.view === 'editor-task' && currentView !== 'editor-task') {
             selectTask(lastWorkedTaskId, false);
-        } else if (step.view !== getCurrentVisibleView()) {
+        } else if (step.view !== currentView) {
             switchView(step.view, false);
         }
     }
@@ -358,11 +363,7 @@ function updateLineNumberSetting() {
 function applyLineNumberSetting() {
     const lineNumbers = document.getElementById('editorLineNumbers');
     if (!lineNumbers) return;
-    if (editorPreferences.showLineNumbers) {
-        lineNumbers.classList.remove('hidden-lines');
-    } else {
-        lineNumbers.classList.add('hidden-lines');
-    }
+    lineNumbers.classList.toggle('hidden-lines', !editorPreferences.showLineNumbers);
 }
 
 function updateEditorFontSize() {
@@ -482,9 +483,7 @@ function setAudienceMode(isKid, save = true) {
     if (save) {
         try {
             localStorage.setItem('codelab_kid_mode', isKidMode.toString());
-        } catch (e) {
-            console.warn('LocalStorage save error:', e);
-        }
+        } catch (e) {}
     }
 
     renderDictCards();
@@ -513,9 +512,7 @@ function setThemeMode(mode, save = true) {
     if (save) {
         try {
             localStorage.setItem('codelab_theme', mode);
-        } catch (e) {
-            console.warn('LocalStorage save error:', e);
-        }
+        } catch (e) {}
     }
 }
 
@@ -618,9 +615,7 @@ function updatePartPositions() {
 function saveLayoutToStorage() {
     try {
         localStorage.setItem('codelab_layout', JSON.stringify(layoutConfig));
-    } catch (e) {
-        console.warn('LocalStorage save error:', e);
-    }
+    } catch (e) {}
 }
 
 function renderDynamicLayout() {
@@ -687,20 +682,20 @@ function updateMiniPreview() {
 // 画面遷移
 // ===================================================================
 function switchView(view, pushHistory = true) {
-    if (getCurrentVisibleView() === 'editor-task' && lastWorkedTaskId) {
+    const currentVisible = getCurrentVisibleView();
+
+    if (currentVisible === 'editor-task' && lastWorkedTaskId) {
         userTaskCodes[lastWorkedTaskId] = document.getElementById('codeEditor').value;
         try {
             localStorage.setItem('codelab_task_codes', JSON.stringify(userTaskCodes));
             localStorage.setItem('codelab_last_task', lastWorkedTaskId.toString());
         } catch (e) {}
-    } else if (getCurrentVisibleView() === 'editor-free') {
+    } else if (currentVisible === 'editor-free') {
         const proj = projectsData[currentProjectKey];
         if (proj && currentFileKey) {
             proj.files[currentFileKey] = document.getElementById('codeEditor').value;
         }
     }
-
-    const currentVisible = getCurrentVisibleView();
 
     if (pushHistory && currentVisible !== view) {
         navigationHistoryStack.push({
@@ -726,12 +721,9 @@ function switchView(view, pushHistory = true) {
         document.getElementById('dictBackBtnLabel').innerText = labelMap[lastV] || '戻る';
     }
 
-    document.getElementById('view-tasks-container').classList.add('hidden');
-    document.getElementById('view-projects-container').classList.add('hidden');
-    document.getElementById('view-dict-container').classList.add('hidden');
-    document.getElementById('view-editor-container').classList.add('hidden');
-    document.getElementById('view-history-container').classList.add('hidden');
-    document.getElementById('view-settings-container').classList.add('hidden');
+    ['tasks', 'projects', 'dict', 'editor', 'history', 'settings'].forEach(v => {
+        document.getElementById(`view-${v}-container`).classList.add('hidden');
+    });
 
     const taskCategoryNav = document.getElementById('taskCategoryNavSection');
     const dictCategoryNav = document.getElementById('dictCategoryNavSection');
@@ -896,7 +888,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ===================================================================
-// 辞書ビュー
+// 構文辞書ビュー
 // ===================================================================
 function tryDictSnippetInEditor(id, event) {
     if (event) event.stopPropagation();
@@ -1007,7 +999,7 @@ function renderDictCards() {
                 const tObj = tasks.find(t => t.id === tId);
                 if (!tObj) return '';
                 return `
-                    <button onclick="jumpToTaskFromDict(${tObj.id}, event)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors" title="「${tObj.title}」を解く">
+                    <button onclick="jumpToTaskFromDict(${tObj.id}, event)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors" title="「${escapeHtml(tObj.title)}」を解く">
                         <span>🎯 課題0${tObj.id}</span>
                         <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
                     </button>
@@ -1038,12 +1030,12 @@ function renderDictCards() {
 
                 <div>
                     <div class="flex items-baseline gap-1.5">
-                        <h3 class="font-extrabold text-sm text-slate-900 dark:text-white font-mono card-func-title">${currentLangData.name}</h3>
-                        ${isKidMode ? `<span class="text-[10px] text-slate-400">(${currentLangData.kana})</span>` : ''}
+                        <h3 class="font-extrabold text-sm text-slate-900 dark:text-white font-mono card-func-title">${escapeHtml(currentLangData.name)}</h3>
+                        ${isKidMode ? `<span class="text-[10px] text-slate-400">(${escapeHtml(currentLangData.kana)})</span>` : ''}
                     </div>
-                    <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">【${item.summary}】</p>
+                    <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">【${escapeHtml(item.summary)}】</p>
                 </div>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">${item.desc}</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">${escapeHtml(item.desc)}</p>
             </div>
 
             <div class="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -1057,11 +1049,11 @@ function renderDictCards() {
                 </div>
 
                 <div class="p-2.5 rounded-lg bg-slate-900 text-slate-200 font-mono text-[11px] overflow-x-auto min-h-[3.6rem] flex items-center">
-                    <code class="card-syntax-code leading-relaxed">${escapeHtml(currentLangData.example)}</code>
+                    <code class="card-syntax-code leading-relaxed whitespace-pre">${escapeHtml(currentLangData.example)}</code>
                 </div>
 
                 <p class="text-[10px] text-amber-600 dark:text-amber-400/90 font-medium card-syntax-note">
-                    💡 [${currentSelectedLang.toUpperCase()}] ${currentLangData.note}
+                    💡 [${currentSelectedLang.toUpperCase()}] ${escapeHtml(currentLangData.note)}
                 </p>
             </div>
 
@@ -1102,14 +1094,14 @@ function renderSideDictCards() {
         card.className = 'p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl space-y-1.5';
         card.innerHTML = `
             <div class="flex items-center justify-between">
-                <span class="font-bold text-xs text-brand-600 dark:text-brand-400 font-mono">${currentLangData.name}</span>
+                <span class="font-bold text-xs text-brand-600 dark:text-brand-400 font-mono">${escapeHtml(currentLangData.name)}</span>
                 ${taskLinkHtml}
             </div>
             <div class="p-1.5 rounded bg-slate-900 text-slate-200 font-mono text-[10px]">
                 <code>${escapeHtml(currentLangData.example.split('\n')[0])}</code>
             </div>
             <div class="text-[9px] text-slate-400">
-                【${item.summary}】 (${currentSelectedLang.toUpperCase()})
+                【${escapeHtml(item.summary)}】 (${currentSelectedLang.toUpperCase()})
             </div>
         `;
         container.appendChild(card);
@@ -1170,9 +1162,9 @@ function renderTasks() {
                 const dObj = dictionaryData.find(d => d.id === dId);
                 const label = dObj ? dObj.langs.python.name.split(' ')[0] : dId;
                 return `
-                    <button onclick="jumpToDictFromTaskCard('${dId}', event)" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors" title="辞書を見る: ${label}">
+                    <button onclick="jumpToDictFromTaskCard('${dId}', event)" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors" title="辞書を見る: ${escapeHtml(label)}">
                         <i data-lucide="book-open" class="w-2.5 h-2.5 text-indigo-500"></i>
-                        <span>${label}</span>
+                        <span>${escapeHtml(label)}</span>
                     </button>
                 `;
             }).join('');
@@ -1193,8 +1185,8 @@ function renderTasks() {
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded ${diffBadgeClass}">${task.diffLabel}</span>
                     <span class="text-[10px] text-slate-400">目安: ${task.time}</span>
                 </div>
-                <h3 class="font-bold text-xs text-slate-900 dark:text-white mb-1">${task.title}</h3>
-                <p class="text-[11px] text-slate-500 line-clamp-2">${task.desc}</p>
+                <h3 class="font-bold text-xs text-slate-900 dark:text-white mb-1">${escapeHtml(task.title)}</h3>
+                <p class="text-[11px] text-slate-500 line-clamp-2">${escapeHtml(task.desc)}</p>
             </div>
 
             <div class="space-y-2">
@@ -1227,6 +1219,10 @@ function selectTask(taskId, isNewSelect = true) {
         localStorage.setItem('codelab_last_task', taskId.toString());
     } catch (e) {}
 
+    resetLastRunState();
+    resetAiHintLevel();
+    aiHintFetchedForCurrentRun = false;
+
     const task = tasks.find(t => t.id === taskId) || tasks[0];
 
     document.getElementById('taskBannerTitle').innerText = task.title;
@@ -1248,6 +1244,11 @@ function selectTask(taskId, isNewSelect = true) {
 
     document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> task_${taskId}.py`;
     document.getElementById('consoleBody').innerHTML = `<span class="text-slate-500">「うごかす！」ボタンを押すとRust側でPythonが実行されます。</span>`;
+
+    const aiText = document.getElementById('aiAdviceText');
+    if (aiText) {
+        aiText.innerHTML = '「うごかす！」を押したあと、下のコンソールから「💡 AIの解説・ヒントを見る」を押すと段階的なアドバイスが表示されるよ！';
+    }
 
     switchView('editor-task');
     updateLineNumbers();
@@ -1282,18 +1283,18 @@ function renderProjectCards() {
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1">
-                        <i data-lucide="folder" class="w-4 h-4 fill-brand-500/20"></i> ${proj.name}
+                        <i data-lucide="folder" class="w-4 h-4 fill-brand-500/20"></i> ${escapeHtml(proj.name)}
                     </span>
-                    <button onclick="event.stopPropagation(); deleteFolder('${key}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-500 transition-opacity" title="フォルダを削除">
+                    <button onclick="event.stopPropagation(); deleteFolder('${escapeHtml(key)}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-500 transition-opacity" title="フォルダを削除">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
-                <p class="text-xs text-slate-500 line-clamp-2">${proj.desc}</p>
+                <p class="text-xs text-slate-500 line-clamp-2">${escapeHtml(proj.desc)}</p>
             </div>
             <div>
                 <div class="text-[10px] text-slate-400 font-mono mb-2 flex items-center justify-between">
                     <span>ファイル: ${Object.keys(proj.files).length}件</span>
-                    <span>${proj.updated}</span>
+                    <span>${escapeHtml(proj.updated)}</span>
                 </div>
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-brand-600 font-bold">
                     <span>このフォルダを開く</span>
@@ -1313,10 +1314,14 @@ function openProject(key) {
     const firstFile = Object.keys(proj.files)[0] || 'main.py';
     currentFileKey = firstFile;
 
+    resetLastRunState();
+    resetAiHintLevel();
+    aiHintFetchedForCurrentRun = false;
+
     document.getElementById('activeProjectBreadcrumb').innerText = `${proj.name} / ${firstFile}`;
     document.getElementById('currentProjectTreeLabel').innerText = proj.name.toUpperCase();
     document.getElementById('codeEditor').value = proj.files[firstFile] || '';
-    document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> ${firstFile}`;
+    document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> ${escapeHtml(firstFile)}`;
     document.getElementById('consoleBody').innerHTML = `<span class="text-slate-500">「うごかす！」ボタンを押すとRust側でPythonが実行されます。</span>`;
 
     switchView('editor-free');
@@ -1338,7 +1343,7 @@ function renderFileTree() {
             ? 'flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-200/70 dark:bg-slate-800 text-brand-600 dark:text-brand-400 cursor-pointer'
             : 'flex items-center justify-between px-2 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-200/40 dark:hover:bg-slate-800/60 cursor-pointer';
         item.innerHTML = `
-            <span class="flex items-center gap-1.5"><i data-lucide="file" class="w-3.5 h-3.5"></i>${f}</span>
+            <span class="flex items-center gap-1.5"><i data-lucide="file" class="w-3.5 h-3.5"></i>${escapeHtml(f)}</span>
             ${isActive ? '<span class="text-[9px] text-slate-400 font-mono">active</span>' : ''}
         `;
         item.onclick = () => selectFile(f);
@@ -1354,7 +1359,7 @@ function selectFile(f) {
     }
     currentFileKey = f;
     document.getElementById('codeEditor').value = proj.files[f] || '';
-    document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> ${f}`;
+    document.getElementById('currentEditorFileName').innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5 text-brand-500"></i> ${escapeHtml(f)}`;
     document.getElementById('activeProjectBreadcrumb').innerText = `${proj.name} / ${f}`;
     renderFileTree();
     updateLineNumbers();
@@ -1401,14 +1406,269 @@ function promptNewFile() {
 }
 
 // ===================================================================
-// Rust バックエンド連携：実行・自動採点・構文チェック・AIヒント
+// AI (Ollama) 稼働ステータス表示（ヘッダー・右パネル自動配置）
+// ===================================================================
+function ensureAiStatusUi() {
+    const aiPanelBtn = document.getElementById('headerAiPanelBtn');
+    if (aiPanelBtn && !document.getElementById('aiStatusBadge')) {
+        const badge = document.createElement('button');
+        badge.id = 'aiStatusBadge';
+        badge.type = 'button';
+        badge.onclick = () => checkAiConnectionStatus(true);
+        badge.title = 'クリックでAI (Ollama) の接続状態を再確認';
+        badge.className = 'px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 transition-colors bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>AI確認中...</span>';
+        aiPanelBtn.parentNode.insertBefore(badge, aiPanelBtn);
+    }
+
+    const rightAiBox = document.getElementById('rightAiBox');
+    if (rightAiBox && !document.getElementById('aiPanelStatusLine')) {
+        const line = document.createElement('div');
+        line.id = 'aiPanelStatusLine';
+        line.className = 'flex items-center justify-between text-[10px] px-2 py-1 rounded-lg bg-white/70 dark:bg-slate-900/60 border border-indigo-200/60 dark:border-indigo-800/50 text-slate-500';
+        line.innerHTML = '<span>接続先を確認中...</span>';
+        const adviceEl = document.getElementById('aiAdviceText');
+        if (adviceEl) {
+            rightAiBox.insertBefore(line, adviceEl);
+        } else {
+            rightAiBox.appendChild(line);
+        }
+    }
+}
+
+async function checkAiConnectionStatus(manual = false) {
+    ensureAiStatusUi();
+    const badge = document.getElementById('aiStatusBadge');
+    const panelLine = document.getElementById('aiPanelStatusLine');
+
+    if (manual && badge) {
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>確認中...</span>';
+    }
+
+    try {
+        const res = await invokeRust('check_ai_status');
+        if (res?.running && res?.model_installed) {
+            if (badge) {
+                badge.className = 'px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 transition-colors bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>AI稼働中 (${escapeHtml(res.model_name)})</span>`;
+            }
+            if (panelLine) {
+                panelLine.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">● Ollama 接続OK (${escapeHtml(res.model_name)})</span><button onclick="checkAiConnectionStatus(true)" class="underline text-slate-400 hover:text-slate-600">再確認</button>`;
+            }
+        } else if (res?.running && !res?.model_installed) {
+            if (badge) {
+                badge.className = 'px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 transition-colors bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+                badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>モデル未導入</span>';
+            }
+            if (panelLine) {
+                panelLine.innerHTML = `<span class="text-amber-600 dark:text-amber-400 font-bold">● Ollama起動中 / ${escapeHtml(res.model_name)} 未導入</span><button onclick="checkAiConnectionStatus(true)" class="underline text-slate-400 hover:text-slate-600">再確認</button>`;
+            }
+        } else {
+            if (badge) {
+                badge.className = 'px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 transition-colors bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
+                badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>AI未接続</span>';
+            }
+            if (panelLine) {
+                panelLine.innerHTML = '<span class="text-rose-500 font-bold">● Ollama 未起動（簡易分析で動作中）</span><button onclick="checkAiConnectionStatus(true)" class="underline text-slate-400 hover:text-slate-600">再確認</button>';
+            }
+        }
+    } catch (e) {
+        if (badge) {
+            badge.className = 'px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 transition-colors bg-slate-200/70 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>AIオフライン</span>';
+        }
+    }
+}
+
+// ===================================================================
+// AI 段階的ヒント制御（エラー分析 / 出力差分分析 共通・レベル 1 -> 2 -> 3）
+// ===================================================================
+function ensureAiHintControls() {
+    const rightAiBox = document.getElementById('rightAiBox');
+    if (!rightAiBox) return;
+
+    let badge = document.getElementById('aiHintLevelBadge');
+    if (!badge) {
+        const spans = rightAiBox.querySelectorAll('span');
+        spans.forEach(s => {
+            if (s.innerText.includes('ヒント')) {
+                s.id = 'aiHintLevelBadge';
+                badge = s;
+            }
+        });
+    }
+
+    if (!document.getElementById('btnNextHint')) {
+        const footer = document.createElement('div');
+        footer.className = 'pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-between gap-2';
+        footer.innerHTML = `
+            <span class="text-[10px] text-slate-400" id="aiHintStepDesc">第1段階: 着眼点</span>
+            <button id="btnNextHint" onclick="nextAiHintStep()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95">
+                <span>次のヒント (2/3)</span>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </button>
+        `;
+        rightAiBox.appendChild(footer);
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function resetAiHintLevel() {
+    currentAiHintLevel = 1;
+    updateAiHintUiLevel(1);
+}
+
+function updateAiHintUiLevel(level) {
+    ensureAiHintControls();
+    const badge = document.getElementById('aiHintLevelBadge');
+    const stepDesc = document.getElementById('aiHintStepDesc');
+    const nextBtn = document.getElementById('btnNextHint');
+    const isErrMode = Boolean((lastRunState.error || '').trim());
+
+    if (badge) badge.innerText = `ヒント ${level}/3`;
+    if (stepDesc) {
+        const descs = isErrMode
+            ? ['第1段階: エラーの意味と場所', '第2段階: エラーの原因解説', '第3段階: 具体的な修正コード']
+            : ['第1段階: 着眼点', '第2段階: 考え方・原因', '第3段階: 具体的な修正コード'];
+        stepDesc.innerText = descs[level - 1] || '';
+    }
+    if (nextBtn) {
+        if (level < 3) {
+            nextBtn.classList.remove('hidden');
+            nextBtn.innerHTML = `<span>次のヒント (${level + 1}/3)</span><i data-lucide="chevron-right" class="w-3 h-3"></i>`;
+        } else {
+            nextBtn.classList.add('hidden');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function buildCurrentAiPrompt() {
+    if (activeMode === 'task') {
+        const task = tasks.find(t => t.id === lastWorkedTaskId) || tasks[0];
+        let prompt = `${task.title}: ${task.desc}\n期待される出力: ${task.expected}`;
+        if (lastRunState.output) prompt += `\n実際の出力: ${lastRunState.output}`;
+        if (lastRunState.error) prompt += `\nエラー内容: ${lastRunState.error}`;
+        return prompt;
+    }
+    let prompt = `自由制作 (${currentProjectKey}/${currentFileKey})`;
+    if (lastRunState.error) prompt += `\nエラー内容: ${lastRunState.error}`;
+    return prompt;
+}
+
+function renderAiResultHtml(res, currentError) {
+    const hint = res?.hint || (typeof res === 'string' ? res : '');
+    const isOllama = res?.source === 'ollama';
+    const isErrResult = res?.analysis_type === 'error' || currentError.length > 0;
+
+    const sourceBadge = isOllama
+        ? '<span class="inline-block px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">⚡ Ollama (gemma3:4b)</span>'
+        : '<span class="inline-block px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-bold">📝 簡易分析</span>';
+
+    const modeBadge = isErrResult
+        ? '<span class="inline-block px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] font-bold">🚨 エラー内容分析</span>'
+        : '<span class="inline-block px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold">🤔 出力の差分分析</span>';
+
+    const errSummary = isErrResult && currentError
+        ? `<div class="mb-2 p-1.5 rounded bg-rose-950/80 text-rose-200 font-mono text-[10px] border border-rose-500/40 overflow-x-auto whitespace-pre-wrap">${escapeHtml(currentError.split('\n').slice(-2).join('\n'))}</div>`
+        : '';
+
+    return `<div class="mb-1.5 flex items-center gap-1.5 flex-wrap">${modeBadge}${sourceBadge}</div>${errSummary}${formatHintMarkdown(hint)}`;
+}
+
+async function nextAiHintStep() {
+    if (currentAiHintLevel < 3) {
+        currentAiHintLevel++;
+        updateAiHintUiLevel(currentAiHintLevel);
+        const code = document.getElementById('codeEditor').value;
+        await fetchAiHintIntoPanel(code, buildCurrentAiPrompt(), currentAiHintLevel);
+    }
+}
+
+async function nextConsoleAiHintStep() {
+    if (currentAiHintLevel < 3) {
+        currentAiHintLevel++;
+        updateAiHintUiLevel(currentAiHintLevel);
+        await switchConsoleTab('ai');
+    }
+}
+
+async function fetchAiHintIntoPanel(userCode, taskPrompt, level = 1) {
+    ensureAiStatusUi();
+    ensureAiHintControls();
+    updateAiHintUiLevel(level);
+
+    const aiText = document.getElementById('aiAdviceText');
+    if (!aiText) return;
+
+    const currentError = (lastRunState.error || '').trim();
+    const isErrorAnalysis = currentError.length > 0;
+
+    aiText.innerHTML = `<span class="text-indigo-500 font-bold animate-pulse">${
+        isErrorAnalysis
+            ? `🚨 AIがプログラムエラーを分析中... (${level}/3)`
+            : `AIがヒント(${level}/3)を分析中...`
+    }</span>`;
+
+    try {
+        const res = await invokeRust('ask_ai_hint', {
+            userCode,
+            taskPrompt,
+            hintLevel: level,
+            errorMessage: isErrorAnalysis ? currentError : null,
+            isKidMode
+        });
+
+        if (res?.hint || typeof res === 'string') {
+            aiText.innerHTML = renderAiResultHtml(res, currentError);
+            aiHintFetchedForCurrentRun = true;
+            checkAiConnectionStatus(false);
+            return;
+        }
+    } catch (e) {
+        console.warn('AI Hint Error:', e);
+    }
+
+    aiText.innerHTML = 'エラーメッセージや計算式、文字列のつなぎ方を見直してみよう！';
+}
+
+// コンソールの「💡 AIの解説・ヒントを見る」押下時は確実に右側サポートパネルを開く
+async function openAiHelpFromConsole() {
+    const code = document.getElementById('codeEditor').value;
+
+    const panel = document.getElementById('detailPanel');
+    if (panel) {
+        isDetailOpen = true;
+        panel.classList.remove('translate-x-full');
+    }
+
+    const rightAiBox = document.getElementById('rightAiBox');
+    if (rightAiBox) {
+        rightAiBox.classList.remove('hidden');
+        rightAiBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    ensureAiStatusUi();
+    ensureAiHintControls();
+
+    if (!aiHintFetchedForCurrentRun) {
+        resetAiHintLevel();
+        await fetchAiHintIntoPanel(code, buildCurrentAiPrompt(), 1);
+    }
+}
+
+// ===================================================================
+// Rust バックエンド連携：実行・自動採点・構文チェック
 // ===================================================================
 async function runCode() {
     const code = document.getElementById('codeEditor').value;
     const consoleBody = document.getElementById('consoleBody');
     const aiText = document.getElementById('aiAdviceText');
 
-    // 出力タブをアクティブに戻す
+    resetLastRunState();
+    resetAiHintLevel();
+    aiHintFetchedForCurrentRun = false;
+
     const tabBtnOutput = document.getElementById('tabBtnOutput');
     const tabBtnDiff = document.getElementById('tabBtnDiff');
     const tabBtnAi = document.getElementById('tabBtnAi');
@@ -1451,10 +1711,11 @@ async function runCode() {
                     <div class="text-emerald-400 font-bold mb-1">🎉 合格！（${escapeHtml(score)}点）期待値と一致しました</div>
                     <pre class="text-slate-200 font-mono whitespace-pre-wrap">${escapeHtml(actualOut || '(出力なし)')}</pre>
                 `;
-                aiText.innerHTML = `
-                    すばらしい！期待通りの結果が出せたね。<br>
-                    次の課題にも挑戦してみよう！
-                `;
+                if (aiText) {
+                    aiText.innerHTML = 'すばらしい！期待通りの結果が出せたね。<br>次の課題にも挑戦してみよう！';
+                }
+                const nextBtn = document.getElementById('btnNextHint');
+                if (nextBtn) nextBtn.classList.add('hidden');
                 appendHistoryRow(task.title, '合格', 'bg-emerald-100 text-emerald-800', '期待値と完全一致');
             } else {
                 const isRuntimeErr = Boolean(errMsg);
@@ -1462,16 +1723,16 @@ async function runCode() {
 
                 consoleBody.innerHTML = `
                     <div class="${isRuntimeErr ? 'text-rose-400' : 'text-amber-400'} font-bold mb-1">
-                        ${isRuntimeErr ? '❌ 実行エラーが発生しました' : `🤔 期待した結果と少しちがうみたい！（${escapeHtml(score)}点）`}
+                        ${isRuntimeErr ? '❌ プログラムエラーが発生しました' : `🤔 期待した結果と少しちがうみたい！（${escapeHtml(score)}点）`}
                     </div>
                     <div class="text-slate-400">出力結果: <span class="text-rose-400 font-bold whitespace-pre-wrap">${escapeHtml(actualOut || '(出力なし)')}</span></div>
                     <div class="text-slate-400">期待される結果: <span class="text-emerald-400 font-bold whitespace-pre-wrap">${escapeHtml(expectedOut)}</span></div>
-                    ${errMsg ? `<pre class="mt-2 text-rose-300 whitespace-pre-wrap">${escapeHtml(errMsg)}</pre>` : ''}
+                    ${errMsg ? `<pre class="mt-2 p-2 rounded bg-rose-950/60 border border-rose-500/30 text-rose-200 whitespace-pre-wrap">${escapeHtml(errMsg)}</pre>` : ''}
 
                     <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center gap-2 flex-wrap">
                         <button onclick="openAiHelpFromConsole()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                            <span>💡 AIの解説・ヒントを見る</span>
+                            <span>${isRuntimeErr ? '🚨 AIでエラー原因を分析する' : '💡 AIの解説・ヒントを見る'}</span>
                         </button>
                         <button onclick="openDictHelpFromConsole('${escapeHtml(relatedKey)}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
                             <i data-lucide="book" class="w-3.5 h-3.5 text-brand-400"></i>
@@ -1485,7 +1746,8 @@ async function runCode() {
                     'bg-rose-100 text-rose-800',
                     isRuntimeErr ? errMsg.split('\n').pop() : `出力「${actualOut || '(なし)'}」/ 期待「${expectedOut}」`
                 );
-                await fetchAiHintIntoPanel(code, `${task.title}: ${task.desc}\n期待される出力: ${task.expected}`);
+                // 裏で第1段階（エラー分析または差分分析）を先読みしておく
+                fetchAiHintIntoPanel(code, buildCurrentAiPrompt(), 1);
             }
         } else {
             const proj = projectsData[currentProjectKey];
@@ -1507,19 +1769,27 @@ async function runCode() {
 
             if (errText) {
                 consoleBody.innerHTML = `
-                    <div class="text-rose-400 font-bold mb-1">❌ 実行エラー (プロジェクト: ${escapeHtml(currentProjectKey)})</div>
+                    <div class="text-rose-400 font-bold mb-1">❌ プログラムエラー (プロジェクト: ${escapeHtml(currentProjectKey)})</div>
                     ${outText ? `<pre class="text-slate-300 font-mono whitespace-pre-wrap mb-2">${escapeHtml(outText)}</pre>` : ''}
-                    <pre class="text-rose-300 font-mono whitespace-pre-wrap">${escapeHtml(errText)}</pre>
+                    <pre class="p-2 rounded bg-rose-950/60 border border-rose-500/30 text-rose-200 font-mono whitespace-pre-wrap">${escapeHtml(errText)}</pre>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center gap-2">
+                        <button onclick="openAiHelpFromConsole()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-transform active:scale-95">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>🚨 AIでエラー原因を分析する</span>
+                        </button>
+                    </div>
                 `;
-                await fetchAiHintIntoPanel(code, `自由制作 (${currentFileKey}) のエラー:\n${errText}`);
+                fetchAiHintIntoPanel(code, buildCurrentAiPrompt(), 1);
             } else {
                 consoleBody.innerHTML = `
                     <div class="text-emerald-400 font-bold mb-1">✔ 実行が完了しました (プロジェクト: ${escapeHtml(currentProjectKey)})</div>
                     <pre class="text-slate-200 font-mono whitespace-pre-wrap">${escapeHtml(outText || '(出力なし)')}</pre>
                 `;
-                aiText.innerHTML = `
-                    正常に実行できたね！新しい処理を追加したり、別のファイルに分けてみよう！
-                `;
+                if (aiText) {
+                    aiText.innerHTML = '正常に実行できたね！新しい処理を追加したり、別のファイルに分けてみよう！';
+                }
+                const nextBtn = document.getElementById('btnNextHint');
+                if (nextBtn) nextBtn.classList.add('hidden');
             }
         }
     } catch (err) {
@@ -1532,54 +1802,6 @@ async function runCode() {
     }
 
     if (window.lucide) lucide.createIcons();
-}
-
-async function fetchAiHintIntoPanel(userCode, taskPrompt) {
-    const aiText = document.getElementById('aiAdviceText');
-    if (!aiText) return;
-    aiText.innerHTML = `<span class="text-indigo-500 font-bold">AIがコードを分析中...</span>`;
-    try {
-        const res = await invokeRust('ask_ai_hint', {
-            userCode,
-            taskPrompt,
-            hintLevel: 1
-        });
-        const hint = res?.hint || (typeof res === 'string' ? res : '');
-        if (hint) {
-            aiText.innerHTML = escapeHtml(hint).replace(/\n/g, '<br>');
-            return;
-        }
-    } catch (e) {
-        // Ollama 未起動・エラー時はフォールバック
-    }
-    aiText.innerHTML = `
-        計算式や文字列のつなぎ方、スペース・改行が<strong>期待される出力</strong>と一致しているか見直してみよう！
-    `;
-}
-
-async function openAiHelpFromConsole() {
-    const task = tasks.find(t => t.id === lastWorkedTaskId);
-    const code = document.getElementById('codeEditor').value;
-
-    // 1. 右側サイドパネルを確実に開く
-    const panel = document.getElementById('detailPanel');
-    if (panel) {
-        isDetailOpen = true;
-        panel.classList.remove('translate-x-full');
-    }
-
-    // 2. 右パネルのAIボックスにスクロールして注目させる
-    const rightAiBox = document.getElementById('rightAiBox');
-    if (rightAiBox) {
-        rightAiBox.classList.remove('hidden');
-        rightAiBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    // 3. AIにヒントを問い合わせて右パネルに反映
-    await fetchAiHintIntoPanel(
-        code,
-        task ? `${task.title}: ${task.desc}\n期待される出力: ${task.expected}` : '自由制作'
-    );
 }
 
 function openDictHelpFromConsole(keyword) {
@@ -1636,20 +1858,31 @@ async function switchConsoleTab(tab) {
         `;
     } else if (tab === 'ai') {
         tabBtnAi.className = 'text-xs font-bold text-indigo-400 border-b-2 border-indigo-500 pb-0.5 flex items-center gap-1';
-        consoleBody.innerHTML = `<div class="text-indigo-400 font-bold">🤖 AIエラー分析を取得中...</div>`;
-        const task = tasks.find(t => t.id === lastWorkedTaskId);
+        const currentError = (lastRunState.error || '').trim();
+        const isErrorAnalysis = currentError.length > 0;
+        consoleBody.innerHTML = `<div class="text-indigo-400 font-bold animate-pulse">${
+            isErrorAnalysis
+                ? `🚨 AIがプログラムエラーを分析中... (ヒント ${currentAiHintLevel}/3)`
+                : `🤖 AIエラー分析（ヒント ${currentAiHintLevel}/3）を取得中...`
+        }</div>`;
+
         const code = document.getElementById('codeEditor').value;
         try {
             const res = await invokeRust('ask_ai_hint', {
                 userCode: code,
-                taskPrompt: task ? `${task.title}: ${task.desc}\n期待される出力: ${task.expected}` : '自由制作',
-                hintLevel: 1
+                taskPrompt: buildCurrentAiPrompt(),
+                hintLevel: currentAiHintLevel,
+                errorMessage: isErrorAnalysis ? currentError : null,
+                isKidMode
             });
-            const hint = res?.hint || '計算式や出力内容が期待値と合っているか確認してみよう！';
             consoleBody.innerHTML = `
-                <div class="text-indigo-400 font-bold mb-1 flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AIエラー分析:</div>
-                <div class="text-slate-300 whitespace-pre-wrap">${escapeHtml(hint)}</div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-indigo-400 font-bold flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AI分析 (ヒント ${currentAiHintLevel}/3)</span>
+                    ${currentAiHintLevel < 3 ? `<button onclick="nextConsoleAiHintStep()" class="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[10px] font-bold">次のヒント (${currentAiHintLevel + 1}/3) ▶</button>` : ''}
+                </div>
+                <div class="text-slate-300 leading-relaxed">${renderAiResultHtml(res, currentError)}</div>
             `;
+            checkAiConnectionStatus(false);
         } catch (e) {
             consoleBody.innerHTML = `<div class="text-rose-400">AI分析の取得に失敗しました: ${escapeHtml(e?.message || e)}</div>`;
         }
@@ -1681,7 +1914,7 @@ function scheduleSyntaxCheck() {
                 label.className = 'text-[10px] text-emerald-400 font-mono';
             }
         } catch (e) {
-            // Tauri外で開いた場合は無視
+            // Tauri外ブラウザ表示時は無視
         }
     }, 450);
 }
@@ -1724,11 +1957,17 @@ function setupEditorEvents() {
 window.onload = () => {
     loadSavedPreferences();
     setupEditorEvents();
+    ensureAiStatusUi();
+    ensureAiHintControls();
     if (window.lucide) lucide.createIcons();
     switchView('tasks');
     renderSideDictCards();
     renderDynamicLayout();
     updateLineNumbers();
+
+    // Ollama 稼働チェック（起動時 + 15秒ごと）
+    checkAiConnectionStatus(false);
+    setInterval(() => checkAiConnectionStatus(false), 15000);
 
     try {
         const tourDone = localStorage.getItem('codelab_tour_done');
