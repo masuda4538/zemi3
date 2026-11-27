@@ -7,13 +7,14 @@
 //    フレンド一覧   … 名前とアイコン・オンライン（または最後のログイン）・アチーブの取得率。「すべて／オンライン」で しぼれる
 //                     行を押すと「フレンド詳細」（FriendDetail）
 //    フレンド詳細   … その人の名前とアイコン・オンライン（最後のログイン）・アチーブの取得率と、
-//                     その人と送り合ったもの（手紙・問題・応援）。「チャットする」「問題を送る」で その人とのチャットへ
+//                     その人と チャットで送り合った 問題・コード。「チャットする」「問題を送る」で その人とのチャットへ
+//                     （手紙・応援のスタンプは なくしました。スタンプは チャットで送る）
 //    フレンドを追加 … 自分の ID と、相手の ID を入れる欄・届いた申請。★ 申請はまだ送れない（押すと「準備中」とお知らせ）
 //  ☆（一覧の行の右・詳細）… お気に入りにする・外す。お気に入りの人は、一覧の上のほうに ならぶ
 //    お気に入りは favorites.js（その PC の中に覚えておく）。ホームでは、お気に入りの人が最初の広場、そうでない人が となりの広場にいる
 //  ホームの広場のカードから来たときは、その人のフレンド詳細を開く（だれを開くかは open-friend.js でメモしてわたす）
 //  ホームのポストのチャットの通知・広場の吹き出しから来たときは、その人とのチャットを開く（これも open-friend.js）
-//  フレンドは、今は仮のデータ（friends-sample.js）。送り合ったものも仮のデータ（mail-sample.js）
+//  フレンドは、今は仮のデータ（friends-sample.js）。届いた申請も仮のデータ（mail-sample.js）
 //  core/App.jsx から user（ログインしている人）を受け取ります。
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from "react";
@@ -21,10 +22,11 @@ import PageBar from "../../core/components/PageBar";
 import Icon from "../../core/components/Icon";
 import { notify } from "../../core/utils/notify.js";
 import { FRIENDS_SAMPLE, lastLoginText } from "./friends-sample.js";
-import { MAIL_SAMPLE, SENT_SAMPLE, MAIL_TYPES, STAMPS } from "./mail-sample.js";
+import { REQUEST_SAMPLE } from "./mail-sample.js";
+import { loadChats } from "./chat-store.js";
 import { peekFriend, peekChat, clearFriend } from "./open-friend.js";
 import { loadFavorites, toggleFavorite } from "./favorites.js";
-import Chat from "./chat.jsx";             // チャット
+import Chat, { CodeBlock } from "./chat.jsx";   // チャット ・ コードの表示
 import QuizView from "./quiz-view.jsx";    // 問題の中身
 import "./friends.css";
 
@@ -42,9 +44,7 @@ const FILTERS = [
 ];
 
 /** 種類ごとのアイコン（送り合ったものの一覧） */
-const KIND_ICON = { letter: "mail", quiz: "quiz", request: "userPlus", gift: "heart" };
-/** 応援のスタンプのアイコン */
-const STAMP_ICON = { cheer: "flag", star: "star", heart: "heart" };
+const KIND_ICON = { quiz: "quiz", code: "programming" };
 
 /** 「準備中」のお知らせ */
 const soon = (title) => notify({ type: "info", title: `${title}は準備中です`, message: "今は見た目のイメージだけで、まだ送れません。", key: "friends" });
@@ -101,10 +101,10 @@ export default function Friends({ user }) {
         <section className="fr-sub" key={current}>
           <header className="fr-sub-title">
             <h1>{detail ? `${detail.name} さん` : view.name}</h1>
-            <p>{detail ? "フレンドの くわしい様子と、送り合ったもの（手紙・問題・応援）が見られます。" : view.desc}</p>
+            <p>{detail ? "フレンドの くわしい様子と、チャットで送り合った 問題・コードが見られます。" : view.desc}</p>
           </header>
           {current === "list" && (detail
-            ? <FriendDetail key={detail.userId} friend={detail} onBack={() => setDetailId(null)} fav={favorites.has(detail.userId)} onFav={() => flipFav(detail.userId)}
+            ? <FriendDetail key={detail.userId} friend={detail} me={user?.userId} onBack={() => setDetailId(null)} fav={favorites.has(detail.userId)} onFav={() => flipFav(detail.userId)}
                 onChat={() => openChat(detail.userId)} onQuiz={() => openChat(detail.userId, true)} />
             : <FriendList friends={friends} onOpen={openDetail} favorites={favorites} onFav={flipFav} />)}
           {current === "add" && <AddFriend user={user} />}
@@ -177,15 +177,19 @@ function FavButton({ on, name, onClick, big = false }) {
   );
 }
 
-function FriendDetail({ friend: f, onBack, fav, onFav, onChat, onQuiz }) {
+function FriendDetail({ friend: f, me, onBack, fav, onFav, onChat, onQuiz }) {
   const [filter, setFilter] = useState("all");   // all ／ got（届いた） ／ sent（送った）
   const [openId, setOpenId] = useState(null);    // 中身を開いている行
-  // 送り合ったもの：届いたもの（from がこの人）と、送ったもの（to がこの人）を、新しい順に
-  const got = MAIL_SAMPLE.filter((m) => m.from.userId === f.userId).map((m) => ({ ...m, dir: "got" }));
-  const sent = SENT_SAMPLE.filter((m) => m.to.userId === f.userId).map((m) => ({ ...m, dir: "sent" }));
-  const all = [...got, ...sent].sort((a, b) => b.at - a.at);
+  // 送り合ったもの：この人との チャットの 問題・コード（新しい順）。dir … got（届いた） ／ sent（送った）
+  const [all] = useState(() => (loadChats(me)[f.userId] ?? [])
+    .filter((m) => m.type === "quiz" || m.type === "code")
+    .map((m) => ({ ...m, at: new Date(m.at), dir: m.from === "me" ? "sent" : "got" }))
+    .reverse());
+  const got = all.filter((m) => m.dir === "got");
+  const sent = all.filter((m) => m.dir === "sent");
   const shown = filter === "all" ? all : all.filter((m) => m.dir === filter);
   const quizCount = all.filter((m) => m.type === "quiz").length;
+  const codeCount = all.length - quizCount;
   const DIRS = [{ id: "all", name: "すべて" }, { id: "got", name: "届いた" }, { id: "sent", name: "送った" }];
 
   return (
@@ -210,7 +214,6 @@ function FriendDetail({ friend: f, onBack, fav, onFav, onChat, onQuiz }) {
           <FavButton big on={fav} name={f.name} onClick={onFav} />
           <button type="button" className="btn btn-primary" onClick={onChat}><Icon name="chat" />チャットする</button>
           <button type="button" className="btn" onClick={onQuiz}><Icon name="quiz" />問題を送る</button>
-          <button type="button" className="btn" onClick={() => soon("手紙を送る機能")}><Icon name="mail" />手紙を送る</button>
         </div>
       </section>
 
@@ -218,12 +221,12 @@ function FriendDetail({ friend: f, onBack, fav, onFav, onChat, onQuiz }) {
       <ul className="fr-counts">
         <li><span>届いたもの</span><b>{got.length}</b></li>
         <li><span>送ったもの</span><b>{sent.length}</b></li>
-        <li><span>問題のやりとり</span><b>{quizCount}</b></li>
+        <li><span>問題 ・ コード</span><b>{quizCount} ・ {codeCount}</b></li>
       </ul>
 
       <section className="panel fr-card">
         <header className="fr-card-head">
-          <strong>送り合ったもの</strong>
+          <strong>送り合ったもの<small className="fr-card-note">（チャットの 問題・コード）</small></strong>
           <div className="seg" role="radiogroup" aria-label="しぼりこみ">
             {DIRS.map((x) => (
               <button key={x.id} type="button" role="radio" aria-checked={filter === x.id} className={filter === x.id ? "active" : ""} onClick={() => setFilter(x.id)}>
@@ -232,7 +235,7 @@ function FriendDetail({ friend: f, onBack, fav, onFav, onChat, onQuiz }) {
             ))}
           </div>
         </header>
-        {shown.length === 0 ? <p className="fr-none">まだ ありません。</p> : (
+        {shown.length === 0 ? <p className="fr-none">まだ ありません。チャットの ＋ から 問題や コードを送れます。</p> : (
           <ul className="fr-list">
             {shown.map((m) => {
               const open = openId === m.id;
@@ -262,27 +265,18 @@ function FriendDetail({ friend: f, onBack, fav, onFav, onChat, onQuiz }) {
 /** 一覧の 1 行目 */
 function mailTitle(m) {
   if (m.type === "quiz") return `問題「${m.quiz?.title ?? ""}」`;
-  if (m.type === "gift") return `応援「${STAMPS[m.stamp] ?? ""}」`;
-  return MAIL_TYPES[m.type]?.name ?? "";
+  return `${m.lang || "その他"} の コード`;
 }
 /** 一覧の 2 行目 */
 function mailPreview(m) {
-  if (m.type === "quiz") return `${m.quiz?.questions?.length ?? 0}問${m.text ? `・${m.text}` : ""}`;
-  return (m.text ?? "").replace(/\n/g, " ");
+  const n = m.type === "quiz" ? `${m.quiz?.questions?.length ?? 0}問` : `${(m.code ?? "").replace(/\n+$/, "").split("\n").length}行`;
+  return `${n}${m.text ? `・${m.text.replace(/\n/g, " ")}` : ""}`;
 }
 
-/** 開いたときの中身（手紙・問題・応援） */
+/** 開いたときの中身（問題 ・ コード） */
 function MailBody({ m }) {
-  if (m.type === "quiz") return <QuizView quiz={m.quiz} note={m.text} canSolve={m.dir === "got"} />;
-  if (m.type === "gift") {
-    return (
-      <div className="fr-gift">
-        <span className={`fr-stamp is-${m.stamp}`}><Icon name={STAMP_ICON[m.stamp] ?? "heart"} /><b>{STAMPS[m.stamp]}</b></span>
-        {m.text && <p>{m.text}</p>}
-      </div>
-    );
-  }
-  return <div className="fr-letter"><p>{m.text}</p></div>;
+  if (m.type === "quiz") return <QuizView quiz={m.quiz} note={m.text} showAnswer={m.dir === "sent"} canSolve={m.dir === "got"} />;
+  return <>{m.text && <p className="fr-code-note">{m.text}</p>}<CodeBlock msg={m} big /></>;
 }
 
 // 問題の中身（QuizView）は quiz-view.jsx
@@ -290,7 +284,7 @@ function MailBody({ m }) {
 // ───────── フレンドを追加（★ 見た目だけ。申請はまだ送れない） ─────────
 function AddFriend({ user }) {
   const [id, setId] = useState("");
-  const requests = MAIL_SAMPLE.filter((m) => m.type === "request");   // 届いた申請（ホームのポストにも届いている）
+  const requests = REQUEST_SAMPLE;   // 届いた申請（ホームのポストにも届いている）
   const send = (e) => {
     e.preventDefault();
     soon("フレンドの申請");

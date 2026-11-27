@@ -15,6 +15,8 @@
 //
 //  sampleCode() … あとから 足した 仮のコード（プログラムを送ったもの）[{ talk: トークの id, msg: メッセージ }]
 //    コードの メッセージ：{ type: "code", lang: 言語の名前, code: コード（何行でも）, text: ひとこと }
+//  sampleStamps() … あとから 足した 仮のスタンプ（形は sampleCode と同じ）
+//    スタンプの メッセージ：{ type: "stamp", stamp: スタンプの id（stamps.js） }
 //
 //  sampleRoom() … 仮のグループトーク 1 つ（「勉強会」。たろう・はなこ と 自分）
 //    { room: { id, name, color, members }, list: [メッセージ…], mark: 見た日時, pins: [メッセージの id…] }
@@ -264,5 +266,18 @@ export function sampleCode() {
     m("grp:study", "s-code-3", 1, "20:20", "friend", "HTML",
       "<h1>勉強会</h1>\n<p>毎晩 8 時から 30 分</p>\n<a href=\"page2.html\">つぎのページ</a>",
       "見出しと リンクの 見本だよ", "hanako"),
+  ];
+}
+
+/** あとから 足した 仮のスタンプ（すでに保存してある やりとりにも 1 回だけ 入る。chat-store.js の ensureExtras） */
+export function sampleStamps() {
+  const m = (talk, id, days, time, from, stamp, by) => ({
+    talk, msg: { id, from, ...(by ? { by } : {}), type: "stamp", stamp, text: "", at: when(days, time) },
+  });
+  return [
+    m("taro", "s-stamp-1", 1, "20:02", "me", "good"),
+    m("hanako", "s-stamp-2", 1, "21:10", "friend", "thanks"),
+    m("jiro", "s-stamp-3", 2, "19:30", "friend", "otsukare"),
+    m("grp:study", "s-stamp-4", 1, "20:25", "friend", "fight", "taro"),
   ];
 }

@@ -20,19 +20,21 @@
 //               お気に入り：フレンドのお気に入り（favorites.js。ホームの最初の広場・掲示板と同じ）。名前の横に ★
 //                 行にマウスをのせると（キーボードで えらんでも）右に ☆ のボタン。まん中の上にも「お気に入り」ボタン
 //    まん中   … やりとり：自分は右がわの青い吹き出し、相手は左がわの白い吹き出し。日付の区切りと時刻
-//               上の右はしの 丸いボタン：分類 ・ お気に入り ・ 詳細（フレンド詳細へ。グループトークなら 設定） ・ 右の列を 出す／かくす（その PC に覚える）
+//               上の右はしの 丸いボタン：分類 ・ お気に入り ・ 詳細（フレンド詳細へ。グループトークなら 設定） ・ 右の 2 列を 出す／かくす（その PC に覚える）
 //               グループトークでは、相手の吹き出しの上に 送った人の名前。お知らせ（「〇〇さんを 追加しました」など）は まん中に 小さく
 //               下の入力欄：Enter で送信・Shift + Enter で改行。左の ＋ →「問題を送る」で 問題を作る画面（QuizComposer）
 //               問題は カードで出る。押すと中身（自分が送った問題なら 正解も）
 //               プログラムのコード：＋ →「コードを送る」（CodeComposer。言語・コード・ひとこと。Tab で字下げ・Ctrl + Enter で送る）
 //                 ふつうの入力欄でも ``` と ``` で かこむと コードになる（```python のように 言語名も書ける。かこみの外の文は ひとこと）
 //                 コードの吹き出し（CodeBlock）：行番号つき。上の「すべてコピー」、行に マウスをのせると 右に「コピー」、行番号を押しても その行をコピー
+//               スタンプ：入力欄の右の 顔のボタン → 一覧（StampPicker）→ 押すと すぐ送る。吹き出しは 絵だけ（大きめ）
+//                 スタンプの一覧と 絵の場所は stamps.js（絵は public/images/stamp）
 //               会話のピン止め：吹き出しにマウスをのせると 横に ピンのボタン（ピン止めしたものは いつも青いピン）
-//                 ピン止めしたものは 右の列の上に 一覧で出る（chat-store.js の toggleMsgPin）
-//    右       … 上下 2 つ（それぞれ 多いときは 中だけスクロール）
-//               上：ピン止め … ピン止めした会話（あとから ピン止めしたものほど 上。何日の会話か・だれ・文）。押すと その会話へ 飛ぶ。× で外す
-//               下：やりとりしたもの … タブで切りかえ「すべて ／ 送ったもの ／ 届いたもの」
-//                 今のトークの人と 送り合ったもの（今は問題だけ。新しい順。題名・何日・問題数）
+//                 ピン止めしたものは 右の「ピン止め」の列に 一覧で出る（chat-store.js の toggleMsgPin）
+//    右       … 2 列（別々の列。それぞれ 多いときは 中だけスクロール）
+//               ピン止めの列 … ピン止めした会話（あとから ピン止めしたものほど 上。何日の会話か・だれ・文）。押すと その会話へ 飛ぶ。× で外す
+//               やりとりしたものの列 … タブで切りかえ「すべて ／ 送ったもの ／ 届いたもの」
+//                 今のトークの人と 送り合ったもの（問題と コード。新しい順。題名・何日・問題数／行数）
 //                 押すと中身（送った問題は正解つき。届いた問題は正解を出さない）と「トークで見る」（やりとりの その問題のところへ）
 //  飛んだとき（ピン止め・「トークで見る」）は、その会話を光らせて、やりとりの上に「〇月〇日（〇）の会話」と出す
 //  やりとりの 日付の区切りは、スクロールしても 上に のこる（今 何日の会話を見ているか わかるように）
@@ -43,8 +45,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Icon from "../../core/components/Icon";
 import { lastLoginText } from "./friends-sample.js";
 import { notify } from "../../core/utils/notify.js";
+import { STAMPS, stampOf, stampSrc } from "./stamps.js";
 import { CHOICE_MARKS } from "./mail-sample.js";
-import { loadChats, sendMessage, loadReadMarks, markRead, unreadCount, loadMsgPins, toggleMsgPin, loadGroups, saveGroups, newGroupId, loadChatTab, saveChatTab, loadFilesOpen, saveFilesOpen, loadRooms, saveRooms, newRoomId, addNotice, removeTalk } from "./chat-store.js";
+import { loadChats, sendMessage, loadReadMarks, markRead, unreadCount, loadMsgPins, toggleMsgPin, loadGroups, saveGroups, newGroupId, loadChatTab, saveChatTab, loadTabOrder, saveTabOrder, loadFilesOpen, saveFilesOpen, loadRooms, saveRooms, newRoomId, addNotice, removeTalk } from "./chat-store.js";
 import QuizView from "./quiz-view.jsx";
 import "./chat.css";
 
@@ -64,6 +67,7 @@ const ROOM_COLORS = ["#0ea5e9", "#8b5cf6", "#f97316", "#14b8a6", "#ec4899", "#84
 /** トークの一覧の 決まったタブ（このあとに 自分で作ったグループが ならぶ） */
 const BASE_TABS = [
   { id: "all", name: "すべて" },
+  { id: "solo", name: "個人", icon: "account" },   // 1 対 1 の トーク（グループトークではない）
   { id: "fav", name: "お気に入り", mark: "★" },
   { id: "unread", name: "未読" },
   { id: "online", name: "オンライン" },
@@ -114,10 +118,12 @@ const preview = (msg, nameOf = () => "") => {
   const head = msg.from === "me" ? "あなた：" : msg.by ? `${nameOf(msg.by)}：` : "";   // グループトークでは 送った人の名前も
   if (msg.type === "quiz") return `${head}問題「${msg.quiz?.title ?? ""}」を送りました`;
   if (msg.type === "code") return `${head}コード（${msg.lang || "その他"}）を送りました`;
+  if (msg.type === "stamp") return `${head}スタンプ（${stampOf(msg.stamp)?.name ?? ""}）を送りました`;
   return `${head}${(msg.text ?? "").replace(/\n/g, " ")}`;
 };
 /** 1 行で あらわす 中身（ピン止めの一覧など） */
 const summary = (msg) => (msg.type === "quiz" ? `問題「${msg.quiz?.title ?? ""}」`
+  : msg.type === "stamp" ? `スタンプ「${stampOf(msg.stamp)?.name ?? ""}」`
   : msg.type === "code" ? `コード（${msg.lang || "その他"}・${lineCount(msg.code)}行）${msg.text ? ` ${msg.text}` : ""}` : msg.text);
 const lineCount = (code = "") => code.replace(/\n+$/, "").split("\n").length;
 
@@ -206,6 +212,7 @@ export default function Chat({ user, friends, start, favorites = new Set(), onFa
 
   // タブで しぼる
   const inTab = (id, f) => {
+    if (id === "solo") return !f.room;
     if (id === "fav") return favorites.has(f.userId);
     if (id === "unread") return unreadOf(f) > 0;
     if (id === "online") return !f.room && !!f.online;
@@ -216,7 +223,7 @@ export default function Chat({ user, friends, start, favorites = new Set(), onFa
   // けんさく：名前か 会話の文で さがす（会話で見つかったら、いちばん新しいものを hit に）
   const [q, setQ] = useState("");
   const query = q.trim().toLowerCase();
-  const textOf = (m) => (m.type === "quiz" ? `${m.quiz?.title ?? ""} ${m.text ?? ""}` : m.type === "code" ? `${m.code ?? ""} ${m.text ?? ""}` : m.text ?? "").toLowerCase();
+  const textOf = (m) => (m.type === "quiz" ? `${m.quiz?.title ?? ""} ${m.text ?? ""}` : m.type === "code" ? `${m.code ?? ""} ${m.text ?? ""}` : m.type === "stamp" ? stampOf(m.stamp)?.name ?? "" : m.text ?? "").toLowerCase();
   const shownTalks = talks.filter(({ f }) => inTab(tabId, f)).map((t) => {
     if (!query) return t;
     if (t.f.name.toLowerCase().includes(query)) return t;
@@ -226,7 +233,10 @@ export default function Chat({ user, friends, start, favorites = new Set(), onFa
   // 右の列を 出すか（その PC に覚える）
   const [filesOpen, setFilesOpenState] = useState(() => loadFilesOpen(me));
   const toggleFiles = () => setFilesOpenState((v) => { saveFilesOpen(me, !v); return !v; });
-  const tabs = [...BASE_TABS, ...groups.map((g) => ({ id: g.id, name: g.name, group: true }))];
+  // タブの ならび：「すべて」は いつも 左はし。ほかは 自分で 並べかえた順（ドラッグ＆ドロップ ・ Alt + ← →）
+  const [order, setOrderState] = useState(() => loadTabOrder(me));
+  const tabs = arrangeTabs([...BASE_TABS, ...groups.map((g) => ({ id: g.id, name: g.name, group: true }))], order);
+  const moveTab = (ids) => setOrderState(saveTabOrder(me, ids));
 
   // ── グループを作る・名前を変える・消す・人を入れる ──
   /** 名前のチェック（だめなら理由。よければ ""） */
@@ -287,7 +297,7 @@ export default function Chat({ user, friends, start, favorites = new Set(), onFa
     <>
     {/* ── いちばん上（フレンドの画面の タブの すぐ下）：分類のタブを 横いっぱいの 1 行で。分類を えらんでいるときは 右に 名前を変える・消す ── */}
     <div className="ch-catbar">
-      <TalkTabs tabs={tabs} current={tabId} onSelect={setTab}
+      <TalkTabs tabs={tabs} current={tabId} onSelect={setTab} onMove={moveTab}
         count={(id) => talks.filter(({ f }) => inTab(id, f)).length}
         canAdd={groups.length < MAX_GROUPS} nameError={nameError}
         onAdd={(name) => setTab(addGroup(name).id)} />
@@ -372,13 +382,13 @@ export default function Chat({ user, friends, start, favorites = new Set(), onFa
                 )}
                 <span className="ch-tool-sep" aria-hidden="true" />
                 <button type="button" className={`ch-tool is-round${filesOpen ? " is-on" : ""}`} onClick={toggleFiles} aria-pressed={filesOpen}
-                  title={filesOpen ? "右の列（ピン止め・やりとりしたもの）を かくす" : "右の列（ピン止め・やりとりしたもの）を 出す"}
-                  aria-label="右の列（ピン止め・やりとりしたもの）を 出す・かくす"><Icon name="panelRight" /></button>
+                  title={filesOpen ? "右の 2 列（ピン止め・やりとりしたもの）を かくす" : "右の 2 列（ピン止め・やりとりしたもの）を 出す"}
+                  aria-label="右の 2 列（ピン止め・やりとりしたもの）を 出す・かくす"><Icon name="panelRight" /></button>
               </>} />
           : <p className="ch-empty"><Icon name="chat" />左のトークを えらんでください。</p>}
       </div>
 
-      {/* ── 右：上 ＝ ピン止めした会話 ・ 下 ＝ 今の人と やりとりしたもの（タブ：すべて ・ 送ったもの ・ 届いたもの） ── */}
+      {/* ── 右の 2 列：ピン止めした会話 ／ 今の人と やりとりしたもの（タブ：すべて ・ 送ったもの ・ 届いたもの）。別々の列で、どちらも 上から下まで ── */}
       <aside className="ch-files" aria-label="ピン止めと やりとりしたもの" hidden={!filesOpen}>
         <section className={`ch-files-part is-pins${pinnedMsgs.length ? "" : " is-empty"}`} aria-label="ピン止めした会話">
           <h2 className="ch-col-title"><Icon name="pin" />ピン止め<span className="ch-count">{pinnedMsgs.length}</span></h2>
@@ -401,7 +411,7 @@ export default function Chat({ user, friends, start, favorites = new Set(), onFa
         </section>
 
         <section className="ch-files-part is-shared" aria-label="やりとりしたもの">
-          <h3 className="ch-part-title"><Icon name="list" />やりとりしたもの<span className="ch-count">{files.length}</span></h3>
+          <h2 className="ch-col-title"><Icon name="list" />やりとりしたもの<span className="ch-count">{files.length}</span></h2>
           <div className="ch-file-tabs" role="tablist" aria-label="やりとりしたものの切りかえ">
             {FILE_TABS.map((t) => (
               <button key={t.id} type="button" role="tab" aria-selected={fileTab === t.id}
@@ -554,6 +564,8 @@ function Thread({ friend: f, nameOf = () => "", people = [], list, jumpId, jumpK
             ? <QuizBubble msg={msg} onOpen={() => onView(msg)} />
             : msg.type === "code"
             ? <div className="ch-code-bubble">{msg.text && <p className="ch-code-note">{msg.text}</p>}<CodeBlock msg={msg} /></div>
+            : msg.type === "stamp"
+            ? <StampImage id={msg.stamp} />
             : <p className="ch-bubble">{msg.text}</p>}
           <time dateTime={msg.at}>{hm(d)}</time>
           <MsgPinButton on={pinnedIds.includes(msg.id)} onClick={() => onPinMsg?.(msg.id)} />
@@ -610,8 +622,53 @@ function Thread({ friend: f, nameOf = () => "", people = [], list, jumpId, jumpK
         <textarea ref={inputRef} className="ch-text" rows={1} value={draft} maxLength={MAX_TEXT}
           placeholder="メッセージを入力（Enter で送信）" title="Enter で送信・Shift + Enter で改行・``` で かこむと コード" aria-label={`${f.call}へのメッセージ`}
           onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey} />
+        <StampPicker onPick={(id) => onSend({ type: "stamp", stamp: id })} />
         <button type="submit" className="ch-send" disabled={!draft.trim()} aria-label="送信"><Icon name="send" /></button>
       </form>
+    </div>
+  );
+}
+
+// ───────── スタンプ ─────────
+/** やりとりの中の スタンプ（吹き出しなしで 絵だけ。わからない id のときは 文で） */
+function StampImage({ id }) {
+  const s = stampOf(id);
+  if (!s) return <p className="ch-bubble">（スタンプ）</p>;
+  return <img className="ch-stamp" src={stampSrc(s)} alt={`スタンプ：${s.name}`} title={s.name} width={128} height={128} draggable={false} />;
+}
+
+/** 入力欄の右の スタンプのボタンと 一覧。押すと すぐ送って とじる（Esc ・ 外を押しても とじる） */
+function StampPicker({ onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const off = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const esc = (e) => { if (e.key === "Escape") { e.preventDefault(); setOpen(false); ref.current?.querySelector(".ch-stamp-btn")?.focus(); } };
+    document.addEventListener("mousedown", off);
+    document.addEventListener("keydown", esc);
+    ref.current?.querySelector(".ch-stamp-item")?.focus();   // 開いたら 1 つ目に
+    return () => { document.removeEventListener("mousedown", off); document.removeEventListener("keydown", esc); };
+  }, [open]);
+  return (
+    <div className="ch-stamp-wrap" ref={ref}>
+      <button type="button" className={`ch-stamp-btn${open ? " is-open" : ""}`} aria-label="スタンプを送る" title="スタンプ" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <Icon name="smile" />
+      </button>
+      {open && (
+        <div className="ch-stamps" role="dialog" aria-label="スタンプ">
+          <p className="ch-stamps-title"><Icon name="smile" />スタンプ<small>押すと すぐ送ります</small></p>
+          <ul className="ch-stamps-grid">
+            {STAMPS.map((s) => (
+              <li key={s.id}>
+                <button type="button" className="ch-stamp-item" title={s.name} aria-label={`スタンプ「${s.name}」を送る`} onClick={() => { onPick(s.id); setOpen(false); }}>
+                  <img src={stampSrc(s)} alt="" width={72} height={72} draggable={false} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -627,9 +684,98 @@ function MsgPinButton({ on, onClick }) {
   );
 }
 // ───────── トークの一覧の タブ・グループ ─────────
-/** タブ（すべて・お気に入り・未読・オンライン・グループ…）と、グループを作る「＋」 */
-function TalkTabs({ tabs, current, onSelect, count, canAdd, nameError, onAdd }) {
+/** タブを 覚えている順に ならべる。「すべて」は 左はし。覚えていない タブ（新しく できたもの）は
+ *  自分で作った分類なら いちばん うしろ。決まったタブなら もとの順で すぐ前にある タブの うしろ（なければ「すべて」の すぐうしろ） */
+function arrangeTabs(list, order) {
+  const [first, ...rest] = list;   // first ＝「すべて」
+  const byId = new Map(rest.map((t) => [t.id, t]));
+  const ids = order.filter((id) => byId.has(id));
+  rest.forEach((t, i) => {
+    if (ids.includes(t.id)) return;
+    if (t.group) { ids.push(t.id); return; }
+    const before = rest.slice(0, i).reverse().find((x) => ids.includes(x.id));
+    ids.splice(before ? ids.indexOf(before.id) + 1 : 0, 0, t.id);
+  });
+  return [first, ...ids.map((id) => byId.get(id))];
+}
+
+/** タブ（すべて・個人・お気に入り・未読・オンライン・グループ…）と、グループを作る「＋」
+ *  「すべて」より うしろの タブは ドラッグ＆ドロップで 並べかえられる（onMove(新しい id の順)）。
+ *  キーボードでは タブを えらんで Alt + ← / → */
+function TalkTabs({ tabs, current, onSelect, onMove, count, canAdd, nameError, onAdd }) {
   const [adding, setAdding] = useState(false);
+  // ── ドラッグで 並べかえ ──
+  //   押して 6px 以上 動かしたら ドラッグ開始。動かしている あいだは ならびを その場で 入れかえて見せ、
+  //   はなしたら 決まり（onMove）。Esc で やめる。ドラッグしたあとの クリックは 切りかえに しない
+  const [drag, setDrag] = useState(null);   // { id, ids: 見せている ならび }
+  const g = useRef(null);                   // ドラッグの 細かい様子（画面に出さない）
+  const moved = useRef(false);              // ドラッグした すぐあとの クリックを むしする
+  const movable = tabs.slice(1).map((t) => t.id);
+  const shown = drag ? [tabs[0], ...drag.ids.map((id) => tabs.find((t) => t.id === id))] : tabs;
+  const onDown = (e, id) => {
+    if (e.button !== 0 || id === tabs[0].id) return;
+    g.current = { id, x: e.clientX, el: e.currentTarget, pid: e.pointerId, started: false, left: e.currentTarget.offsetLeft, ids: movable };
+  };
+  const onPtrMove = (e) => {
+    const d = g.current;
+    if (!d || e.pointerId !== d.pid) return;
+    if (!d.started) {
+      if (Math.abs(e.clientX - d.x) < 6) return;
+      d.started = true;
+      d.el.setPointerCapture(e.pointerId);
+      setDrag({ id: d.id, ids: d.ids });
+    }
+    const box = ref.current;
+    // はしに 近づいたら 横に スクロール
+    const r = box.getBoundingClientRect();
+    if (e.clientX < r.left + 36) box.scrollLeft -= 10;
+    else if (e.clientX > r.right - 36) box.scrollLeft += 10;
+    // 指の下の タブを さがして、その まん中を こえたら 入れかえる
+    const others = [...box.querySelectorAll(".ch-tab[data-move]")].filter((el) => el.dataset.move !== d.id);
+    let to = 0;
+    for (const el of others) {
+      const b = el.getBoundingClientRect();
+      if (e.clientX > b.left + b.width / 2) to += 1;
+    }
+    const rest = d.ids.filter((x) => x !== d.id);
+    const next = [...rest.slice(0, to), d.id, ...rest.slice(to)];
+    if (next.join() !== d.ids.join()) { d.ids = next; setDrag({ id: d.id, ids: next }); }
+    d.cx = e.clientX;
+    follow();
+  };
+  /** ひっぱっている タブを 指に ついてこさせる（今の ならびでの 位置からの ずれ） */
+  const follow = () => {
+    const d = g.current;
+    if (d?.started) d.el.style.transform = `translateX(${d.cx - d.x - (d.el.offsetLeft - d.left)}px)`;
+  };
+  useLayoutEffect(follow, [drag]);   // ならびが 変わったら 位置を 直す
+  const finish = (commit) => {
+    const d = g.current;
+    g.current = null;
+    if (!d?.started) return;
+    d.el.style.transform = "";
+    moved.current = true;
+    setTimeout(() => { moved.current = false; }, 0);
+    setDrag(null);
+    if (commit && d.ids.join() !== movable.join()) onMove(d.ids);
+  };
+  useEffect(() => {
+    if (!drag) return;
+    const onKey = (e) => { if (e.key === "Escape") { e.preventDefault(); finish(false); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+  /** キーボード：Alt + ← / → で 1 つ となりへ */
+  const onTabKey = (e, id) => {
+    if (!e.altKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight") || id === tabs[0].id) return;
+    e.preventDefault();
+    const i = movable.indexOf(id), j = i + (e.key === "ArrowLeft" ? -1 : 1);
+    if (j < 0 || j >= movable.length) return;
+    const next = [...movable];
+    [next[i], next[j]] = [next[j], next[i]];
+    onMove(next);
+    requestAnimationFrame(() => ref.current?.querySelector(`[data-move="${CSS.escape(id)}"]`)?.focus());
+  };
   // 1 行に ならべて、入りきらない分は 横にスクロール（マウスの ホイールでも 横に動く）
   const ref = useRef(null);
   const [edge, setEdge] = useState({ left: false, right: false });   // 左・右に まだ続きが あるか（はしを うすく消す）
@@ -662,10 +808,15 @@ function TalkTabs({ tabs, current, onSelect, count, canAdd, nameError, onAdd }) 
     else if (r > el.scrollLeft + el.clientWidth) el.scrollLeft = r - el.clientWidth + 12;
   }, [current, adding]);
   return (
-    <div className={`ch-tabs${edge.left ? " has-left" : ""}${edge.right ? " has-right" : ""}`} role="tablist" aria-label="トークの分類" ref={ref} onScroll={measure}>
-      {tabs.map((t) => (
-        <button key={t.id} type="button" role="tab" aria-selected={current === t.id}
-          className={`ch-tab${current === t.id ? " is-active" : ""}${t.group ? " is-group" : ""}`} onClick={() => onSelect(t.id)}>
+    <div className={`ch-tabs${edge.left ? " has-left" : ""}${edge.right ? " has-right" : ""}${drag ? " is-sorting" : ""}`} role="tablist" aria-label="トークの分類（ドラッグで 並べかえ）" ref={ref} onScroll={measure}>
+      {shown.map((t, i) => (
+        <button key={t.id} type="button" role="tab" aria-selected={current === t.id} data-move={i > 0 ? t.id : undefined}
+          className={`ch-tab${current === t.id ? " is-active" : ""}${t.group ? " is-group" : ""}${drag?.id === t.id ? " is-dragging" : ""}`}
+          title={i > 0 ? "ドラッグで 並べかえ（Alt + ← → でも）" : undefined}
+          onClick={() => { if (!moved.current) onSelect(t.id); }}
+          onPointerDown={(e) => onDown(e, t.id)} onPointerMove={onPtrMove}
+          onPointerUp={() => finish(true)} onPointerCancel={() => finish(false)} onLostPointerCapture={() => finish(true)}
+          onKeyDown={(e) => onTabKey(e, t.id)}>
           {t.mark && <span className="ch-tab-mark" aria-hidden="true">{t.mark}</span>}
           {t.icon && <Icon name={t.icon} />}
           {t.group && <Icon name="tag" />}
@@ -787,7 +938,7 @@ function Highlight({ text = "", q }) {
 // ───────── プログラムのコード ─────────
 /** コードの表示：行番号つき。上の「すべてコピー」、行に マウスをのせると 右に「コピー」、行番号を押しても その行をコピー
  *  big … 大きく出す（中身を見る画面） */
-function CodeBlock({ msg, big = false }) {
+export function CodeBlock({ msg, big = false }) {
   const lines = (msg.code ?? "").replace(/\n+$/, "").split("\n");
   const [copied, setCopied] = useState(null);   // コピーした ところ（"all" か 行の番号）。少しのあいだ「コピーしました」
   const timer = useRef(0);

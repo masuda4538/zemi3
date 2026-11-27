@@ -16,6 +16,9 @@
 //    newGroupId()                             … 新しいグループの id
 //  えらんでいる タブ（すべて・お気に入り・未読・オンライン・グループの id）
 //    loadChatTab(自分の userId) ／ saveChatTab(自分の userId, タブの id)
+//  タブの ならび（ドラッグ＆ドロップで 自分で 並べかえた順。「すべて」は いつも 左はしなので 入らない）
+//    loadTabOrder(自分の userId) … [タブの id…]（まだ 並べかえていなければ []）
+//    saveTabOrder(自分の userId, [タブの id…])
 //  グループトーク（何人かの フレンドと 1 つのトークで話す。やりとりは 上の chats に id「grp:…」で 入る）
 //    loadRooms(自分の userId)                 … [{ id: "grp:…", name, color, members: [相手の userId…] }]（作った順）
 //    saveRooms(自分の userId, [グループ…])    … 覚えておく。同じ配列を返す
@@ -32,11 +35,11 @@
 //  メッセージ 1 つの形
 //    id   … 見分けるための名前
 //    from … "me"（自分） ／ "friend"（相手）
-//    type … "text"（文） ／ "quiz"（問題） ／ "code"（プログラムのコード） ／ "system"（お知らせ）
+//    type … "text"（文） ／ "quiz"（問題） ／ "code"（プログラムのコード） ／ "stamp"（スタンプ） ／ "system"（お知らせ）
 //    text … 文（問題のときは ひとこと。なくてもよい）
 //    code … コード（code のときだけ。何行でも）　lang … 言語の名前（"Python" など。code のときだけ）
+//    stamp … スタンプの id（stamp のときだけ。一覧と 絵は stamps.js）
 //    quiz … 問題（quiz のときだけ）{ title: 題名, questions: [{ q: 問題文, choices: [選択肢 4 つ], answer: 正解の番号（0 から） }] }
-//           形は mail-sample.js（ホームのポスト）と同じ
 //    at   … 送った日時（文字。例 "2026-11-26T04:16:00.000Z"。new Date(at) で日時になる）
 //
 //  最初の 仮のやりとりは chat-sample.js。中身を変えたら SAMPLE_VERSION を 1 つ上げる
@@ -45,7 +48,7 @@
 //  ★ サーバーを使うようになったら、この 3 つの中身を、サーバーに聞く・送る形に書きかえる（使う側は そのまま）
 // ═══════════════════════════════════════════════════════════════
 
-import { sampleChats, sampleRoom, sampleCode } from "./chat-sample.js";
+import { sampleChats, sampleRoom, sampleCode, sampleStamps } from "./chat-sample.js";
 
 const key = (me) => `zemi:friends:chat:${me ?? "guest"}`;   // ログインしている人ごとに分けて覚える
 
@@ -90,8 +93,12 @@ function saveChats(me, chats) {
 }
 
 /** 1 つ送る（自分のメッセージを足して覚えておく）。新しい やりとりを返す */
-export function sendMessage(me, chats, friendId, { type = "text", text = "", quiz = null, code = "", lang = "" }) {
-  const msg = { id: newId(), from: "me", type, text, ...(type === "quiz" ? { quiz } : {}), ...(type === "code" ? { code, lang } : {}), at: new Date().toISOString() };
+export function sendMessage(me, chats, friendId, { type = "text", text = "", quiz = null, code = "", lang = "", stamp = "" }) {
+  const msg = {
+    id: newId(), from: "me", type, text,
+    ...(type === "quiz" ? { quiz } : {}), ...(type === "code" ? { code, lang } : {}), ...(type === "stamp" ? { stamp } : {}),
+    at: new Date().toISOString(),
+  };
   const next = { ...chats, [friendId]: [...(chats[friendId] ?? []), msg] };
   saveChats(me, next);
   return next;
@@ -188,6 +195,19 @@ export function saveChatTab(me, id) {
   try { localStorage.setItem(tabKey(me), id); } catch { /* 覚えられなくても、今の画面では切りかわる */ }
 }
 
+// ───────── タブの ならび ─────────
+const orderKey = (me) => `zemi:friends:chat-tab-order:${me ?? "guest"}`;
+export function loadTabOrder(me) {
+  try {
+    const v = JSON.parse(localStorage.getItem(orderKey(me)) ?? "[]");
+    return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
+  } catch { return []; }
+}
+export function saveTabOrder(me, ids) {
+  try { localStorage.setItem(orderKey(me), JSON.stringify(ids)); } catch { /* 覚えられなくても、今の画面では ならぶ */ }
+  return ids;
+}
+
 // ───────── グループトーク ─────────
 const roomKey = (me) => `zemi:friends:chat-rooms:${me ?? "guest"}`;
 
@@ -209,13 +229,19 @@ export function loadRooms(me) {
   return [];
 }
 /** あとから足した 仮のやりとり（コード）を、保存してある やりとりにも 1 回だけ 入れる（時刻の順に はさむ） */
-const EXTRA_VERSION = 1;
+/** あとから 足した 仮のもの（番号ごと。保存してある番号より 大きいものだけ 1 回 入れる） */
+const EXTRAS = [
+  { v: 1, list: sampleCode },     // プログラムのコード
+  { v: 2, list: sampleStamps },   // スタンプ
+];
+const EXTRA_VERSION = EXTRAS.at(-1).v;
 const extraKey = (me) => `zemi:friends:chat-extra:${me ?? "guest"}`;
 function ensureExtras(me) {
   try {
-    if (Number(localStorage.getItem(extraKey(me))) >= EXTRA_VERSION) return;
+    const done = Number(localStorage.getItem(extraKey(me))) || 0;
+    if (done >= EXTRA_VERSION) return;
     const chats = JSON.parse(localStorage.getItem(key(me)) ?? "{}") ?? {};
-    for (const { talk, msg } of sampleCode()) {
+    for (const { talk, msg } of EXTRAS.filter((x) => x.v > done).flatMap((x) => x.list())) {
       const list = Array.isArray(chats[talk]) ? chats[talk] : null;
       if (!list || list.some((m) => m.id === msg.id)) continue;   // その相手が いない・もう入っている
       chats[talk] = [...list, msg].sort((a, b) => new Date(a.at) - new Date(b.at));

@@ -35,6 +35,7 @@ const PATHS = {
   sideClose: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16M16 9.5 13.5 12l2.5 2.5" /></>,   // サイドバーを隠す
   sideOpen: <><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16M13.5 9.5 16 12l-2.5 2.5" /></>,    // サイドバーを出す
   chat: <><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z" /><path d="M8 9.5h8M8 12.5h5" /></>,                // チャット（フレンド）
+  smile: <><circle cx="12" cy="12" r="9" /><path d="M8.5 14.2a4.5 4.5 0 0 0 7 0" /><path d="M9 9.6v.6M15 9.6v.6" /></>,   // スタンプ（にこにこの顔）
   copy: <><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" /><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" /></>,   // コピー（紙が 2 まい）
   send: <><path d="M21 3 10.5 13.5" /><path d="M21 3 14.5 21l-4-7.5L3 9.5z" /></>,                          // 送る（紙ひこうき）
   plus: <path d="M12 5v14M5 12h14" />,                                                                      // たす

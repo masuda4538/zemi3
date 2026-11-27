@@ -42,7 +42,8 @@ import { mountPlaza } from "./plaza.js";                              // 広場�
 import { FRIENDS_SAMPLE, RANKING_SAMPLE } from "../../../pages/friends/friends-sample.js";   // 仮のフレンド（フレンドのページと同じ）
 import { mountMailbox } from "./mailbox.js";
 import { mountRanking } from "./ranking.js";                          // お気に入りの広場の掲示板（今週の勉強ランキング）
-import { MAIL_SAMPLE } from "../../../pages/friends/mail-sample.js";   // フレンドから届いたもの（仮のデータ。ここでは フレンド申請だけ使う）
+import { REQUEST_SAMPLE } from "../../../pages/friends/mail-sample.js";   // 届いたフレンド申請（仮のデータ）
+import { stampOf } from "../../../pages/friends/stamps.js";                 // スタンプの名前（チャットの通知の文）
 import { unreadChats, markAllRead } from "../../../pages/friends/chat-store.js";   // チャット（まだ見ていないもの）
 import { requestFriend, requestChat } from "../../../pages/friends/open-friend.js";   // フレンドのページの「フレンド詳細」「チャット」を開く
 import { loadFavorites, toggleFavorite } from "../../../pages/friends/favorites.js";   // お気に入りのフレンド（その PC の中に覚えておく）
@@ -336,7 +337,7 @@ app.onUserChange(drawUser);              // 名前・アイコンを変えたと
 
 // ───────── 左下のポスト（チャットの通知と フレンド申請。js/mailbox.js） ─────────
 //   チャット … まだ見ていないメッセージがある人ごとに 1 つ（pages/friends/chat-store.js の unreadChats から作る）
-//   申請     … 仮のデータ（pages/friends/mail-sample.js の フレンド申請だけ）
+//   申請     … 仮のデータ（pages/friends/mail-sample.js の REQUEST_SAMPLE）
 //   本当の機能を作ったら：届いたときに mailbox.receive(届いたもの) を呼ぶ
 //   onReceive … あとから届いたときに、右上にお知らせを出す
 function postMails() {
@@ -347,10 +348,11 @@ function postMails() {
       id: `chat:${friendId}:${last.id}`, type: "chat", from: { userId: f.userId, name: f.name, color: f.color },
       at: new Date(last.at), count, quiz: last.type === "quiz", read: false,
       text: last.type === "quiz" ? `問題「${last.quiz?.title ?? ""}」を送ってきました`
-        : last.type === "code" ? `コード（${last.lang || "その他"}）を送ってきました` : last.text,
+        : last.type === "code" ? `コード（${last.lang || "その他"}）を送ってきました`
+        : last.type === "stamp" ? `スタンプ「${stampOf(last.stamp)?.name ?? ""}」を送ってきました` : last.text,
     };
   }).filter(Boolean);
-  return [...chats, ...MAIL_SAMPLE.filter((m) => m.type === "request")];
+  return [...chats, ...REQUEST_SAMPLE];
 }
 const mailbox = mountMailbox({
   post: $("mailbox-post"), badge: $("mailbox-badge"), box: $("mailbox"), mails: postMails(), isFriend, onFriend: openFriend,

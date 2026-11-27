@@ -1,35 +1,33 @@
 /* ═════════ フレンド：チャット（chat.jsx）。LINE のような やりとり ═════════
-   3 列：左 トークの一覧（はば 280px） ・ まん中 やりとり ・ 右 ピン止めと やりとりしたもの（はば 320px。かくせる）
+   4 列：左 トークの一覧 ・ まん中 やりとり ・ ピン止め ・ やりとりしたもの（右の 2 列は まとめて かくせる）
    ページの左右いっぱい・下までを使う（外の枠・影なし。列のさかいは線だけ。高さは friends.css の .fr-page.is-chat が決める） */
 .ch {
-  display: grid; grid-template-columns: 280px minmax(0, 1fr) 320px; overflow: clip; padding: 0;   /* clip … 中が横に ずれない（スクロールしない） */
+  display: grid; grid-template-columns: 280px minmax(0, 1fr) 260px 290px; overflow: clip; padding: 0;   /* clip … 中が横に ずれない（スクロールしない） */
   min-height: 420px; background: var(--surface); border-top: 1px solid var(--border);
 }
 .ch.is-files-hidden { grid-template-columns: 280px minmax(0, 1fr); }   /* 右の列を かくしたとき */
+.ch-files { display: contents; }   /* 中の 2 つ（ピン止め ・ やりとりしたもの）が そのまま 列になる */
 .ch-files[hidden] { display: none; }
 
 /* ── 左：トークの一覧 ・ 右：送ったもの（どちらも 上に見出し、下に一覧） ── */
-.ch-side, .ch-files { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--surface); }
+.ch-side, .ch-files-part { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--surface); }
 .ch-side { border-right: 1px solid var(--border); }
-.ch-files { border-left: 1px solid var(--border); }
+.ch-files-part { border-left: 1px solid var(--border); }
 .ch-col-title {
   flex: none; display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 18px; height: 69px;
-  border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 800;
+  border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 800; white-space: nowrap;
 }
 .ch-col-title .icon { width: 18px; height: 18px; color: var(--primary); }
 .ch-count { min-width: 22px; height: 20px; padding: 0 7px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); font-size: 11.5px; line-height: 18px; text-align: center; }
 .ch-side .ch-list, .ch-files .ch-list { padding-top: 8px; }
-/* 右の中：上下 2 つ。上 ＝ ピン止めした会話、下 ＝ やりとりしたもの（タブ ＋ 一覧）。それぞれ 多いときは 一覧だけスクロール
-   ピン止めが ないときは、上は 小さく（見出しと ひとことだけ） */
-.ch-files-part { min-height: 0; display: flex; flex-direction: column; }
-.ch-files-part.is-pins { flex: 1 1 0; }
-.ch-files-part.is-pins.is-empty { flex: none; }
-.ch-files-part.is-shared { flex: 1 1 0; border-top: 1px solid var(--border); }
+/* 右の 2 列：ピン止めした会話 ／ やりとりしたもの（タブ ＋ 一覧）。それぞれ 多いときは 一覧だけスクロール */
+.ch-files-part.is-pins { background: color-mix(in srgb, var(--sky-soft) 45%, var(--surface)); }   /* ピン止めの列は 少しだけ 水色 */
+:root[data-theme="dark"] .ch-files-part.is-pins { background: color-mix(in srgb, var(--primary) 6%, var(--surface)); }
 .ch-files-part .ch-file-list { flex: 1; min-height: 0; overflow-y: auto; }
 .ch-files-part.is-pins .ch-col-title .icon { color: var(--primary); }
-.ch-part-title { flex: none; display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 18px 0; font-size: 14px; font-weight: 800; }
-.ch-part-title .icon { width: 17px; height: 17px; color: var(--primary); }
-.ch-file-tabs { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 8px; border-bottom: 1px solid var(--border); }
+/* やりとりしたものの タブ：1 行に 3 つ（すべて ・ 送ったもの ・ 届いたもの）。列のはばを 3 つで分ける */
+.ch-file-tabs { flex: none; display: flex; gap: 4px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.ch-file-tabs .ch-tab { flex: 1 1 auto; min-width: 0; justify-content: center; padding: 0 5px; gap: 3px; font-size: 12px; }
 .ch-file-list { padding: 10px 12px 14px !important; display: flex; flex-direction: column; gap: 8px; }
 .ch-files .ch-none { padding: 14px 16px; font-size: 12.5px; }
 .ch-tab.is-pin .icon { color: var(--primary); }
@@ -71,7 +69,7 @@
 .ch-file .fr-kind { grid-row: span 2; width: 32px; height: 32px; border-radius: 10px; }
 .ch-file .fr-kind .icon { width: 16px; height: 16px; }
 .ch-file b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 800; }
-.ch-file small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+.ch-file small { min-width: 0; font-size: 11.5px; font-weight: 700; line-height: 1.55; color: var(--text-3); }   /* 列が せまくても 日にちまで 見えるように 折り返す */
 /* トークの一覧の 2 行目：文 ＋ まだ見ていない数（緑の丸） */
 .ch-row-bottom { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .ch-row-bottom small { flex: 1; min-width: 0; }
@@ -280,12 +278,16 @@
 
 /* せまい画面：左右の列を少しせまく。いちばん せまいときは 選択肢を 1 列に */
 @media (max-width: 1300px) {
-  .ch { grid-template-columns: 240px minmax(0, 1fr) 280px; }
+  .ch { grid-template-columns: 210px minmax(0, 1fr) 200px 250px; }
+  .ch.is-files-hidden { grid-template-columns: 210px minmax(0, 1fr); }
+}
+@media (max-width: 1500px) and (min-width: 1301px) {
+  .ch { grid-template-columns: 240px minmax(0, 1fr) 210px 260px; }
   .ch.is-files-hidden { grid-template-columns: 240px minmax(0, 1fr); }
 }
 @media (max-width: 1100px) {
-  .ch { grid-template-columns: 210px minmax(0, 1fr) 240px; }
-  .ch.is-files-hidden { grid-template-columns: 210px minmax(0, 1fr); }
+  .ch { grid-template-columns: 180px minmax(0, 1fr) 170px 250px; }
+  .ch.is-files-hidden { grid-template-columns: 180px minmax(0, 1fr); }
   .ch-col-title { padding: 0 14px; font-size: 14px; }
   .ch-file { grid-template-columns: minmax(0, 1fr); padding: 8px 10px; }   /* せまいときは 問題のしるしを出さない */
   .ch-file .fr-kind { display: none; }
@@ -308,7 +310,7 @@
 .ch-pin-x .icon { width: 15px; height: 15px; }
 .ch-pin-x:hover { background: color-mix(in srgb, #e5484d 10%, transparent); color: #e5484d; }
 
-/* ── トークの一覧の タブ（すべて・お気に入り・未読・オンライン・グループ…・＋） ── */
+/* ── トークの一覧の タブ（すべて・個人・お気に入り・未読・オンライン・グループ…・＋） ── */
 .ch-tabs {   /* 1 行に ならべて、入りきらない分は 横にスクロール（スクロールバーは 細く） */
   flex: none; display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 6px; padding: 10px 12px 9px; border-bottom: 1px solid var(--border);
   overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: smooth;
@@ -510,3 +512,46 @@
 :root[data-theme="dark"] .ch-code-lines li:hover .ch-code-no { background: #1e3a66; color: #93c5fd; }
 :root[data-theme="dark"] .ch-code-lines li.is-done, :root[data-theme="dark"] .ch-code-lines li.is-done .ch-code-no { background: #14532d; color: #86efac; }
 :root[data-theme="dark"] .ch-code-lines code { color: #e2e8f0; }
+
+/* ── 分類のタブの 並べかえ（ドラッグ＆ドロップ）。ひっぱっている タブは 少し浮いて 指に ついてくる ── */
+.ch-tab[data-move] { touch-action: none; user-select: none; -webkit-user-select: none; }
+.ch-tabs.is-sorting { scroll-behavior: auto; cursor: grabbing; }
+.ch-tabs.is-sorting .ch-tab { cursor: grabbing; }
+.ch-tabs.is-sorting .ch-tab:not(.is-dragging) { border-style: dashed; }   /* ならべかえ中は ほかのタブを 点線に */
+.ch-tab.is-dragging {
+  position: relative; z-index: 2; border-color: var(--primary); border-style: solid;
+  box-shadow: 0 4px 12px rgb(37 99 235 / .28); opacity: .95;
+}
+
+/* ── スタンプ：入力欄の右の ボタン・一覧（入力欄の上に出す）・やりとりの中の 絵 ── */
+.ch-stamp-wrap { position: relative; flex: none; }
+.ch-stamp-btn {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text-2); cursor: pointer;
+}
+.ch-stamp-btn .icon { width: 21px; height: 21px; }
+.ch-stamp-btn:hover, .ch-stamp-btn.is-open { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
+.ch-stamp-btn.is-open { background: var(--sky-soft); }
+.ch-stamp-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ch-stamps {
+  position: absolute; right: -50px; bottom: calc(100% + 10px); z-index: 5; width: 364px; padding: 10px 10px 12px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 12px 30px rgb(15 30 60 / .2);
+}
+.ch-stamps-title { display: flex; align-items: center; gap: 6px; margin: 0 4px 8px; font-size: 13.5px; font-weight: 800; }
+.ch-stamps-title .icon { width: 17px; height: 17px; color: var(--primary); }
+.ch-stamps-title small { margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+.ch-stamps-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.ch-stamp-item {
+  width: 100%; display: grid; place-items: center; padding: 6px 0; border: 1px solid transparent; border-radius: 12px; background: none; cursor: pointer;
+  transition: background .12s, transform .12s;
+}
+.ch-stamp-item img { display: block; width: 72px; height: 72px; }
+.ch-stamp-item:hover { background: var(--hover); transform: scale(1.06); }
+.ch-stamp-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.reduce-motion .ch-stamp-item { transition: none; }
+.reduce-motion .ch-stamp-item:hover { transform: none; }
+/* やりとりの中の スタンプ（吹き出しなし） */
+.ch-stamp { display: block; width: 128px; height: 128px; user-select: none; -webkit-user-drag: none; }
+.ch-msg.is-jump .ch-stamp { animation: ch-flash 1.6s ease-out; border-radius: 16px; }
+.reduce-motion .ch-msg.is-jump .ch-stamp { animation: none; }
+:root[data-theme="dark"] .ch-stamp-item:hover { background: color-mix(in srgb, var(--primary) 14%, var(--surface)); }
