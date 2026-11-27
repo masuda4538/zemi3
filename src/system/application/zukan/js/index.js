@@ -1,4 +1,3 @@
-
 import { $, esc, initCommon, updateNavCounts } from "./common.js";
 
 // 初期データ
@@ -44,15 +43,18 @@ let flt = { scope: "all", tags: [] };
 let pend = [];
 
 // 一覧表示
-function renderGrid() {
-    const q = $("#q").value.trim().toLowerCase();
+function renderGrid(query = $("#q").value) {
+    const q = query.trim().toLowerCase();
 
     const r = items.filter(i => {
-        const m = !q || (
+        const targets =
             flt.scope === "all" ? [i.w, ...i.d, ...i.t] :
-                flt.scope === "word" ? [i.w] :
-                    flt.scope === "desc" ? i.d : i.t
-        ).some(x => x.toLowerCase().includes(q));
+            flt.scope === "word" ? [i.w] :
+            flt.scope === "desc" ? i.d : i.t;
+
+        const m = !q || targets.some(x =>
+            x.toLowerCase().includes(q)
+        );
 
         return m && flt.tags.every(t => i.t.includes(t));
     });
@@ -98,8 +100,13 @@ function drawF() {
 initCommon();
 
 // イベント設定
-$("#sbtn").onclick = renderGrid;
-$("#q").addEventListener("input", renderGrid);
+$("#sbtn").onclick = () => renderGrid();
+
+$("#q").addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+        renderGrid();
+    }
+});
 
 $("#fbtn").onclick = () => {
     pend = [...flt.tags];
@@ -115,7 +122,6 @@ $("#fapply").onclick = () => {
     flt.scope = document.querySelector("[name=scope]:checked").value;
     flt.tags = [...pend];
     $("#fmodal").classList.remove("on");
-    renderGrid();
 };
 
 $("#ftag").onfocus = () => {
