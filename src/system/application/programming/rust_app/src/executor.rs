@@ -29,6 +29,9 @@ async fn exec_python(args: &[&str]) -> Result<(String, String, bool), String> {
     for cmd in candidates {
         let mut child = match Command::new(cmd)
             .args(args)
+            // ★ Windows環境での文字化けを防ぐためUTF-8を強制
+            .env("PYTHONIOENCODING", "utf-8")
+            .env("PYTHONUTF8", "1")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()

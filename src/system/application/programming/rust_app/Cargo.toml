@@ -1,11 +1,11 @@
-[package]
+﻿[package]
 name = "codelab"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
 name = "codelab_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

@@ -1560,16 +1560,26 @@ async function fetchAiHintIntoPanel(userCode, taskPrompt) {
 async function openAiHelpFromConsole() {
     const task = tasks.find(t => t.id === lastWorkedTaskId);
     const code = document.getElementById('codeEditor').value;
+
+    // 1. 右側サイドパネルを確実に開く
+    const panel = document.getElementById('detailPanel');
+    if (panel) {
+        isDetailOpen = true;
+        panel.classList.remove('translate-x-full');
+    }
+
+    // 2. 右パネルのAIボックスにスクロールして注目させる
+    const rightAiBox = document.getElementById('rightAiBox');
+    if (rightAiBox) {
+        rightAiBox.classList.remove('hidden');
+        rightAiBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // 3. AIにヒントを問い合わせて右パネルに反映
     await fetchAiHintIntoPanel(
         code,
         task ? `${task.title}: ${task.desc}\n期待される出力: ${task.expected}` : '自由制作'
     );
-
-    if (layoutConfig.aiPos === 'bottom') {
-        switchConsoleTab('ai');
-    } else {
-        if (!isDetailOpen) toggleDetailPanel();
-    }
 }
 
 function openDictHelpFromConsole(keyword) {
